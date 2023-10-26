@@ -20,3 +20,4 @@ const UserSchema= mongoose.Schema({
 
 const Userdata=mongoose.model('deveotes-task1',UserSchema);
 module.exports=Userdata;
+

@@ -79,6 +79,10 @@ exports.getdata=(req,res)=>{
 
 }
 
+exports.getUrl=(req,res)=>{
+  
+
+}
 
 
 
