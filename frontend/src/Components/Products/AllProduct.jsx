@@ -33,6 +33,7 @@ const AllProducts = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [open, setOpen] = React.useState(false);
   const [showImg, setShowImg] = useState({})
+  const [showModalImg, setShowModalImg] = useState({})
 
   // add modal state
   const [AddData, setAddData] = useState({
@@ -42,7 +43,7 @@ const AllProducts = () => {
     productcode: '',
   });
 
-  // update modal state
+  // this state is basically for update modal state which store the privious data of inputs
   const [modalFormdata, setModalFormData] = useState({});
 
   const handleChange = (e) => {
@@ -56,7 +57,7 @@ const AllProducts = () => {
       const imagePreviewURL = URL.createObjectURL(selectedImage);
       setShowImg({ imagePreview: imagePreviewURL })
 
-      // console.log(showImg,"imggggggggggggggggggggggg");
+
     } else {
       setAddData({ ...AddData, [e.target.name]: e.target.value });
     }
@@ -117,7 +118,7 @@ const AllProducts = () => {
     if (resp) {
       if (resp.status === 200) {
         setData(resp.data.getdata);
-     
+
         // toast.success(resp.data.message);
       } else {
         toast.error(resp.data.message);
@@ -158,12 +159,22 @@ const AllProducts = () => {
 
   const handleModalChange = (e) => {
     if (e.target.name === 'image') {
-      setModalImage(e.target.files[0]);
+      const selectedImage = e.target.files[0];
+      setModalImage(selectedImage);
+  
+      // Preview the selected image, or use the existing image if no new image is selected
+      if (selectedImage) {
+        const imgPreviewURL = URL.createObjectURL(selectedImage);
+        setShowModalImg({ imagePreview: imgPreviewURL });
+      } else {
+        setShowModalImg({ imagePreview: `http://localhost:1000/${modalData.image}` });
+      }
     } else {
       setModalFormData({ ...modalFormdata, [e.target.name]: e.target.value });
     }
   };
-
+  
+  
 
 
   const handleOpenUpdate = (data) => {
@@ -175,7 +186,11 @@ const AllProducts = () => {
       quantity: data.quantity,
       productcode: data.productcode,
     });
-    setModalImage(data.image)
+    if (data.image) {
+      setShowModalImg({ imagePreview: `http://localhost:1000/${data.image}` });
+    } else {
+      setShowModalImg({});
+    }
   };
 
   const handleCloseUpdate = () => {
@@ -190,6 +205,7 @@ const AllProducts = () => {
     formData.append('quantity', modalFormdata.quantity);
     formData.append('productcode', modalFormdata.productcode);
     formData.append('image', modalImage);
+    
 
     try {
       const resp = await UpdateProducts(modalData._id, formData, {
@@ -201,6 +217,7 @@ const AllProducts = () => {
         toast.success(resp.data.message);
         getAllData();
         handleCloseUpdate();
+        setShowModalImg({});
       } else if (resp) {
         toast.error(resp.data.message);
       } else {
@@ -212,14 +229,13 @@ const AllProducts = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', padding: "0 20px", boxSizing: "border-box"}}>
+    <Box sx={{ width: '100%', padding: "0 20px", boxSizing: "border-box" }}>
       <ToastContainer />
       <Box>
-        <Typography textAlign="center" variant="h2" sx={{ fontSize: '24px', fontWeight: '700',margin:'20px 0' }}>
+        <Typography textAlign="center" variant="h2" sx={{ fontSize: '24px', fontWeight: '700', margin: '20px 0' }}>
           ALL Products
         </Typography>
       </Box>
- 
 
 
 
@@ -236,15 +252,18 @@ const AllProducts = () => {
 
 
 
- <Box  sx={{padding:"0 8px",boxSizing:"border-box"}}> <Button onClick={handleOpenAdd} sx={{ padding: '10px 15px'
- ,textTransform:"capitalize" }} variant="contained" color="primary">
+
+      <Box sx={{ padding: "0 8px", boxSizing: "border-box" }}> <Button onClick={handleOpenAdd} sx={{
+        padding: '10px 15px'
+        , textTransform: "capitalize"
+      }} variant="contained" color="primary">
         Add Product
       </Button>
-      
-      
+
+
       </Box>
 
-     
+
       <Box sx={{ marginBottom: '10px' }}>
 
         {/*for add product MODAL */}
@@ -254,7 +273,7 @@ const AllProducts = () => {
           aria-labelledby="child-modal-title"
           aria-describedby="child-modal-description"
         >
-          <Box sx={{ ...style, width: '70%', height: '500px', display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ ...style, width: '70%', height: 'auto', display: 'flex', justifyContent: 'center' }}>
             <Grid container>
 
               <Grid item xs={12}>
@@ -268,15 +287,16 @@ const AllProducts = () => {
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
                         <Box display={"flex"} flexDirection={"column"}>
-                          <input type="file" onChange={handleChange} name="image" required />
                           {/* Image preview */}
                           {showImg.imagePreview && (
                             <img
                               src={showImg.imagePreview}
                               alt="Preview"
-                              style={{ width: '100px', height: "50px", marginTop: '10px' }}
+                              style={{ width: '100px', height: "50px", marginTop: '10px', border: "0.5px solid gray", padding: "5px" }}
                             />
                           )}
+                          <br /><input type="file" placeholder='upload image' onChange={handleChange} name="image" required />
+
                         </Box>
                       </Grid>
 
@@ -338,6 +358,10 @@ const AllProducts = () => {
         </Modal>
       </Box>
 
+
+
+
+
       {/* for update product modal */}
       <Modal
         open={open}
@@ -345,7 +369,7 @@ const AllProducts = () => {
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
       >
-        <Box sx={{ ...style, width: '70%', height: '500px', display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ ...style, width: '70%', height: 'auto', display: 'flex', justifyContent: 'center' }}>
           <Grid container>
             <Grid item xs={12}>
               <Typography variant="h4">Update Product Data</Typography>
@@ -354,6 +378,19 @@ const AllProducts = () => {
               <form onSubmit={handleModalSubmit}>
                 <Box sx={{ padding: '20px', borderRadius: '12px' }}>
                   <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <Box>
+                        {showModalImg.imagePreview && (
+                          <img
+                            src={showModalImg.imagePreview}
+                            alt="Preview"
+                            style={{ width: '100px', height: "50px", marginTop: '10px' }}
+                          />
+                        )}
+                        <br /><input type="file" onChange={handleModalChange} name="image" required />
+
+                      </Box>
+                    </Grid>
                     <Grid item xs={12} sm={6}>
                       <Box>
                         <FormControl fullWidth>
@@ -388,11 +425,7 @@ const AllProducts = () => {
                         </FormControl>
                       </Box>
                     </Grid>
-                    <Grid item xs={12}>
-                      <Box>
-                        <input type="file" onChange={handleModalChange} name="image" required />
-                      </Box>
-                    </Grid>
+
                     <Grid item xs={12}>
                       <Box display="flex" gap="6px">
                         <Button variant="contained" type="submit">
@@ -416,16 +449,16 @@ const AllProducts = () => {
         sx={{
           display: 'flex',
           flexWrap: "wrap",
-          justifyContent:"center",
+          justifyContent: "center",
           gap: "14px",
           rowGap: '20px', // Adjust for smaller screens
         }}
       >
-        
+
         {Data ? (
           Data.map((item, index) => {
 
-        
+
             return (
               <Box
                 key={index}
@@ -443,7 +476,7 @@ const AllProducts = () => {
               >
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Box sx={{ maxWidth: '300px', width: '100%',height: '130px', overflow: 'hidden' }}>
+                    <Box sx={{ maxWidth: '300px', width: '100%', height: '130px', overflow: 'hidden' }}>
                       <img
                         src={`http://localhost:1000/${item.image}`}
                         // src={`./assets/${item.image}`}
@@ -481,10 +514,10 @@ const AllProducts = () => {
                     </Box>
                   </Grid>
                   <Grid item xs={12} display="flex" gap="6px">
-                    <Button  sx={{textTransform:"capitalize" }} variant="outlined" onClick={() => handleOpenUpdate(item)}>
+                    <Button sx={{ textTransform: "capitalize" }} variant="outlined" onClick={() => handleOpenUpdate(item)}>
                       Edit
                     </Button>
-                    <Button sx={{textTransform:"capitalize"}} variant="contained" onClick={() => DeleteProduct(item._id)}>
+                    <Button sx={{ textTransform: "capitalize" }} variant="contained" onClick={() => DeleteProduct(item._id)}>
                       Delete
                     </Button>
                   </Grid>

@@ -1,7 +1,7 @@
 import axios from "../BaseUrl";
-export const getAllProducts = async (page,pageSize) => {
+export const getAllProducts = async (page,size) => {
     try {
-        const response = await axios.get("/getproducts",page,pageSize);
+        const response = await axios.get(`/getproducts?page=${page}&size=${size}`);
 
         return response;
     } catch (err) {

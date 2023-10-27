@@ -33,36 +33,32 @@ exports.AddProduct = async (req, res) => {
 
 // get all products
 
-exports.getAllproduct=async (req,res)=>{
 
-    
-try {
-  let { page, size } = req.query;
-  page = parseInt(page)? parseInt(page): 1;
-  size = parseInt(size) ?parseInt(size):4;
-  const skip = (page - 1) * size;
-  const totalProducts = await productSchema.countDocuments();
-  console.log(totalProducts);
-  const totalPages = (totalProducts / size);
-  console.log(totalPages,'total pages');
 
-    let getdata=await productSchema.find().skip(skip)
-    .limit(size);
-    if(!getdata){
-        return res.status(400).json({ message: "data not found" });
-    }
+exports.getAllproduct = async (req, res) => {
+  try {
+      let { page, size } = req.query;
+      page = parseInt(page);
+      size = parseInt(size);
+      const skip = (page - 1) * size;
+      const totalProducts = await productSchema.countDocuments();
+      console.log(totalProducts);
+      const totalPages = Math.ceil(totalProducts / size);
+      console.log(totalPages);
 
-     
-      res.status(200).json({message:"get all products successfully",getdata,currentPage:page})
+      let getdata = await productSchema.find()
+          .skip(skip)
+          .limit(size);
+      if (!getdata) {
+          return res.status(400).json({ message: "data not found" });
+      }
 
-} catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+      res.status(200).json({ message: "get all products successfully", getdata, currentPage: page, totalPages });
+  } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+  }
 }
 
-
-
-
-}
 
 
 
