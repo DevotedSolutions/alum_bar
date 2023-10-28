@@ -12,7 +12,7 @@ router.delete('/deleteproducts/:id',productController.deleteProduct);
 router.get('/getqrcode/:id',productController.getQrcode);
 router.get('/decrement/:id',productController.DecrementQuantity);
 router.get('/increment/:id',productController.IncrementQuantity);
-
+router.post('/updatequantity/:id',productController.updateQuantity);
 
 
 

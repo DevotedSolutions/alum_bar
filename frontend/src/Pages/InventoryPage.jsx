@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Grid, Typography, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { getAllProducts } from '../services/products/getAllProducts';
+import { Box, Button, Grid, Typography, Table, TableBody, TableCell, TableHead, TableRow, FormControl, TextField } from '@mui/material';
+import { getAllProducts, getOneProduct } from '../services/products/getAllProducts';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal from '@mui/material/Modal';
 import ClearIcon from '@mui/icons-material/Clear';
 import { getQrcode } from '../services/products/getAllProducts';
-// import ReactPaginate from 'react-paginate';
-
 import Pagination from '@mui/material/Pagination';
 import PaginationItem from '@mui/material/PaginationItem';
 import Stack from '@mui/material/Stack';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+
+import { UpdateQuantity } from '../services/products/updateQuantity';
+// import { DecrementProduct } from '../services/products/DecrementProduct';
+// import QrReader from 'react-qr-scanner'
 
 const style = {
     position: 'absolute',
@@ -37,8 +37,8 @@ const style = {
 
 
 const InventoryPage = () => {
-    const [productId, setProductId] = useState('');
-    const [qrCodeUrl, setQRCodeUrl] = useState('');
+    // const [productId, setProductId] = useState('');
+    // const [qrCodeUrl, setQRCodeUrl] = useState('');
     const [qrCodeUrlSell, setQRCodeUrlSell] = useState('');
     const [data, setData] = useState([]);
     const [open, setOpen] = useState(false);
@@ -47,6 +47,93 @@ const InventoryPage = () => {
     const [page, setPage] = useState(1);
     const [Size, setSize] = useState(5);
     const [totalPages, setTotalPages] = useState(1);
+
+
+    // update quantity
+    let [oneProduct, setOneProduct] = useState({})
+    const [priviousQuantity, setPriviousQuantity] = useState('');
+    const [newQuantity, setNewQuantity] = useState();
+    function handleNewQuantity(e) {
+        if (e.target.value < 0) {
+            setNewQuantity(0)
+        }
+        else {
+            setNewQuantity(e.target.value)
+        }
+    }
+
+    async function handleQuantitySubmit(e) {
+        e.preventDefault();
+        let newData = { newQuantity: newQuantity }
+        try {
+            let response = await UpdateQuantity(oneProduct._id, newData)
+            if (response.status === 200) {
+                console.log(response.data.message);
+                toast.success(response.data)
+                toast.success(response.data.message)
+
+                handleClose()
+                getData()
+                setNewQuantity(" ")
+            }
+            else {
+                toast.error()
+            }
+        } catch (error) {
+            console.log(error);
+
+        }
+
+    }
+
+
+    // const [qrCodeScanned, setQrCodeScanned] = useState('');
+
+
+
+
+    // const handleScan = async (data) => {
+    //     console.log("Scanned data:", data);
+
+    //     if (data && !qrCodeScanned) {
+    //         // Data contains the QR code content
+    //         setQrCodeScanned(data);
+
+    //         try {
+    //             const response = await DecrementProduct(productId); // Assuming the scanned data should be used as input to the DecrementProduct API.
+
+    //             if (response.status === 200) {
+    //                 toast.success('Decrement successful');
+    //             } else {
+    //                 toast.error('Failed to decrement');
+    //             }
+    //         } catch (error) {
+    //             console.error('Failed to make the decrement API call', error);
+    //         }
+    //     }
+    // };
+
+    // const handleError = (error) => {
+    //     console.error('QR code scanning error occurs:', error);
+    // };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     function searchFun(e) {
         setSearchData(e.target.value);
@@ -58,15 +145,23 @@ const InventoryPage = () => {
 
     const handleOpen = async (id) => {
         setOpen(true);
-        setProductId(id);
+        // setProductId(id);
+
+
+
 
         try {
-            const response = await getQrcode(id);
-            if (response.status === 200) {
-                setQRCodeUrl(response.data.qrCodeUrl);
-            } else {
-                console.error('Failed to generate QR code');
+            let resp = await getOneProduct(id)
+            if (resp.status === 200) {
+                setPriviousQuantity(resp.data.data.quantity)
+                setOneProduct(resp.data.data)
+                console.log(oneProduct._id, "one product");
             }
+            else {
+                console.log(resp.data.message);
+            }
+
+
         } catch (error) {
             console.error('Failed to make the request', error);
         }
@@ -101,7 +196,7 @@ const InventoryPage = () => {
             if (resp.status === 200) {
                 setData(resp.data.getdata);
                 setTotalPages(resp.data.totalPages);
-                console.log(resp.data.totalPages, "ddddddddddddddd");
+
 
             } else {
                 toast.error(resp.data.message);
@@ -112,7 +207,7 @@ const InventoryPage = () => {
     }
 
     useEffect(() => {
-       getData()
+        getData()
     }, [page, Size]);
 
 
@@ -129,18 +224,70 @@ const InventoryPage = () => {
                 >
                     <Box sx={{ ...style, width: "30%" }}>
                         <div>
-                            {qrCodeUrl && (
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                    <h3>QR Code</h3>
-                                    <img src={qrCodeUrl} alt="QR Code" /><br />
-                                    <a href={qrCodeUrl} download="qrcode.png">Download</a>
-                                </div>
-                            )}
+
+                            <Typography variant='h5' sx={{ textAlign: "center" }}>Update Quantity</Typography>
+                            <div>
+                                <form onSubmit={handleQuantitySubmit}>
+
+                                    <Box sx={{ padding: '20px', borderRadius: '12px' }}>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12}>
+                                                <Box>
+                                                    <FormControl fullWidth>
+                                                        <TextField
+                                                            type='number'
+                                                            fullWidth
+                                                            label="Privious Quantity"
+                                                            disabled
+                                                            name="quantity" value={priviousQuantity} />
+                                                    </FormControl>
+                                                </Box>
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <Box>
+                                                    <FormControl fullWidth>
+                                                        <TextField
+                                                            type='number'
+                                                            fullWidth
+                                                            label="Add Quantity"
+                                                            required
+                                                            value={newQuantity}
+                                                            onChange={handleNewQuantity}
+                                                        />
+                                                    </FormControl>
+                                                </Box>
+                                            </Grid>
+
+                                            <Grid item xs={12}>
+                                                <Box display="flex" gap="6px">
+                                                    <Button variant="outlined" sx={{ textTransform: "capitalize" }} type="submit">
+                                                        update Quantity
+                                                    </Button>
+                                                    <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={handleClose}>Cancel</Button>
+                                                </Box>
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
+                                </form>
+                            </div>
+
+
                         </div>
-                        <Button variant='contained' onClick={handleClose}>Cancel</Button>
+
+
                     </Box>
                 </Modal>
             </div>
+
+
+
+
+
+
+
+
+            {/* sell modal */}
+
             <div>
                 <Modal
                     open={openSell}
@@ -162,7 +309,7 @@ const InventoryPage = () => {
                     </Box>
                 </Modal>
             </div>
-            <Grid container spacing={2}>
+            <Grid container >
                 <Grid item xs={12}>
                     <Box sx={{ borderRadius: "12px" }}>
                         <Typography sx={{ fontSize: "30px" }} variant='1'>Welcome to the inventory page</Typography>
@@ -190,6 +337,7 @@ const InventoryPage = () => {
                                     <TableCell>Product Name</TableCell>
                                     <TableCell>Product Description</TableCell>
                                     <TableCell>Product Code</TableCell>
+                                    <TableCell>Quantity</TableCell>
                                     <TableCell>Action</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -215,9 +363,10 @@ const InventoryPage = () => {
                                             <TableCell>{item.productName}</TableCell>
                                             <TableCell>{item.productDescription}</TableCell>
                                             <TableCell>{item.productcode}</TableCell>
+                                            <TableCell>{item.quantity}</TableCell>
                                             <TableCell>
-                                                <Box sx={{ display: "flex", gap: "6px" }}>
-                                                    <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpen(item._id) }}>Generate Buy QR code</Button>
+                                                <Box sx={{ display: "flex", gap: "6px", border: "1px solid black" }}>
+                                                    <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpen(item._id) }}>Add more Quantity</Button>
                                                     <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpenSellModal(item._id) }}>Generate Sell QR code</Button>
                                                 </Box>
                                             </TableCell>
@@ -239,19 +388,20 @@ const InventoryPage = () => {
                         count={totalPages}
                         page={page}
                         onChange={(event, value) => {
-                         setPage(value)
+                            setPage(value)
                             // console.log(value);
                         }
                         }
                         renderItem={(item) => {
                             // console.log(item,"iteeeeeeeeeeem");
-                           return (
-                            
-                            <PaginationItem
-                                component={Button}
-                                {...item}
-                            />
-                        ) }}
+                            return (
+
+                                <PaginationItem
+                                    component={Button}
+                                    {...item}
+                                />
+                            )
+                        }}
                     />
                 </Stack>
             </div>
