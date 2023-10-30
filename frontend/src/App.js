@@ -8,6 +8,7 @@ import Home from "./Pages/ShowProduct/Home";
 import InventoryPage from "./Pages/InventoryPage";
 import DashBoard from "./Components/DashBoard";
 import AllProducts from "./Components/Products/AllProduct";
+import OpenScanner from "./Pages/OpenScanner";
 
 function App() {
 
@@ -26,10 +27,10 @@ function App() {
 
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/allproduct" element={<AllProducts />} />
+          <Route path="/open-scanner" element={<OpenScanner/>} />
         </Route>
 
       </Routes>
-
 
     </Box>
   );

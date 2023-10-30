@@ -9,9 +9,10 @@ import { getQrcode } from '../services/products/getAllProducts';
 import Pagination from '@mui/material/Pagination';
 import PaginationItem from '@mui/material/PaginationItem';
 import Stack from '@mui/material/Stack';
-
+import { QrReader } from 'react-qr-reader';
+import { useNavigate } from 'react-router-dom';
 import { UpdateQuantity } from '../services/products/updateQuantity';
-// import { DecrementProduct } from '../services/products/DecrementProduct';
+import { DecrementProduct } from '../services/products/DecrementProduct';
 // import QrReader from 'react-qr-scanner'
 
 const style = {
@@ -37,6 +38,7 @@ const style = {
 
 
 const InventoryPage = () => {
+    let navigate=useNavigate()
     // const [productId, setProductId] = useState('');
     // const [qrCodeUrl, setQRCodeUrl] = useState('');
     const [qrCodeUrlSell, setQRCodeUrlSell] = useState('');
@@ -47,18 +49,24 @@ const InventoryPage = () => {
     const [page, setPage] = useState(1);
     const [Size, setSize] = useState(5);
     const [totalPages, setTotalPages] = useState(1);
-
-
+    const [totalQuantity, setTotalQuantity] = useState(0)
+    const [scandata, setScandata] = useState("No QR code scanned yet.");
     // update quantity
-    let [oneProduct, setOneProduct] = useState({})
-    const [priviousQuantity, setPriviousQuantity] = useState('');
+    let [oneProduct, setOneProduct] = useState(null)
+    const [priviousQuantity, setPriviousQuantity] = useState(0);
     const [newQuantity, setNewQuantity] = useState();
+
+
     function handleNewQuantity(e) {
-        if (e.target.value < 0) {
-            setNewQuantity(0)
+        let inputValue = parseInt(e.target.value)
+
+        if (!isNaN(inputValue) && inputValue >= 0) {
+
+            setNewQuantity(inputValue)
+            setTotalQuantity(inputValue)
         }
         else {
-            setNewQuantity(e.target.value)
+            setNewQuantity(0)
         }
     }
 
@@ -87,35 +95,6 @@ const InventoryPage = () => {
     }
 
 
-    // const [qrCodeScanned, setQrCodeScanned] = useState('');
-
-
-
-
-    // const handleScan = async (data) => {
-    //     console.log("Scanned data:", data);
-
-    //     if (data && !qrCodeScanned) {
-    //         // Data contains the QR code content
-    //         setQrCodeScanned(data);
-
-    //         try {
-    //             const response = await DecrementProduct(productId); // Assuming the scanned data should be used as input to the DecrementProduct API.
-
-    //             if (response.status === 200) {
-    //                 toast.success('Decrement successful');
-    //             } else {
-    //                 toast.error('Failed to decrement');
-    //             }
-    //         } catch (error) {
-    //             console.error('Failed to make the decrement API call', error);
-    //         }
-    //     }
-    // };
-
-    // const handleError = (error) => {
-    //     console.error('QR code scanning error occurs:', error);
-    // };
 
 
 
@@ -169,6 +148,8 @@ const InventoryPage = () => {
 
     const handleClose = () => {
         setOpen(false);
+
+
     };
 
     const handleCloseSellModal = async () => {
@@ -213,7 +194,7 @@ const InventoryPage = () => {
 
 
     return (
-        <Box sx={{ width: { xs: "100%", sm: "100%" }, padding: "0 10px" }}>
+        <Box sx={{ width: { xs: 'auto', sm: "auto" }, padding: "0 10px" }}>
             <ToastContainer />
             <div>
                 <Modal
@@ -259,6 +240,7 @@ const InventoryPage = () => {
                                             </Grid>
 
                                             <Grid item xs={12}>
+                                                <Box sx={{ margin: "6px 0", color: "#707070" }}>Total Quantity = {parseInt(priviousQuantity) + parseInt(totalQuantity)}</Box>
                                                 <Box display="flex" gap="6px">
                                                     <Button variant="outlined" sx={{ textTransform: "capitalize" }} type="submit">
                                                         update Quantity
@@ -304,11 +286,44 @@ const InventoryPage = () => {
                                     <a href={qrCodeUrlSell} download="qrcode.png">Download</a>
                                 </div>
                             )}
+                            {/* <div>
+
+                                 <QrReader onScan={handleScan} />
+
+                                <p>{result}</p>
+
+                                </div> */}
+                                    {/* <>
+
+      <QrReader
+        onResult={(result, error) => {
+          if (!!result) {
+            setScandata(result?.text);
+          }
+
+          if (!!error) {
+            console.info(error,"iam error");
+          }
+        }}
+        style={{ width: '100%' }}
+      />
+      <p>{scandata}</p>
+    </> */}
+                                
                         </div>
+                        <Button onClick={()=>{navigate("/open-scanner")}}>open scanner</Button>
                         <Button sx={{ margin: "4px 0" }} variant='contained' onClick={handleCloseSellModal}>Cancel</Button>
                     </Box>
                 </Modal>
             </div>
+
+
+
+
+
+
+
+
             <Grid container >
                 <Grid item xs={12}>
                     <Box sx={{ borderRadius: "12px" }}>
@@ -323,6 +338,7 @@ const InventoryPage = () => {
                                 <span onClick={clearSearch}><ClearIcon /></span>
                             )}
                         </Box>
+
                         <Box>
                             <Button sx={{ borderRadius: "8px", padding: "7px 20px", textTransform: "capitalize" }} variant='contained'>Search</Button>
                         </Box>
@@ -330,7 +346,7 @@ const InventoryPage = () => {
                 </Grid>
                 <Grid item xs={12}>
                     <Box sx={{ borderRadius: "12px" }}>
-                        <Table>
+                        <Table >
                             <TableHead>
                                 <TableRow>
                                     <TableCell>Image</TableCell>
@@ -365,7 +381,7 @@ const InventoryPage = () => {
                                             <TableCell>{item.productcode}</TableCell>
                                             <TableCell>{item.quantity}</TableCell>
                                             <TableCell>
-                                                <Box sx={{ display: "flex", gap: "6px", border: "1px solid black" }}>
+                                                <Box sx={{ display: "flex", gap: "6px" }}>
                                                     <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpen(item._id) }}>Add more Quantity</Button>
                                                     <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpenSellModal(item._id) }}>Generate Sell QR code</Button>
                                                 </Box>
@@ -381,30 +397,36 @@ const InventoryPage = () => {
                         </Table>
                     </Box>
                 </Grid>
-            </Grid>
-            <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
-                <Stack spacing={2}>
-                    <Pagination
-                        count={totalPages}
-                        page={page}
-                        onChange={(event, value) => {
-                            setPage(value)
-                            // console.log(value);
-                        }
-                        }
-                        renderItem={(item) => {
-                            // console.log(item,"iteeeeeeeeeeem");
-                            return (
 
-                                <PaginationItem
-                                    component={Button}
-                                    {...item}
-                                />
-                            )
-                        }}
-                    />
-                </Stack>
-            </div>
+                <Grid item xs={12}>
+
+                    <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
+                        <Stack spacing={2}>
+                            <Pagination
+                                count={totalPages}
+                                page={page}
+                                onChange={(event, value) => {
+                                    setPage(value)
+                                    // console.log(value);
+                                }
+                                }
+                                renderItem={(item) => {
+                                    // console.log(item,"iteeeeeeeeeeem");
+                                    return (
+
+                                        <PaginationItem
+                                            component={Button}
+                                            {...item}
+                                        />
+                                    )
+                                }}
+                            />
+                        </Stack>
+                    </div>
+
+                </Grid>
+            </Grid>
+
 
         </Box>
     );

@@ -43,14 +43,16 @@ const AllProducts = () => {
     productcode: '',
   });
 
-  // this state is basically for update modal state which store the privious data of inputs
+  // this state is basically for update modal which store the privious data of inputs
   const [modalFormdata, setModalFormData] = useState({});
 
+ 
   const handleChange = (e) => {
     if (e.target.name === 'image') {
 
       const selectedImage = e.target.files[0];
       setImage(selectedImage);
+
 
       // Preview the selected image
 
@@ -91,6 +93,7 @@ const AllProducts = () => {
 
         })
         setShowImg({});
+      
 
 
       } else if (resp) {
@@ -153,7 +156,7 @@ const AllProducts = () => {
 
 
 
-  // edit  modal data 
+  // edit /update modal  functions data 
 
 
 
@@ -161,7 +164,7 @@ const AllProducts = () => {
     if (e.target.name === 'image') {
       const selectedImage = e.target.files[0];
       setModalImage(selectedImage);
-  
+
       // Preview the selected image, or use the existing image if no new image is selected
       if (selectedImage) {
         const imgPreviewURL = URL.createObjectURL(selectedImage);
@@ -173,8 +176,8 @@ const AllProducts = () => {
       setModalFormData({ ...modalFormdata, [e.target.name]: e.target.value });
     }
   };
-  
-  
+
+
 
 
   const handleOpenUpdate = (data) => {
@@ -204,8 +207,10 @@ const AllProducts = () => {
     formData.append('productDescription', modalFormdata.productDescription);
     formData.append('quantity', modalFormdata.quantity);
     formData.append('productcode', modalFormdata.productcode);
-    formData.append('image', modalImage);
-    
+    if (modalImage) {
+      formData.append('image', modalImage);
+    }
+
 
     try {
       const resp = await UpdateProducts(modalData._id, formData, {
@@ -387,7 +392,8 @@ const AllProducts = () => {
                             style={{ width: '100px', height: "50px", marginTop: '10px' }}
                           />
                         )}
-                        <br /><input type="file" onChange={handleModalChange} name="image" required />
+                        <br />
+                        <input type="file" onChange={handleModalChange} name="image"  />
 
                       </Box>
                     </Grid>
@@ -414,7 +420,7 @@ const AllProducts = () => {
                     <Grid item xs={12}>
                       <Box>
                         <FormControl fullWidth>
-                          <TextField fullWidth label="Quantity" name="quantity" onChange={handleModalChange} value={modalFormdata.quantity} />
+                          <TextField fullWidth type='number' label="Quantity" name="quantity" onChange={handleModalChange} value={modalFormdata.quantity} />
                         </FormControl>
                       </Box>
                     </Grid>

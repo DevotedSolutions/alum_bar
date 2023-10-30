@@ -42,9 +42,9 @@ exports.getAllproduct = async (req, res) => {
     size = parseInt(size);
     const skip = (page - 1) * size;
     const totalProducts = await productSchema.countDocuments();
-    console.log(totalProducts);
+   
     const totalPages = Math.ceil(totalProducts / size);
-    console.log(totalPages);
+    
 
     let getdata = await productSchema.find()
       .skip(skip)
