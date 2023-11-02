@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import {Typography } from '@mui/material';
 import QrReader from 'react-qr-scanner';
 import { DecrementProduct } from '../services/products/DecrementProduct';
 
 const OpenScanner = () => {
     const [result, setResult] = useState("");
-    const [delay, setDelay] = useState(100);
+    const delay = 100;
 
     const handleScan = async (data) => {
         if (data) {
@@ -28,22 +28,22 @@ const OpenScanner = () => {
     const webcamStyle = {
         width: '200px',
         height: '200px',
-        objectFit: 'cover', 
+        objectFit: 'cover',
     };
 
     return (
         <div style={{ padding: "0 10px" }}>
             <Typography>QR Code scanner</Typography>
-            <div style={{border:"1px solid black"}}>
+            <div style={{ border: "1px solid black" }}>
                 <QrReader
                     delay={delay}
-                    style={webcamStyle} 
+                    style={webcamStyle}
                     onError={handleError}
                     onScan={handleScan}
                 />
                 <p>{result}</p>
             </div>
-        
+
         </div>
     );
 };
