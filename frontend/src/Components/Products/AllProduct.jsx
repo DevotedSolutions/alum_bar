@@ -44,7 +44,9 @@ const AllProducts = () => {
   });
 
   // this state is basically for update modal which store the privious data of inputs
-  const [modalFormdata, setModalFormData] = useState({});
+  const [modalFormdata, setModalFormData] = useState({
+
+  });
 
  
   const handleChange = (e) => {
@@ -161,18 +163,23 @@ const AllProducts = () => {
 
 
   const handleModalChange = (e) => {
-    if (e.target.name === 'image') {
+
+   if (e.target.name === 'image') {
+
+
       const selectedImage = e.target.files[0];
-      setModalImage(selectedImage);
+      setModalImage( e.target.files[0]);
 
       // Preview the selected image, or use the existing image if no new image is selected
       if (selectedImage) {
         const imgPreviewURL = URL.createObjectURL(selectedImage);
         setShowModalImg({ imagePreview: imgPreviewURL });
-      } else {
+      } 
+      else {
         setShowModalImg({ imagePreview: `http://localhost:1000/${modalData.image}` });
       }
-    } else {
+    }
+     else {
       setModalFormData({ ...modalFormdata, [e.target.name]: e.target.value });
     }
   };
@@ -183,6 +190,7 @@ const AllProducts = () => {
   const handleOpenUpdate = (data) => {
     setOpen(true);
     setModalData(data);
+
     setModalFormData({
       productName: data.productName,
       productDescription: data.productDescription,
@@ -191,9 +199,12 @@ const AllProducts = () => {
     });
     if (data.image) {
       setShowModalImg({ imagePreview: `http://localhost:1000/${data.image}` });
+      setModalImage(data.image);
+      console.log(data.image,"imggggggg");
     } else {
       setShowModalImg({});
     }
+  
   };
 
   const handleCloseUpdate = () => {
@@ -207,9 +218,14 @@ const AllProducts = () => {
     formData.append('productDescription', modalFormdata.productDescription);
     formData.append('quantity', modalFormdata.quantity);
     formData.append('productcode', modalFormdata.productcode);
+
     if (modalImage) {
       formData.append('image', modalImage);
+    } else {
+
+      formData.append('image', modalData.image);
     }
+    console.log(modalData.image,"imgggggggggg");
 
 
     try {
@@ -220,6 +236,7 @@ const AllProducts = () => {
       });
       if (resp && resp.status === 200) {
         toast.success(resp.data.message);
+        setModalImage(null)
         getAllData();
         handleCloseUpdate();
         setShowModalImg({});
@@ -241,20 +258,6 @@ const AllProducts = () => {
           ALL Products
         </Typography>
       </Box>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

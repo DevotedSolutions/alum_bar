@@ -81,9 +81,11 @@ exports.finOneProduct = async (req, res) => {
 // get updat products
 
 exports.updateProduct = async (req, res) => {
+  
   const id = req.params.id
-  const image = req.file ? req.file.path : null;
   const { productName, productDescription, quantity, productcode } = req.body;
+  const image = req.file ? req.file.path : req.body.image;
+  
   try {
     if (!productName || !productDescription || !quantity || !productcode) {
       return res.status(400).json({ message: "fill all input fields" });
