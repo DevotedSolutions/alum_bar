@@ -82,12 +82,13 @@ export default function DrawerAppBar(props) {
 
         <Box sx={{
           width: "100%", maxWidth: "70px", height: "70px", marginLeft: "20px"
-        }}>  <img src='/assets/images/right-img1.png' alt='img' width="100%" 
-        height="100%" style={{ borderRadius: "50%" }}></img></Box>
+        }}>  <img src='/assets/images/dasby.jpeg'  alt='img' width="100%" 
+        height="100%" style={{ borderRadius: "50%",border:"0.3px solid gray" }}></img></Box>
 
         <Box ><Typography variant='h3' sx={{ fontSize: "14px", 
-        fontWeight: "bold", padding: "0 5px" }}>Michel James</Typography>
-          <Typography variant='h3' sx={{ fontSize: "10px", fontWeight: "600", padding: "0 5px", marginTop: "3px", color: "#707070" }}>Shop Owner</Typography>
+        fontWeight: "bold", padding: "0 5px",textTransform:"capitalize" }}> Dasby Pofile System</Typography>
+          <Typography variant='h3' sx={{ fontSize: "10px", fontWeight: "600", padding: "0 5px", marginTop: "3px", color: "#707070" }}>Address:  Royal Road St Paul Phoenix Mauritius</Typography>
+          <Typography variant='h3' sx={{ fontSize: "10px", fontWeight: "600", padding: "0 5px", marginTop: "3px", color: "#707070" }}>Phone: +230 6062720</Typography>
         </Box>
 
 

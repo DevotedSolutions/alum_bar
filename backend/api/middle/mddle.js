@@ -1,7 +1,9 @@
 let jwt = require('jsonwebtoken');
 let key='waqas'
 exports.authVerify=(req,res,next)=>{
+
 const token = req.header('Authorization');
+console.log(req.header('Authorization'));
 
 
   if (!token) {
@@ -16,7 +18,7 @@ const token = req.header('Authorization');
     next();
   } catch (error) {
 
-    res.status(403).json({ message: 'you are not authorized person', error: error.message });
+    res.status(403).json({ message: 'error occured', error: error.message });
   }
 
 

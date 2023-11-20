@@ -157,7 +157,7 @@ exports.getQrcode = async (req, res) => {
 
   try {
 
-    const productUrl = `http://localhost:3000/inventory/${id}`;
+    const productUrl = `http://51.20.193.213:3000/api/decrement/${id}`;
 
     //now  Generating the QR code for the URL
     QRCode.toDataURL(productUrl, (err, url) => {

@@ -228,10 +228,11 @@ const InventoryPage = () => {
                 <h3>QR Code:</h3>
                 <img src={qrCodeUrlSell} alt="QR Code" /><br />
                 <a href={qrCodeUrlSell} download="qrcode.png">Download</a>
+                <Button sx={{ margin: "4px 0" }} variant='contained' onClick={handleCloseSellModal}>Cancel</Button>
               </div>
             )}
-            <Button onClick={() => { navigate("/open-scanner") }}>Open Scanner</Button>
-            <Button sx={{ margin: "4px 0" }} variant='contained' onClick={handleCloseSellModal}>Cancel</Button>
+            {/* <Button onClick={() => { navigate("/open-scanner") }}>Open Scanner</Button> */}
+           
           </div>
         </Box>
       </Modal>

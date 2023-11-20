@@ -1,7 +1,11 @@
 import axios from "../BaseUrl";
 export const getAllProducts = async (page,size) => {
     try {
-        const response = await axios.get(`/getproducts?page=${page}&size=${size}`);
+        const response = await axios.get(`/getproducts?page=${page}&size=${size}`,{
+            headers: {
+              Authorization: `${localStorage.getItem('tokenDevoted')}`, 
+            },
+          });
 
         return response;
     } catch (err) {

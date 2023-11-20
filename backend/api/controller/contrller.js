@@ -3,10 +3,10 @@ const User = require('../model/schema');
 let jwt = require('jsonwebtoken');
 let key="waqas";
 exports.signup = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { username, email, password } = req.body;
 
   try {
-    if (!name || !email || !password) {
+    if (!username || !email || !password) {
       return res.status(400).json({ message: "Please fill all input fields" });
     }
 
@@ -16,7 +16,7 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ message: "This user already exists. Try with a unique email." });
     }
 
-    const user = new User({ name, email, password });
+    const user = new User({ username, email, password });
     const result = await user.save();
  
 
@@ -30,7 +30,7 @@ exports.signup = async (req, res) => {
 
 // login api
 exports.login = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     if (!email || !password) {
@@ -46,7 +46,7 @@ exports.login = async (req, res) => {
           let matchPassword= await user.password===password;
              if(!matchPassword){
               return res.status(404).json({ message: "your password is incorrect" });}
-              let token=jwt.sign({email: user.email }, key, { expiresIn: '1h' });
+              let token=jwt.sign({email: user.email }, key, { expiresIn: '6h' });
 
 
               user.token = token;

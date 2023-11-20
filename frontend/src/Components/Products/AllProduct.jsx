@@ -26,6 +26,8 @@ const style = {
 };
 
 const AllProducts = () => {
+const token=localStorage.getItem('tokenDevoted');
+
   const [Data, setData] = useState(null);
   const [image, setImage] = useState(null);
   const [modalImage, setModalImage] = useState(null);
@@ -69,6 +71,7 @@ const AllProducts = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(token,"get token");
     const formData = new FormData();
     formData.append('productName', AddData.productName);
     formData.append('productDescription', AddData.productDescription);
@@ -77,11 +80,7 @@ const AllProducts = () => {
     formData.append('image', image);
 
     try {
-      const resp = await addProducts(formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const resp = await addProducts(formData);
 
       if (resp && resp.status === 200) {
         toast.success(resp.data.message);
@@ -119,7 +118,7 @@ const AllProducts = () => {
   };
 
   async function getAllData() {
-    let resp = await getAllProducts();
+    let resp = await getAllProducts( );
     if (resp) {
       if (resp.status === 200) {
         setData(resp.data.getdata);
