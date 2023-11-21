@@ -1,5 +1,7 @@
-import { Box } from "@mui/material";
+
 import { Route, Routes } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { useState } from "react";
 import LogIn from "./Components/LogIn";
 // import ShowProducts from "./Pages/ShowProduct/ShowProducts";
 
@@ -11,30 +13,41 @@ import AllProducts from "./Components/Products/AllProduct";
 import OpenScanner from "./Pages/OpenScanner";
 import Signup from "./Components/Signup";
 
+
 function App() {
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-
-
+  const handleLogin = () => {
+    // Logic to handle user login, set isLoggedIn to true
+    setIsLoggedIn(true);
+  };
+  console.log(isLoggedIn);
   return (
-    <Box>
 
-      <Routes>
 
+    <Routes>
+
+      {isLoggedIn ? (
         <Route element={<LayOut />}>
           <Route index path="/" element={<DashBoard />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/login" element={<LogIn />} />
-
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/allproduct" element={<AllProducts />} />
-          <Route path="/open-scanner" element={<OpenScanner/>} />
-          <Route path="/signup" element={<Signup/>} />
+          <Route path="/open-scanner" element={<OpenScanner />} />
         </Route>
+      ) : (
+        // Redirect to login if not logged in
+        <Route path="/*" element={<Navigate to="/login" />} />
+      )}
 
-      </Routes>
 
-    </Box>
+      <Route path="/signup" element={<Signup handleLogin={handleLogin} />} />
+      <Route path="/login" element={<LogIn handleLogin={handleLogin} />} />
+
+    </Routes>
+
+
   );
 }
 

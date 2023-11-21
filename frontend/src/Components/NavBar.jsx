@@ -17,6 +17,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Inventory2TwoToneIcon from '@mui/icons-material/Inventory2TwoTone';
 import AddIcon from '@mui/icons-material/Add';
+import LogoutIcon from '@mui/icons-material/Logout';
 const drawerWidth = 280;
 
 // interface Props {
@@ -29,6 +30,18 @@ const drawerWidth = 280;
 
 export default function DrawerAppBar(props) {
   let navigate = useNavigate()
+
+// logout functionality
+const handleLogout = () => {
+  // Remove token from local storage
+  localStorage.removeItem('tokenDevoted');
+
+  // Navigate to the login page
+  navigate('login');
+};
+
+
+
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
@@ -45,7 +58,7 @@ export default function DrawerAppBar(props) {
     {
       text: 'Dashboard',
       icon: <InboxIcon />,
-      onClick: () => navigate('/'),
+      onClick: () => navigate('/Dashboard'),
     },
     {
       text: 'Inventory',
@@ -57,6 +70,12 @@ export default function DrawerAppBar(props) {
       icon: <AddIcon/>,
       onClick: () => navigate('/allproduct'),
     },
+    {
+      text: 'Log out',
+      icon: <LogoutIcon/>,
+      onClick: () =>{ handleLogout()},
+    },
+
 
 
   ];

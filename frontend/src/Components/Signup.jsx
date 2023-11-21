@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { Box, Typography, TextField, FormControl, Button } from '@mui/material';
+import { Box,TextField, FormControl, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { userSignUp } from '../services/SignUp';
+import LoginLayout from '../LoginLayout/LoginLayout';
 const Signup = () => {
     let navigate=useNavigate()
 
@@ -46,8 +47,9 @@ const Signup = () => {
 
 
   return (
+    <LoginLayout title="Welcome to SignUp page">
     <div style={{width:"100%"}}>
-    <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: '84vh' }}>
+    <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: '100vh' }}>
       <ToastContainer/>
       <Box sx={{
         width: '100%',
@@ -113,6 +115,7 @@ const Signup = () => {
       </Box>
     </Box>
     </div>
+    </LoginLayout>
   )
 }
 

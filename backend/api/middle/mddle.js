@@ -3,7 +3,7 @@ let key='waqas'
 exports.authVerify=(req,res,next)=>{
 
 const token = req.header('Authorization');
-console.log(req.header('Authorization'));
+// console.log(req.header('Authorization'));
 
 
   if (!token) {
