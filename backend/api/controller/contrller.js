@@ -79,9 +79,26 @@ exports.getdata=(req,res)=>{
 
 }
 
-exports.getUrl=(req,res)=>{
+// exports.getUrl=(req,res)=>{
   
 
+// }
+exports.forgotPassword=async (req,res)=>{
+  let {email}=req.body
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    
+    
+   
+  } catch (error) {
+    console.error('Error requesting password reset:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 }
 
 

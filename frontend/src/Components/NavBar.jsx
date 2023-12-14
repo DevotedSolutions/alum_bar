@@ -37,7 +37,7 @@ const handleLogout = () => {
   localStorage.removeItem('tokenDevoted');
 
   // Navigate to the login page
-  navigate('login');
+  navigate('/login');
 };
 
 

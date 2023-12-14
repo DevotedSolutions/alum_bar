@@ -1,24 +1,23 @@
+import React, { useState, useEffect } from "react";
+import { Button, Typography, FormControl, Box, Grid } from "@mui/material";
+import { deleteProducts } from "../../services/products/deleteProduct";
+import { getAllProducts } from "../../services/products/getAllProducts";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import TextField from "@mui/material/TextField";
+import Modal from "@mui/material/Modal";
+import { addProducts } from "../../services/products/addProducts";
 
-import React, { useState, useEffect } from 'react';
-import { Button, Typography, FormControl, Box, Grid } from '@mui/material';
-import { deleteProducts } from '../../services/products/deleteProduct';
-import { getAllProducts } from '../../services/products/getAllProducts';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import TextField from '@mui/material/TextField';
-import Modal from '@mui/material/Modal';
-import { addProducts } from '../../services/products/addProducts';
-
-import { UpdateProducts } from '../../services/products/UpdateProduct';
+import { UpdateProducts } from "../../services/products/UpdateProduct";
 
 const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 500,
-  bgcolor: 'background.paper',
-  borderRadius: '12px',
+  bgcolor: "background.paper",
+  borderRadius: "12px",
   boxShadow: 24,
   pt: 2,
   px: 4,
@@ -26,44 +25,38 @@ const style = {
 };
 
 const AllProducts = () => {
-const token=localStorage.getItem('tokenDevoted');
+  const token = localStorage.getItem("tokenDevoted");
 
   const [Data, setData] = useState(null);
   const [image, setImage] = useState(null);
   const [modalImage, setModalImage] = useState(null);
   const [modalData, setModalData] = useState({});
-  const [addModalOpen, setAddModalOpen] = useState(false)
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const [open, setOpen] = React.useState(false);
-  const [showImg, setShowImg] = useState({})
-  const [showModalImg, setShowModalImg] = useState({})
-
+  const [showImg, setShowImg] = useState({});
+  const [showModalImg, setShowModalImg] = useState({});
+  const [loading, setLoading] = useState(true);
   // add modal state
   const [AddData, setAddData] = useState({
-    productName: '',
-    productDescription: '',
-    quantity: '',
-    productcode: '',
+    productName: "",
+    productDescription: "",
+    quantity: "",
+    productcode: "",
+    price:""
   });
 
   // this state is basically for update modal which store the privious data of inputs
-  const [modalFormdata, setModalFormData] = useState({
+  const [modalFormdata, setModalFormData] = useState({});
 
-  });
-
- 
   const handleChange = (e) => {
-    if (e.target.name === 'image') {
-
+    if (e.target.name === "image") {
       const selectedImage = e.target.files[0];
       setImage(selectedImage);
-
 
       // Preview the selected image
 
       const imagePreviewURL = URL.createObjectURL(selectedImage);
-      setShowImg({ imagePreview: imagePreviewURL })
-
-
+      setShowImg({ imagePreview: imagePreviewURL });
     } else {
       setAddData({ ...AddData, [e.target.name]: e.target.value });
     }
@@ -71,13 +64,14 @@ const token=localStorage.getItem('tokenDevoted');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(token,"get token");
+    console.log(token, "get token");
     const formData = new FormData();
-    formData.append('productName', AddData.productName);
-    formData.append('productDescription', AddData.productDescription);
-    formData.append('quantity', AddData.quantity);
-    formData.append('productcode', AddData.productcode);
-    formData.append('image', image);
+    formData.append("productName", AddData.productName);
+    formData.append("productDescription", AddData.productDescription);
+    formData.append("quantity", AddData.quantity);
+    formData.append("productcode", AddData.productcode);
+    formData.append("price", AddData.price);
+    formData.append("image", image);
 
     try {
       const resp = await addProducts(formData);
@@ -87,27 +81,22 @@ const token=localStorage.getItem('tokenDevoted');
         getAllData();
         handleCloseAdd();
         setAddData({
-          productName: '',
-          productDescription: '',
-          quantity: '',
-          productcode: '',
-
-        })
+          productName: "",
+          productDescription: "",
+          quantity: "",
+          productcode: "",
+          price:""
+        });
         setShowImg({});
-      
-
-
       } else if (resp) {
         toast.error(resp.data.message);
       } else {
-        toast.error('Check network connection');
+        toast.error("Check network connection");
       }
     } catch (error) {
-      toast.error('Server error');
+      toast.error("Server error");
     }
   };
-
-
 
   const handleOpenAdd = () => {
     setAddModalOpen(true);
@@ -118,17 +107,18 @@ const token=localStorage.getItem('tokenDevoted');
   };
 
   async function getAllData() {
-    let resp = await getAllProducts( );
+    let resp = await getAllProducts();
     if (resp) {
       if (resp.status === 200) {
         setData(resp.data.getdata);
+        setLoading(false)
 
         // toast.success(resp.data.message);
       } else {
         toast.error(resp.data.message);
       }
     } else {
-      toast.error('Check network connection');
+      toast.error("Check network connection");
     }
   }
 
@@ -146,45 +136,34 @@ const token=localStorage.getItem('tokenDevoted');
           toast.error(resp.data.message);
         }
       } else {
-        toast.error('Data not found');
+        toast.error("Data not found");
       }
       getAllData();
     } catch (error) {
-      toast.error('Check your network connection.');
+      toast.error("Check your network connection.");
     }
   }
 
-
-
-
-  // edit /update modal  functions data 
-
-
+  // edit /update modal  functions data
 
   const handleModalChange = (e) => {
-
-   if (e.target.name === 'image') {
-
-
+    if (e.target.name === "image") {
       const selectedImage = e.target.files[0];
-      setModalImage( e.target.files[0]);
+      setModalImage(e.target.files[0]);
 
       // Preview the selected image, or use the existing image if no new image is selected
       if (selectedImage) {
         const imgPreviewURL = URL.createObjectURL(selectedImage);
         setShowModalImg({ imagePreview: imgPreviewURL });
-      } 
-      else {
-        setShowModalImg({ imagePreview: `http://localhost:1000/${modalData.image}` });
+      } else {
+        setShowModalImg({
+          imagePreview: `http://localhost:1000/${modalData.image}`,
+        });
       }
-    }
-     else {
+    } else {
       setModalFormData({ ...modalFormdata, [e.target.name]: e.target.value });
     }
   };
-
-
-
 
   const handleOpenUpdate = (data) => {
     setOpen(true);
@@ -195,15 +174,15 @@ const token=localStorage.getItem('tokenDevoted');
       productDescription: data.productDescription,
       quantity: data.quantity,
       productcode: data.productcode,
+      price: data.price,
     });
     if (data.image) {
       setShowModalImg({ imagePreview: `http://localhost:1000/${data.image}` });
       setModalImage(data.image);
-      console.log(data.image,"imggggggg");
+      console.log(data.image, "imggggggg");
     } else {
       setShowModalImg({});
     }
-  
   };
 
   const handleCloseUpdate = () => {
@@ -213,66 +192,70 @@ const token=localStorage.getItem('tokenDevoted');
   const handleModalSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('productName', modalFormdata.productName);
-    formData.append('productDescription', modalFormdata.productDescription);
-    formData.append('quantity', modalFormdata.quantity);
-    formData.append('productcode', modalFormdata.productcode);
+    formData.append("productName", modalFormdata.productName);
+    formData.append("productDescription", modalFormdata.productDescription);
+    formData.append("quantity", modalFormdata.quantity);
+    formData.append("productcode", modalFormdata.productcode);
+    formData.append("price", modalFormdata.price);
 
     if (modalImage) {
-      formData.append('image', modalImage);
+      formData.append("image", modalImage);
     } else {
-
-      formData.append('image', modalData.image);
+      formData.append("image", modalData.image);
     }
-    console.log(modalData.image,"imgggggggggg");
-
+    console.log(modalData.image, "imgggggggggg");
 
     try {
       const resp = await UpdateProducts(modalData._id, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
       if (resp && resp.status === 200) {
         toast.success(resp.data.message);
-        setModalImage(null)
+        setModalImage(null);
         getAllData();
         handleCloseUpdate();
         setShowModalImg({});
       } else if (resp) {
         toast.error(resp.data.message);
       } else {
-        toast.error('Check network connection');
+        toast.error("Check network connection");
       }
     } catch (error) {
-      toast.error('Server error');
+      toast.error("Server error");
     }
   };
 
   return (
-    <Box sx={{ width: '100%', padding: "0 20px", boxSizing: "border-box" }}>
+    <Box sx={{ width: "100%", padding: "0 20px", boxSizing: "border-box" }}>
       <ToastContainer />
       <Box>
-        <Typography textAlign="center" variant="h2" sx={{ fontSize: '24px', fontWeight: '700', margin: '20px 0' }}>
+        <Typography
+          textAlign="center"
+          variant="h2"
+          sx={{ fontSize: "24px", fontWeight: "700", margin: "20px 0" }}
+        >
           ALL Products
         </Typography>
       </Box>
 
-
-
-      <Box sx={{ padding: "0 8px", boxSizing: "border-box" }}> <Button onClick={handleOpenAdd} sx={{
-        padding: '10px 15px'
-        , textTransform: "capitalize"
-      }} variant="contained" color="primary">
-        Add Product
-      </Button>
-
-
+      <Box sx={{ padding: "0 8px", boxSizing: "border-box" }}>
+        {" "}
+        <Button
+          onClick={handleOpenAdd}
+          sx={{
+            padding: "10px 15px",
+            textTransform: "capitalize",
+          }}
+          variant="contained"
+          color="primary"
+        >
+          Add Product
+        </Button>
       </Box>
 
-
-      <Box sx={{ marginBottom: '10px' }}>
-
+      <Box sx={{ marginBottom: "10px" }}>
         {/*for add product MODAL */}
         <Modal
           open={addModalOpen}
@@ -280,17 +263,23 @@ const token=localStorage.getItem('tokenDevoted');
           aria-labelledby="child-modal-title"
           aria-describedby="child-modal-description"
         >
-          <Box sx={{ ...style, width: '70%', height: 'auto', display: 'flex', justifyContent: 'center' }}>
+          <Box
+            sx={{
+              ...style,
+              width: "70%",
+              height: "auto",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <Grid container>
-
               <Grid item xs={12}>
                 <Typography variant="h4">Add Product Data</Typography>
               </Grid>
 
               <Grid item xs={12}>
                 <form onSubmit={handleSubmit}>
-
-                  <Box sx={{ padding: '20px', borderRadius: '12px' }}>
+                  <Box sx={{ padding: "20px", borderRadius: "12px" }}>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
                         <Box display={"flex"} flexDirection={"column"}>
@@ -299,11 +288,23 @@ const token=localStorage.getItem('tokenDevoted');
                             <img
                               src={showImg.imagePreview}
                               alt="Preview"
-                              style={{ width: '100px', height: "50px", marginTop: '10px', border: "0.5px solid gray", padding: "5px" }}
+                              style={{
+                                width: "100px",
+                                height: "50px",
+                                marginTop: "10px",
+                                border: "0.5px solid gray",
+                                padding: "5px",
+                              }}
                             />
                           )}
-                          <br /><input type="file" placeholder='upload image' onChange={handleChange} name="image" required />
-
+                          <br />
+                          <input
+                            type="file"
+                            placeholder="upload image"
+                            onChange={handleChange}
+                            name="image"
+                            required
+                          />
                         </Box>
                       </Grid>
 
@@ -323,25 +324,56 @@ const token=localStorage.getItem('tokenDevoted');
                       <Grid item xs={12} sm={6}>
                         <Box>
                           <FormControl fullWidth>
-                            <TextField fullWidth label="Product Code" name="productcode"
-
-                              onChange={handleChange} value={AddData.productcode} />
+                            <TextField
+                              fullWidth
+                              label="Product Code"
+                              name="productcode"
+                              onChange={handleChange}
+                              value={AddData.productcode}
+                            />
+                          </FormControl>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <FormControl fullWidth>
+                            <TextField
+                              type="number"
+                              fullWidth
+                              label="Quantity"
+                              name="quantity"
+                              onChange={handleChange}
+                              value={AddData.quantity}
+                            />
+                          </FormControl>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <FormControl fullWidth>
+                            <TextField
+                              type="number"
+                              fullWidth
+                              label="Price"
+                              name="price"
+                              onChange={handleChange}
+                              value={AddData.price}
+                            />
                           </FormControl>
                         </Box>
                       </Grid>
                       <Grid item xs={12}>
                         <Box>
                           <FormControl fullWidth>
-                            <TextField type='number' fullWidth label="Quantity" name="quantity" onChange={handleChange} value={AddData.quantity} />
-                          </FormControl>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField fullWidth multiline rows={4}
-                              label="Description" name="productDescription"
-                              onChange={handleChange} value={AddData.productDescription} />
+                            <TextField
+                              fullWidth
+                              multiline
+                              rows={4}
+                              label="Description"
+                              name="productDescription"
+                              onChange={handleChange}
+                              value={AddData.productDescription}
+                            />
                           </FormControl>
                         </Box>
                       </Grid>
@@ -365,10 +397,6 @@ const token=localStorage.getItem('tokenDevoted');
         </Modal>
       </Box>
 
-
-
-
-
       {/* for update product modal */}
       <Modal
         open={open}
@@ -376,14 +404,22 @@ const token=localStorage.getItem('tokenDevoted');
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
       >
-        <Box sx={{ ...style, width: '70%', height: 'auto', display: 'flex', justifyContent: 'center' }}>
+        <Box
+          sx={{
+            ...style,
+            width: "70%",
+            height: "auto",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
           <Grid container>
             <Grid item xs={12}>
               <Typography variant="h4">Update Product Data</Typography>
             </Grid>
             <Grid item xs={12}>
               <form onSubmit={handleModalSubmit}>
-                <Box sx={{ padding: '20px', borderRadius: '12px' }}>
+                <Box sx={{ padding: "20px", borderRadius: "12px" }}>
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
                       <Box>
@@ -391,12 +427,19 @@ const token=localStorage.getItem('tokenDevoted');
                           <img
                             src={showModalImg.imagePreview}
                             alt="Preview"
-                            style={{ width: '100px', height: "50px", marginTop: '10px' }}
+                            style={{
+                              width: "100px",
+                              height: "50px",
+                              marginTop: "10px",
+                            }}
                           />
                         )}
                         <br />
-                        <input type="file" onChange={handleModalChange} name="image"  />
-
+                        <input
+                          type="file"
+                          onChange={handleModalChange}
+                          name="image"
+                        />
                       </Box>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -415,21 +458,56 @@ const token=localStorage.getItem('tokenDevoted');
                     <Grid item xs={12} sm={6}>
                       <Box>
                         <FormControl fullWidth>
-                          <TextField fullWidth label="Product Code" name="productcode" onChange={handleModalChange} value={modalFormdata.productcode} />
+                          <TextField
+                            fullWidth
+                            label="Product Code"
+                            name="productcode"
+                            onChange={handleModalChange}
+                            value={modalFormdata.productcode}
+                          />
+                        </FormControl>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Box>
+                        <FormControl fullWidth>
+                          <TextField
+                            fullWidth
+                            type="number"
+                            label="Quantity"
+                            name="quantity"
+                            onChange={handleModalChange}
+                            value={modalFormdata.quantity}
+                          />
+                        </FormControl>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Box>
+                        <FormControl fullWidth>
+                          <TextField
+                            fullWidth
+                            type="number"
+                            label="Price"
+                            name="price"
+                            onChange={handleModalChange}
+                            value={modalFormdata.price}
+                          />
                         </FormControl>
                       </Box>
                     </Grid>
                     <Grid item xs={12}>
                       <Box>
                         <FormControl fullWidth>
-                          <TextField fullWidth type='number' label="Quantity" name="quantity" onChange={handleModalChange} value={modalFormdata.quantity} />
-                        </FormControl>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField fullWidth multiline rows={4} label="Description" name="productDescription" onChange={handleModalChange} value={modalFormdata.productDescription} />
+                          <TextField
+                            fullWidth
+                            multiline
+                            rows={4}
+                            label="Description"
+                            name="productDescription"
+                            onChange={handleModalChange}
+                            value={modalFormdata.productDescription}
+                          />
                         </FormControl>
                       </Box>
                     </Grid>
@@ -455,40 +533,47 @@ const token=localStorage.getItem('tokenDevoted');
 
       <Box
         sx={{
-          display: 'flex',
+          display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
           gap: "14px",
-          rowGap: '20px', // Adjust for smaller screens
+          rowGap: "20px", // Adjust for smaller screens
         }}
       >
-
-        {Data ? (
+      
+        {loading?     <p>Loading...</p>:   Data ? (
           Data.map((item, index) => {
-
-
             return (
               <Box
                 key={index}
                 sx={{
-
-
                   width: "280px",
-                  overflow: 'hidden',
+                  overflow: "hidden",
 
-                  padding: '20px',
-                  borderRadius: '12px',
-                  background: '#FFFFFF',
-                  boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
+                  padding: "20px",
+                  borderRadius: "12px",
+                  background: "#FFFFFF",
+                  boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
                 }}
               >
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Box sx={{ maxWidth: '300px', width: '100%', height: '130px', overflow: 'hidden' }}>
+                    <Box
+                      sx={{
+                        maxWidth: "300px",
+                        width: "100%",
+                        height: "130px",
+                        overflow: "hidden",
+                      }}
+                    >
                       <img
                         src={`http://localhost:1000/${item.image}`}
                         // src={`./assets/${item.image}`}
-                        style={{ borderRadius: '8px', width: '100%', height: '100%' }}
+                        style={{
+                          borderRadius: "8px",
+                          width: "100%",
+                          height: "100%",
+                        }}
                         alt="Product"
                       />
                     </Box>
@@ -496,25 +581,60 @@ const token=localStorage.getItem('tokenDevoted');
                   <Grid item xs={12}>
                     <Box>
                       <Box>
-                        <Typography textAlign="left" sx={{ color: 'black', fontWeight: '700', lineHeight: '143%' }}>
+                        <Typography
+                          textAlign="left"
+                          sx={{
+                            color: "black",
+                            fontWeight: "700",
+                            lineHeight: "143%",
+                          }}
+                        >
                           {item.productName}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography textAlign="left" sx={{ color: 'black', fontWeight: '500', lineHeight: '143%' }}>
+                        <Typography
+                          textAlign="left"
+                          sx={{
+                            color: "black",
+                            fontWeight: "500",
+                            lineHeight: "143%",
+                          }}
+                        >
                           Description
                         </Typography>
-                        <Typography sx={{ color: '#545454', fontSize: '12px', fontWeight: '400', lineHeight: '143%' }}>
+                        <Typography
+                          sx={{
+                            color: "#545454",
+                            fontSize: "12px",
+                            fontWeight: "400",
+                            lineHeight: "143%",
+                          }}
+                        >
                           {item.productDescription}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography textAlign="left" sx={{ color: 'black', fontWeight: '400', lineHeight: 'normal' }}>
+                        <Typography
+                          textAlign="left"
+                          sx={{
+                            color: "black",
+                            fontWeight: "400",
+                            lineHeight: "normal",
+                          }}
+                        >
                           {item.productcode}
                         </Typography>
                       </Box>
                       <Box display="flex" gap="10px" alignItems="center">
-                        <Typography textAlign="left" sx={{ color: 'black', fontWeight: '300', lineHeight: '200%' }}>
+                        <Typography
+                          textAlign="left"
+                          sx={{
+                            color: "black",
+                            fontWeight: "300",
+                            lineHeight: "200%",
+                          }}
+                        >
                           Product Quantity
                         </Typography>
                         <Typography>{item.quantity}</Typography>
@@ -522,10 +642,18 @@ const token=localStorage.getItem('tokenDevoted');
                     </Box>
                   </Grid>
                   <Grid item xs={12} display="flex" gap="6px">
-                    <Button sx={{ textTransform: "capitalize" }} variant="outlined" onClick={() => handleOpenUpdate(item)}>
+                    <Button
+                      sx={{ textTransform: "capitalize" }}
+                      variant="outlined"
+                      onClick={() => handleOpenUpdate(item)}
+                    >
                       Edit
                     </Button>
-                    <Button sx={{ textTransform: "capitalize" }} variant="contained" onClick={() => DeleteProduct(item._id)}>
+                    <Button
+                      sx={{ textTransform: "capitalize" }}
+                      variant="contained"
+                      onClick={() => DeleteProduct(item._id)}
+                    >
                       Delete
                     </Button>
                   </Grid>

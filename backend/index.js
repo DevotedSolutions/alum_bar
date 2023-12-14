@@ -1,6 +1,8 @@
 const express=require('express');
 const app=express();
-let port=1000;
+require('dotenv').config();
+const port = process.env.PORT || 1000;
+
 let db=require("./api/db config/db")
 app.use(express.json());
 var cors = require('cors')

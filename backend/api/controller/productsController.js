@@ -3,11 +3,11 @@ const QRCode = require('qrcode');
 const mongoose = require('mongoose'); // Import Mongoose
 
 exports.AddProduct = async (req, res) => {
-  const { productName, productDescription, quantity, productcode } = req.body;
+  const { productName, productDescription, quantity, productcode,price } = req.body;
   const image = req.file ? req.file.path : null;
 
   try {
-    if (!productName || !productDescription || !quantity || !productcode) {
+    if (!productName || !productDescription || !quantity || !productcode || !price) {
       return res.status(400).json({ message: "Fill all input fields" });
     }
 
@@ -21,12 +21,13 @@ exports.AddProduct = async (req, res) => {
       quantity,
       productcode,
       image: image,
+      price
     });
 
     const result = await product_data.save();
     res.status(200).json({ message: "Product added successfully", result });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message});
   }
 };
 
@@ -254,3 +255,114 @@ exports.updateQuantity = async (req, res) => {
     res.status(500).json({ error: 'Failed to update the product quantity' });
   }
 }
+
+exports.TotalProducts=async (req,res)=>{
+  try {
+    const totalProducts = await productSchema.countDocuments();
+    res.status(200).json({message:"total products",totalProducts})
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get the total number of products' });
+  }
+}
+exports.getLowStockProducts = async (req, res) => {
+  try {
+    const lowStockProductsCount = await productSchema.countDocuments({ quantity: { $lt: 10 } });
+    const lowStockProducts = await productSchema.find({ quantity: { $lt: 10 } });
+
+    if (!lowStockProducts || lowStockProducts.length === 0) {
+      return res.status(404).json({ message: 'No low stock products found' });
+    }
+
+    res.status(200).json({
+      message: 'Low stock products retrieved successfully',
+      lowStockProductsCount,
+      lowStockProducts,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Failed to retrieve low stock products data' });
+  }
+};
+exports.getMostStockProducts = async (req, res) => {
+  try {
+    const mostStockProductsCount = await productSchema.countDocuments({ quantity: { $gt: 10 } });
+    const mostStockProducts = await productSchema.find({ quantity: { $gt: 10 } });
+
+    res.status(200).json({
+      message: 'Most stock products retrieved successfully',
+      mostStockProductsCount,
+      mostStockProducts,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Failed to retrieve most stock products data' });
+  }
+};
+
+exports.getTotalRevenue = async (req, res) => {
+  try {
+    const products = await productSchema.find();
+
+    // Initialize an object to store monthly revenues
+    const monthlyRevenues = {};
+
+    products.forEach((product) => {
+      // Check if the product has a valid date (you might need to adjust this based on your schema)
+      if (product.createdAt && !isNaN(product.quantity) && !isNaN(product.price)) {
+        // Extract the month and year from the creation date
+        const monthYear = `${product.createdAt.getMonth() + 1}-${product.createdAt.getFullYear()}`;
+
+        // Initialize the monthly revenue for the current month
+        if (!monthlyRevenues[monthYear]) {
+          monthlyRevenues[monthYear] = 0;
+        }
+
+        // Update the monthly revenue
+        monthlyRevenues[monthYear] += product.quantity * product.price;
+      }
+    });
+
+    // Create an array of monthly revenues with default values for each month
+    const months = Array.from({ length: 12 }, (_, index) => {
+      const monthYear = `${index + 1}-${new Date().getFullYear()}`;
+      return { monthYear, revenue: monthlyRevenues[monthYear] || 0 };
+    });
+
+    // Calculate total revenue from all months
+    const totalRevenue = Object.values(monthlyRevenues).reduce((acc, revenue) => acc + revenue, 0);
+
+    // Get the revenue for the current month
+    const currentMonth = new Date().getMonth() + 1;
+    const currentMonthRevenue = monthlyRevenues[`${currentMonth}-${new Date().getFullYear()}`] || 0;
+
+    res.status(200).json({
+      message: 'Monthly revenues calculated successfully',
+      totalRevenue,
+      currentMonthRevenue,
+      months,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Failed to calculate monthly revenues', error });
+  }
+};
+
+
+exports.getTopRatedProducts = async (req, res) => {
+  try {
+  
+    const topRatedProducts = await productSchema
+      .find()      .sort({ quantity: -1 })
+      .limit(5);
+
+    if (!topRatedProducts || topRatedProducts.length === 0) {
+      return res.status(404).json({ message: 'No top-rated products found' });
+    }
+
+    console.log(topRatedProducts);
+    res.status(200).json({ message: 'Top-rated products retrieved successfully', topRatedProducts });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Failed to retrieve top-rated products data' });
+  }
+};

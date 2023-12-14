@@ -12,16 +12,19 @@ import DashBoard from "./Components/DashBoard";
 import AllProducts from "./Components/Products/AllProduct";
 import OpenScanner from "./Pages/OpenScanner";
 import Signup from "./Components/Signup";
+import LastWeekSales from "./Components/LastWeekSales";
 
 
 function App() {
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem('tokenDevoted')));
 
   const handleLogin = () => {
-    // Logic to handle user login, set isLoggedIn to true
+    
     setIsLoggedIn(true);
   };
+
+
   console.log(isLoggedIn);
   return (
 
@@ -30,11 +33,12 @@ function App() {
 
       {isLoggedIn ? (
         <Route element={<LayOut />}>
-          <Route index path="/" element={<DashBoard />} />
+          <Route index path="/Dashboard" element={<DashBoard />} />
           <Route path="/home" element={<Home />} />
           <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/allproduct" element={<AllProducts />} />
+          <Route path="/allproduct" element={<AllProducts/>} />
           <Route path="/open-scanner" element={<OpenScanner />} />
+          <Route path="/lastweek" element={<LastWeekSales />} />
         </Route>
       ) : (
         // Redirect to login if not logged in
@@ -52,3 +56,4 @@ function App() {
 }
 
 export default App;
+

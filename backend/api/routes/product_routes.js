@@ -14,7 +14,11 @@ router.get('/getqrcode/:id',productController.getQrcode);
 router.get('/decrement/:id',productController.DecrementQuantity);
 router.get('/increment/:id',productController.IncrementQuantity);
 router.post('/updatequantity/:id',productController.updateQuantity);
-
+router.get('/getTotal',productController.TotalProducts);
+router.get('/lowstock',productController.getLowStockProducts);
+router.get('/mostproduct',productController.getMostStockProducts);
+router.get('/totalrevenue',productController.getTotalRevenue);
+router.get('/top-rated',productController.getTopRatedProducts);
 
 
 module.exports = router;

@@ -6,6 +6,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { userSignUp } from '../services/SignUp';
 import LoginLayout from '../LoginLayout/LoginLayout';
+import Typography from '@mui/material/Typography';
+import { NavLink } from 'react-router-dom';
 const Signup = () => {
     let navigate=useNavigate()
 
@@ -27,6 +29,7 @@ const Signup = () => {
             
         
             toast.success(resp.data.message);
+            navigate("/login")
           }
           else {
             toast.error(resp.data.message);
@@ -53,22 +56,27 @@ const Signup = () => {
       <ToastContainer/>
       <Box sx={{
         width: '100%',
-        maxWidth: '550px',
+        maxWidth: '470px',
         height: 'auto',
         borderRadius: '12px',
 
         padding: '20px',
         background: "#FFFFFF",
-        boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px"
+        boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",marginTop:"40px"
 
       }}>
+          <Box>
+            <Typography variant="h4" textAlign={"center"}>
+            Sign Up
+            </Typography>
+          </Box>
         <form onSubmit={handleSubmit}>
         <Box my={4}>
             <FormControl fullWidth>
               <TextField
                 value={data.username}
                 fullWidth
-                label="UserName"
+                label="Enter your Username"
                 name="username"
                 onChange={handleChange}
                 variant="outlined"
@@ -81,7 +89,7 @@ const Signup = () => {
               <TextField
                 value={data.email}
                 fullWidth
-                label="Email"
+                label="Enter your email"
                 name="email"
                 onChange={handleChange}
                 variant="outlined"
@@ -94,7 +102,7 @@ const Signup = () => {
               <TextField
                 value={data.password}
                 fullWidth
-                label="password"
+                label="Enter your password"
                 name="password"
                 onChange={handleChange}
                 variant="outlined"
@@ -104,14 +112,20 @@ const Signup = () => {
             </FormControl>
           </Box>
           <Box my={2} sx={{ display: 'flex',gap:"10px"}}>
-            <Button type="submit" variant="contained" color="primary" sx={{ padding: "10px 30px" }}>
+            <Button type="submit" variant="contained"  sx={{ padding: "10px 30px",width:"100%" }}>
            Sign Up
             </Button>
-            <Button onClick={()=>{navigate("/login")}} variant="contained" color="primary" sx={{ padding: "10px 30px" }}>
+            {/* <Button onClick={()=>{navigate("/login")}} variant="contained" color="primary" sx={{ padding: "10px 30px" }}>
               Log In
-            </Button>
+            </Button> */}
           </Box>
+
         </form>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: "6px" }}>
+            {" "}
+            <Typography>Already have an account?</Typography>
+            <NavLink to="/login">Log In</NavLink>
+          </Box>
       </Box>
     </Box>
     </div>
