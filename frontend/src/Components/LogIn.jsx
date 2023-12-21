@@ -83,7 +83,7 @@ function LogIn({ handleLogin }) {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        sx={{ width: "100%", height: "100vh" }}
+        sx={{ width: "100%", height: {xs:"70vh",sm:"85vh"},padding:"10px" }}
       >
         <ToastContainer />
         <Box
@@ -103,7 +103,7 @@ function LogIn({ handleLogin }) {
             </Typography>
           </Box>
           <form onSubmit={handleSubmit}>
-            <Box my={4}>
+            <Box my={3}>
               <FormControl fullWidth>
                 <TextField
                 required

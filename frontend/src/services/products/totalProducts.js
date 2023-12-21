@@ -31,9 +31,33 @@ export const topRatedProducts = async () => {
         return err.response
     }
 }
+export const topSalesProducts = async () => {
+    try {
+        const response = await axios.get("/top-sales")
+        return response;
+    } catch (err) {
+        return err.response
+    }
+}
+export const topSoldProducts = async () => {
+    try {
+        const response = await axios.get("/top-sold")
+        return response;
+    } catch (err) {
+        return err.response
+    }
+}
 export const getTotalRevenue = async () => {
     try {
         const response = await axios.get("/totalrevenue")
+        return response;
+    } catch (err) {
+        return err.response
+    }
+}
+export const getLastweekSales = async () => {
+    try {
+        const response = await axios.get("/last-week-sales")
         return response;
     } catch (err) {
         return err.response

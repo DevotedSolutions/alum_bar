@@ -19,6 +19,10 @@ router.get('/lowstock',productController.getLowStockProducts);
 router.get('/mostproduct',productController.getMostStockProducts);
 router.get('/totalrevenue',productController.getTotalRevenue);
 router.get('/top-rated',productController.getTopRatedProducts);
+router.get('/top-sales',productController.TopSalesProduct);
+router.get('/top-sold',productController.TopSoldProduct);
+router.get('/last-week-sales',productController.getLastWeekSales);
+
 
 
 module.exports = router;

@@ -13,8 +13,8 @@ import AllProducts from "./Components/Products/AllProduct";
 import OpenScanner from "./Pages/OpenScanner";
 import Signup from "./Components/Signup";
 import LastWeekSales from "./Components/LastWeekSales";
-
-
+import ResetPassword from './Components/ResetPassword'
+import ForgotPassword from './Components/ForgotPassword'
 function App() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem('tokenDevoted')));
@@ -48,6 +48,8 @@ function App() {
 
       <Route path="/signup" element={<Signup handleLogin={handleLogin} />} />
       <Route path="/login" element={<LogIn handleLogin={handleLogin} />} />
+      <Route path="/forgot-password" element={<ForgotPassword/>} />
+      <Route path="/reset-password/:id" element={<ResetPassword  />} />
 
     </Routes>
 

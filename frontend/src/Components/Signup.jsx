@@ -1,4 +1,6 @@
 
+
+
 import React, { useState } from 'react';
 import { Box,TextField, FormControl, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -52,7 +54,7 @@ const Signup = () => {
   return (
     <LoginLayout title="Welcome to SignUp page">
     <div style={{width:"100%"}}>
-    <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: '100vh' }}>
+    <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: {xs:"70vh",sm:"85vh"},padding:"10px" }}>
       <ToastContainer/>
       <Box sx={{
         width: '100%',

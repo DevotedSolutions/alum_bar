@@ -9,7 +9,7 @@ const middlware=require("../middle/mddle")
 
 router.post('/signup',contrl.signup);
 router.post('/login',contrl.login);
-router.post('/forgot-password',contrl.forgotPassword);
+// router.post('/forgot-password',contrl.forgotPassword);
 router.get('/getdata',middlware.authVerify,contrl.getdata);
 
 

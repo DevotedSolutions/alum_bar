@@ -16,8 +16,11 @@ import {
   lowStockProducts,
   mostStockProducts,
   topRatedProducts,
-
+  topSalesProducts,
+  getTotalRevenue,
+  getLastweekSales,
 } from "../services/products/totalProducts";
+import { topSoldProducts } from "../services/products/totalProducts";
 
 import LastWeekSales from "./LastWeekSales";
 import TotalRevenu from "./Products/totalRevenue";
@@ -26,16 +29,28 @@ const DashBoard = () => {
   const [lowStock, setLowStock] = useState(0);
   const [mostStock, setMostStock] = useState(0);
   const [topRtdProducts, setTopRatedProducts] = useState([]);
+  const [topSaleProducts, setTopSaleProducts] = useState([]);
+  const [topSoldProductss, setTopSoldProducts] = useState([]);
+  const [monthlySale, setMonthlySale] = useState(0);
+  const [yearRevenue, setYearRevenue] = useState([]);
+  const [lastWeek, setLastWeek] = useState();
+  const [countday, setCountDay] = useState();
+
+  const YearsaleArray=[]
+ 
+ 
+  yearRevenue.map((item,i)=>{
+    // console.log(item.total,"iiii");
+    YearsaleArray.push(item.total)
+    return  item
+
+  })
+
+
+  // console.log(YearsaleArray,"years sale array");
   
 
 
- 
-  const products = [
-    { id: 1, name: "Product 1", code: "ABC123", quantity: 10 },
-    { id: 2, name: "Product 2", code: "BB789", quantity: 20 },
-    { id: 2, name: "Product 2", code: "CC789", quantity: 20 },
-    { id: 2, name: "Product 2", code: "CC789", quantity: 20 },
-  ];
 
   async function fetchTotalproducts() {
     try {
@@ -52,7 +67,7 @@ const DashBoard = () => {
       const resp = await lowStockProducts();
       if (resp.status === 200) {
         setLowStock(resp.data.lowStockProductsCount);
-        // console.log(resp.data.lowStockProductsCount, "ressssssssssssssss");
+        
       }
     } catch (error) {
       console.log("Error occur in fetching Low stock products:", error);
@@ -75,23 +90,80 @@ const DashBoard = () => {
       const resp = await topRatedProducts();
       if (resp.status === 200) {
         setTopRatedProducts(resp.data.topRatedProducts);
-       
-        console.log(topRtdProducts,"ttttttttttttttt");
       }
     } catch (error) {
       console.log("Error occur in fetching top rated products:", error);
     }
   }
+  async function fetchTopSalesProducts() {
+    try {
+      const resp = await topSalesProducts();
+      if (resp.status === 200) {
+        setTopSaleProducts(resp.data.topSales);
+        // console.log(resp.data.topSales, "resssssssssssssssp");
 
+      }
+    } catch (error) {
+      console.log("Error occur in fetching top sales products:", error);
+    }
+  }
+  async function fetchTopSoldProducts() {
+    try {
+      const resp = await topSoldProducts();
+      if (resp.status === 200) {
+        // console.log(resp.data.topSales,"rrrrrrrrrrrrrrr");
+        setTopSoldProducts(resp.data.topSales);
+        // console.log(resp.data.topSales, "resssssssssssssssp");
 
+      }
+    } catch (error) {
+      console.log("Error occur in fetching top sold products:", error);
+    }
+  }
+  async function fetchTotalRevenue() {
+    try {
+      const resp = await getTotalRevenue();
+      if (resp.status === 200) {
+        setMonthlySale(resp.data.currentMonthSales.total)
+        // console.log(resp.data, "resp revenue");
+        // console.log(resp.data.monthlySales, "resp total revenue");
+        setYearRevenue(resp.data.monthlySales)
+
+      }
+    } catch (error) {
+      console.log("Error occur in fetching total revenue of products:", error);
+    }
+  
+  }
+  async function LastWeekSale() {
+    try {
+      const resp = await getLastweekSales();
+      if (resp.status === 200) {
+
+        const lastWeekSales = resp.data.lastWeekSales;
+        const countsArray = lastWeekSales.map((item) => item.count);
+        const countsDay = lastWeekSales.map((item) => item.day);
+        console.log(countsDay,"kkkkkkkkkkkkkkkkk");
+        
+        setLastWeek(countsArray)
+        setCountDay(countsDay)
+
+      }
+    } catch (error) {
+      console.log("Error occur in fetching last week sales of products:", error);
+    }
+  
+  }
   useEffect(() => {
     fetchTotalproducts();
     fetchLowStockProducts();
     fetchMostStockProducts();
     fetchTopRatedProducts();
-
+    fetchTopSalesProducts();
+    fetchTotalRevenue();
+    fetchTopSoldProducts();
+    LastWeekSale()
   }, []);
-
 
   return (
     <Grid container>
@@ -115,10 +187,9 @@ const DashBoard = () => {
               boxShadow:
                 " rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
               background: "#434343",
-              color:"white"
+              color: "white",
             }}
           >
-         
             <Typography variant="h6" textAlign={"center"}>
               Total Products
             </Typography>
@@ -138,18 +209,16 @@ const DashBoard = () => {
               alignItems: "center",
               justifyContent: "center",
               background: "#454545",
-              color:"white",
+              color: "white",
               boxShadow:
                 " rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
-
             }}
           >
-           
             <Typography variant="h6" textAlign={"center"}>
               This Month Sales
             </Typography>
             <Typography variant="h6" textAlign={"center"}>
-              $300
+              ${monthlySale}
             </Typography>
           </Grid>
           <Grid
@@ -166,10 +235,9 @@ const DashBoard = () => {
                 " rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
               borderRadius: "12px",
               background: "#565656",
-              color:"white"
+              color: "white",
             }}
           >
-           
             <Typography variant="h6" textAlign={"center"}>
               Low stock Products
             </Typography>
@@ -191,10 +259,9 @@ const DashBoard = () => {
                 " rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
               borderRadius: "12px",
               background: "#878787",
-              color:"white"
+              color: "white",
             }}
           >
-           
             <Typography variant="h6" textAlign={"center"}>
               Most Stock Products
             </Typography>
@@ -209,45 +276,8 @@ const DashBoard = () => {
 
       <Grid item xs={12} mt={2} sx={{ padding: "0 15px" }}>
         <Grid container gap={"2px"} justifyContent={"space-between"}>
-          <Grid item xs={12} sm={12} md={5.9} sx={{}}>
-            <Typography variant="h6">Top 5 Rated Products</Typography>
-            <Box
-              sx={{
-                boxShadow:
-                  " rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px",
-                borderRadius: "12px",
-                padding: "20px 10px",
-              }}
-            >
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ padding: "5px" }}>Product Name</TableCell>
-                    <TableCell sx={{ padding: "5px" }}>Product Code</TableCell>
-                    <TableCell sx={{ padding: "5px" }}>Quantity</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {topRtdProducts.map((product) => {
-                    console.log(product,"pppppppppp");
-                   return <TableRow key={product.id}>
-                      <TableCell sx={{ padding: "8px" }}>
-                        {product.productName}
-                      </TableCell>
-                      <TableCell sx={{ padding: "8px" }}>
-                        {product.productcode}
-                      </TableCell>
-                      <TableCell sx={{ padding: "8px" }}>
-                        {product.quantity}
-                      </TableCell>
-                    </TableRow>
-})}
-                </TableBody>
-              </Table>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={12} md={5.9}>
-            <Typography variant="h6">Top Sales Products</Typography>
+        <Grid item xs={12} sm={12} md={5.9}>
+            <Typography variant="h6">Top 5 Revenue Products</Typography>
 
             <Box
               sx={{
@@ -263,23 +293,76 @@ const DashBoard = () => {
                     <TableCell sx={{ padding: "5px" }}>Product Name</TableCell>
                     <TableCell sx={{ padding: "5px" }}>Product Code</TableCell>
                     <TableCell sx={{ padding: "5px" }}>Quantity</TableCell>
+                    <TableCell sx={{ padding: "5px" }}>Revenue</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {topRtdProducts.map((product) => {
-                    console.log(product,"pppppppppp");
-                   return <TableRow key={product.id}>
-                      <TableCell sx={{ padding: "8px" }}>
-                        {product.productName}
-                      </TableCell>
-                      <TableCell sx={{ padding: "8px" }}>
-                        {product.productcode}
-                      </TableCell>
-                      <TableCell sx={{ padding: "8px" }}>
-                        {product.quantity}
-                      </TableCell>
-                    </TableRow>
-})}
+                  {topSoldProductss.map((product) => {
+                    // console.log(product, " singlepppppppppp");
+                    // console.log(product.productDetails, "product details");
+                    return (
+                      <TableRow key={product.productDetails._id}>
+                        <TableCell sx={{ padding: "8px" }}>
+                          {product.productDetails.productName}
+                        </TableCell>
+                        <TableCell sx={{ padding: "8px" }}>
+                        {product.productDetails.productcode}
+                        </TableCell>
+                        <TableCell sx={{ padding: "8px" }}>
+                          {product.totalQuantity}
+                        </TableCell>
+                        <TableCell sx={{ padding: "8px" }}>
+                          ${product.totalRevenue}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} sm={12} md={5.9}>
+            <Typography variant="h6">Top 5 Sold Products</Typography>
+
+            <Box
+              sx={{
+                boxShadow:
+                  " rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px",
+                borderRadius: "12px",
+                padding: "20px 10px",
+              }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ padding: "5px" }}>Product Name</TableCell>
+                    <TableCell sx={{ padding: "5px" }}>Product Code</TableCell>
+                    <TableCell sx={{ padding: "5px" }}>Quantity</TableCell>
+                    <TableCell sx={{ padding: "5px" }}>Revenue</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {topSaleProducts.map((product) => {
+                    // console.log(product, " singlepppppppppp");
+                    // console.log(product.productDetails, "product details");
+                    return (
+                      <TableRow key={product.productDetails._id}>
+                        <TableCell sx={{ padding: "8px" }}>
+                          {product.productDetails.productName}
+                        </TableCell>
+                        <TableCell sx={{ padding: "8px" }}>
+                        {product.productDetails.productcode}
+                        </TableCell>
+                        <TableCell sx={{ padding: "8px" }}>
+                          {product.totalQuantity}
+                        </TableCell>
+                        <TableCell sx={{ padding: "8px" }}>
+                          ${product.totalRevenue}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </Box>
@@ -288,41 +371,18 @@ const DashBoard = () => {
       </Grid>
 
       <Grid item xs={12} mt={2} sx={{ padding: "0 15px" }}>
-        <Grid
-          container
-          justifyContent={"space-between"}
-        
-        >
-        
-          <Grid
-            item
-            xs={12}
-            sm={12}
-            md={5.9}
-            sx={{
-           
-            }}
-            mb={3}
-          >
+        <Grid container justifyContent={"space-between"}>
+          <Grid item xs={12} sm={12} md={5.9} sx={{}} mb={3}>
             <Typography variant="h6">Last week sales</Typography>
-            
-            <LastWeekSales />
+
+            <LastWeekSales lastWeek={lastWeek} countday={countday}/>
           </Grid>
-          <Grid
-            item
-            xs={12}
-            sm={12}
-            md={5.9}
-            sx={{
-            }}
-            mb={3}
-          >
-              <Typography variant="h6">Total Revenue</Typography>
-            <TotalRevenu />
+          <Grid item xs={12} sm={12} md={5.9} sx={{}} mb={3}>
+            <Typography variant="h6">Total Revenue</Typography>
+            <TotalRevenu yearData={YearsaleArray}/>
           </Grid>
         </Grid>
       </Grid>
-  
     </Grid>
   );
 };

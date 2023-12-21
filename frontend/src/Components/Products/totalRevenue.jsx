@@ -1,7 +1,8 @@
 import React from "react";
-
 import { Line } from "react-chartjs-2";
+
 const TotalRevenu = (props) => {
+  // console.log(props.yearData, "iiiiiiiiiiiiiiiiii");
   const labels = [
     "Jan",
     "Feb",
@@ -16,25 +17,55 @@ const TotalRevenu = (props) => {
     "Nov",
     "Dec",
   ];
-
+  const Dummydata = [0, 2, 3, 4, 5, 6, 7, 811, 3455, 5555, 4444];
   const data = {
     labels: labels,
     datasets: [
       {
-        label: "Total Revnue",
-        backgroundColor: "gray",
-        borderColor: "gray",
+        label: "Total Revenue",
+        backgroundColor: "#3B71CA",
+        borderColor: "#3B71CA",
         borderWidth: 2,
         pointRadius: 0,
-        pointBackgroundColor: "gray",
+        pointBackgroundColor: "#3B71CA",
         pointBorderColor: "white",
         pointBorderWidth: 2,
-        pointHoverRadius: 1,
-        pointHoverBackgroundColor: "gray",
-
-        data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110],
+        pointHoverRadius: 5, // Adjust the size of the hover point
+        pointHoverBackgroundColor: "white",
+        pointHoverBorderColor: "#3B71CA",
+        pointHoverBorderWidth: 2,
+        data: props.yearData,
       },
     ],
+  };
+
+  const options = {
+    scales: {
+      x: {
+        display: true,
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        display: true,
+        grid: {
+          display: false,
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        enabled: true,
+      },interaction: {
+        mode: "index",
+        intersect: false,
+        axis: "x", // Set to "y" if you want to activate on the y-axis
+      },
+    },
   };
 
   return (
@@ -46,7 +77,7 @@ const TotalRevenu = (props) => {
         borderRadius: "12px",
       }}
     >
-      <Line data={data} maxWidth="100%" />
+      <Line data={data} options={options} maxWidth="100%" />
     </div>
   );
 };

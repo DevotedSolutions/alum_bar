@@ -265,6 +265,7 @@ const InventoryPage = () => {
                   <TableCell>Product Name</TableCell>
                   <TableCell>Product Description</TableCell>
                   <TableCell>Product Code</TableCell>
+                  <TableCell>Price</TableCell>
                   <TableCell>Quantity</TableCell>
                   <TableCell>Action</TableCell>
                 </TableRow>
@@ -277,8 +278,9 @@ const InventoryPage = () => {
                     const productcode = item.productcode.toLowerCase();
                     const searchDataLowerCase = searchData.toLowerCase();
                     return productName.includes(searchDataLowerCase) || productDescription.includes(searchDataLowerCase) || productcode.includes(searchDataLowerCase);
-                  }).map((item, index) => (
-                    <TableRow key={index}>
+                  }).map((item, index) => { 
+               console.log(item.price);
+                   return  <TableRow key={index}>
                       <TableCell>
                         <Box sx={{ width: "100px" }}>
                           <img
@@ -291,6 +293,8 @@ const InventoryPage = () => {
                       <TableCell>{item.productName}</TableCell>
                       <TableCell>{item.productDescription}</TableCell>
                       <TableCell>{item.productcode}</TableCell>
+                      <TableCell>{item.price}</TableCell>
+                   
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>
                         <Box sx={{ display: "flex", gap: "6px" }}>
@@ -299,7 +303,7 @@ const InventoryPage = () => {
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))
+})
                 ) : (
                   <TableRow>
                     <TableCell>Data not found</TableCell>

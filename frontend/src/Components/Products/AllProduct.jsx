@@ -354,7 +354,7 @@ const AllProducts = () => {
                             <TextField
                               type="number"
                               fullWidth
-                              label="Price"
+                              label="$Price"
                               name="price"
                               onChange={handleChange}
                               value={AddData.price}
@@ -547,7 +547,7 @@ const AllProducts = () => {
               <Box
                 key={index}
                 sx={{
-                  width: "280px",
+                  width: "230px",
                   overflow: "hidden",
 
                   padding: "20px",
@@ -566,6 +566,7 @@ const AllProducts = () => {
                         overflow: "hidden",
                       }}
                     >
+
                       <img
                         src={`http://localhost:1000/${item.image}`}
                         // src={`./assets/${item.image}`}
@@ -580,18 +581,31 @@ const AllProducts = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <Box>
-                      <Box>
+                      <Box display={{display:"flex",justifyContent:"space-between"}}>
                         <Typography
                           textAlign="left"
                           sx={{
                             color: "black",
-                            fontWeight: "700",
+                            fontWeight: "400",
+                            fontSize:"14px",
                             lineHeight: "143%",
                           }}
                         >
                           {item.productName}
                         </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: "#141414",
+                            fontSize: "14px",
+                            fontWeight: "900",
+                            lineHeight: "143%",
+                          }}
+                        >
+                          ${item.price}
+                        </Typography>
                       </Box>
+                      
                       <Box>
                         <Typography
                           textAlign="left"
@@ -599,6 +613,7 @@ const AllProducts = () => {
                             color: "black",
                             fontWeight: "500",
                             lineHeight: "143%",
+                            fontSize:"14px",
                           }}
                         >
                           Description
@@ -614,13 +629,35 @@ const AllProducts = () => {
                           {item.productDescription}
                         </Typography>
                       </Box>
+                      {/* <Box>
+                        <Typography
+                          textAlign="left"
+                          sx={{
+                            color: "black",
+                            fontWeight: "500",
+                            lineHeight: "143%",
+                          }}
+                        >
+                          Price
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: "#545454",
+                            fontSize: "12px",
+                            fontWeight: "400",
+                            lineHeight: "143%",
+                          }}
+                        >
+                          ${item.price}
+                        </Typography>
+                      </Box> */}
                       <Box>
                         <Typography
                           textAlign="left"
                           sx={{
                             color: "black",
                             fontWeight: "400",
-                            lineHeight: "normal",
+                            lineHeight: "normal", fontSize:"14px",
                           }}
                         >
                           {item.productcode}
@@ -632,12 +669,12 @@ const AllProducts = () => {
                           sx={{
                             color: "black",
                             fontWeight: "300",
-                            lineHeight: "200%",
+                            lineHeight: "200%", fontSize:"14px",
                           }}
                         >
                           Product Quantity
                         </Typography>
-                        <Typography>{item.quantity}</Typography>
+                        <Typography sx={{ fontSize:"14px",}}>{item.quantity}</Typography>
                       </Box>
                     </Box>
                   </Grid>
