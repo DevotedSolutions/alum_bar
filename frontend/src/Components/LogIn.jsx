@@ -20,7 +20,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import CircularProgress from '@mui/material/CircularProgress';
 
 
-function LogIn({ handleLogin }) {
+function LogIn({ handleLogin,admin}) {
   const [loading,setLoading]=useState(false)
   let navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
@@ -48,6 +48,16 @@ function LogIn({ handleLogin }) {
 
     event.preventDefault();
     setLoading(true)
+
+    if (data.email === "admin@quotation.com" && data.password === "admin123") {
+      toast.success("Login Successful as admin");
+      localStorage.setItem("isAdmin", 'adminLogin');
+      localStorage.setItem("UserId", "admin");
+      admin(true)
+      handleLogin();
+      navigate('/')
+       return
+    }
     try {
       const resp = await userLogin(data, {
         headers: {
@@ -59,10 +69,11 @@ function LogIn({ handleLogin }) {
         if (resp.status === 200) {
           console.log(resp.data.token);
           localStorage.setItem("tokenDevoted", resp.data.token);
+          localStorage.setItem("UserId", resp.data.user._id)
           toast.success(resp.data.message);
           handleLogin();
          
-          navigate("/Dashboard");
+          navigate("/");
         } else {
           toast.error(resp.data.message);
           setLoading(false)

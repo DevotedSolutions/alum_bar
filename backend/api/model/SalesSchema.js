@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
 
 const saleSchema = new mongoose.Schema({
+  productSoldBy:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'deveotes-task1',
+    required: true,
+
+  },
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product', // Reference to your product schema
+    ref: 'Product',
     required: true,
   },
   quantity: {

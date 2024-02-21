@@ -1,9 +1,14 @@
 import axios from "../BaseUrl";
+import {checkTokenExpiration} from './getAllProducts';
 export const UpdateProducts = async (id,body) => {
+  const token = localStorage.getItem('tokenDevoted');
+      const isAdmin = localStorage.getItem('isAdmin');
+
+  checkTokenExpiration();
     try {
         const response = await axios.put(`updateproducts/${id}`,body,{
             headers: {
-              Authorization: `${localStorage.getItem('tokenDevoted')}`, 
+              Authorization: `${token ? token : isAdmin}`,
             },
           });
 

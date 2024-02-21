@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Typography, FormControl, Box, Grid } from "@mui/material";
+import { Button, Typography, FormControl, Box, Grid,MenuItem } from "@mui/material";
 import { deleteProducts } from "../../services/products/deleteProduct";
 import { getAllProducts } from "../../services/products/getAllProducts";
 import { ToastContainer, toast } from "react-toastify";
@@ -9,6 +9,7 @@ import Modal from "@mui/material/Modal";
 import { addProducts } from "../../services/products/addProducts";
 
 import { UpdateProducts } from "../../services/products/UpdateProduct";
+import { cermoneData, vitrageData } from "../../Utility/data";
 
 const style = {
   position: "absolute",
@@ -42,11 +43,15 @@ const AllProducts = () => {
     productDescription: "",
     quantity: "",
     productcode: "",
+    productCermone:"",
+    productVitrage:"",
     price:""
   });
 
   // this state is basically for update modal which store the privious data of inputs
   const [modalFormdata, setModalFormData] = useState({});
+  const cermone = cermoneData;
+  const vitrage = vitrageData;
 
   const handleChange = (e) => {
     if (e.target.name === "image") {
@@ -71,6 +76,8 @@ const AllProducts = () => {
     formData.append("quantity", AddData.quantity);
     formData.append("productcode", AddData.productcode);
     formData.append("price", AddData.price);
+    formData.append("productCermone",AddData.productCermone)
+    formData.append("productVitrage",AddData.productVitrage)
     formData.append("image", image);
 
     try {
@@ -85,6 +92,8 @@ const AllProducts = () => {
           productDescription: "",
           quantity: "",
           productcode: "",
+          productcermone:"",
+          productVitrage:"",
           price:""
         });
         setShowImg({});
@@ -157,7 +166,7 @@ const AllProducts = () => {
         setShowModalImg({ imagePreview: imgPreviewURL });
       } else {
         setShowModalImg({
-          imagePreview: `http://localhost:1000/${modalData.image}`,
+          imagePreview: `https://inventory.api.noutfermeture.com/${modalData.image}`,
         });
       }
     } else {
@@ -174,10 +183,12 @@ const AllProducts = () => {
       productDescription: data.productDescription,
       quantity: data.quantity,
       productcode: data.productcode,
+      productCermone:data.productCermone,
+      productVitrage:data.productVitrage,
       price: data.price,
     });
     if (data.image) {
-      setShowModalImg({ imagePreview: `http://localhost:1000/${data.image}` });
+      setShowModalImg({ imagePreview: `https://inventory.api.noutfermeture.com/${data.image}` });
       setModalImage(data.image);
       console.log(data.image, "imggggggg");
     } else {
@@ -197,6 +208,8 @@ const AllProducts = () => {
     formData.append("quantity", modalFormdata.quantity);
     formData.append("productcode", modalFormdata.productcode);
     formData.append("price", modalFormdata.price);
+    formData.append("productCermone",modalFormdata.productCermone);
+    formData.append("productVitrage",modalFormdata.productVitrage)
 
     if (modalImage) {
       formData.append("image", modalImage);
@@ -362,6 +375,45 @@ const AllProducts = () => {
                           </FormControl>
                         </Box>
                       </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              label="Product Cermone"
+                              name="productCermone"
+                              select
+                              onChange={handleChange}
+                              value={AddData.productCermone}
+                            >
+                                {cermone.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>) ) }
+                            </TextField>
+                          </FormControl>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              select
+                              label="Product Vitrage"
+                              name="productVitrage"
+                              onChange={handleChange}
+                              value={AddData.productVitrage}
+                            >
+                              {vitrage.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+                            </TextField>
+                          </FormControl>
+                        </Box>
+                      </Grid>
                       <Grid item xs={12}>
                         <Box>
                           <FormControl fullWidth>
@@ -496,6 +548,45 @@ const AllProducts = () => {
                         </FormControl>
                       </Box>
                     </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <Box>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              label="Product Cermone"
+                              name="productCermone"
+                              select
+                              onChange={handleModalChange}
+                              value={modalFormdata.productCermone}
+                            >
+                                {cermone.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>) ) }
+                            </TextField>
+                          </FormControl>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              select
+                              label="Product Vitrage"
+                              name="productVitrage"
+                              onChange={handleModalChange}
+                              value={modalFormdata.productVitrage}
+                            >
+                              {vitrage.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+                            </TextField>
+                          </FormControl>
+                        </Box>
+                      </Grid>
                     <Grid item xs={12}>
                       <Box>
                         <FormControl fullWidth>
@@ -568,7 +659,8 @@ const AllProducts = () => {
                     >
 
                       <img
-                        src={`http://localhost:1000/${item.image}`}
+                        // src={`http://localhost:1000/${item.image}`}
+                        src={`https://inventory.api.noutfermeture.com/${item.image}`}
                         // src={`./assets/${item.image}`}
                         style={{
                           borderRadius: "8px",

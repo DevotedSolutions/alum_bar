@@ -18,6 +18,8 @@ import Typography from '@mui/material/Typography';
 import Inventory2TwoToneIcon from '@mui/icons-material/Inventory2TwoTone';
 import AddIcon from '@mui/icons-material/Add';
 import LogoutIcon from '@mui/icons-material/Logout';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import AdbIcon from '@mui/icons-material/Adb';
 const drawerWidth = 280;
 
 // interface Props {
@@ -33,8 +35,9 @@ export default function DrawerAppBar(props) {
 
 // logout functionality
 const handleLogout = () => {
-  // Remove token from local storage
+  localStorage.removeItem('isAdmin');
   localStorage.removeItem('tokenDevoted');
+  localStorage.removeItem('UserId')
 
   // Navigate to the login page
   navigate('/login');
@@ -50,15 +53,14 @@ const handleLogout = () => {
   };
 
 
-
-
+  const isUser = localStorage.getItem("tokenDevoted");
 
 
   const itemsList = [
     {
       text: 'Dashboard',
       icon: <InboxIcon />,
-      onClick: () => navigate('/Dashboard'),
+      onClick: () => navigate('/'),
     },
     {
       text: 'Inventory',
@@ -71,6 +73,16 @@ const handleLogout = () => {
       onClick: () => navigate('/allproduct'),
     },
     {
+      text: 'Open Scannar',
+      icon: <QrCodeScannerIcon/>,
+      onClick: () => navigate('/open-scanner'),
+    },
+    !isUser && {
+      text: "Quotation App",
+      icon: <AdbIcon />,
+      onClick: () => navigate("/designation"),
+    },
+    {
       text: 'Log out',
       icon: <LogoutIcon/>,
       onClick: () =>{ handleLogout()},
@@ -78,7 +90,7 @@ const handleLogout = () => {
 
 
 
-  ];
+  ].filter(Boolean);
 
 
 

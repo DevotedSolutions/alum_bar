@@ -1,9 +1,37 @@
 import axios from "../BaseUrl";
-export const getAllProducts = async (page,size) => {
+import {jwtDecode }from 'jwt-decode';
+
+
+export function checkTokenExpiration() {
+    const token = localStorage.getItem('tokenDevoted');
+  
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+  
+        if (decodedToken.exp * 1000 < Date.now()) {
+          localStorage.removeItem('tokenDevoted');
+          localStorage.removeItem('UserId')
+          console.log('Token has expired. Please log in again.');
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }
+  
+
+export const getAllProducts = async () => {
+   
+     
+      checkTokenExpiration();
     try {
-        const response = await axios.get(`/getproducts?page=${page}&size=${size}`,{
+
+      const token = localStorage.getItem('tokenDevoted');
+      const isAdmin = localStorage.getItem('isAdmin');
+        const response = await axios.get(`/getproducts`,{
             headers: {
-              Authorization: `${localStorage.getItem('tokenDevoted')}`, 
+              Authorization: `${token ? token : isAdmin}`,
             },
           });
 
@@ -29,4 +57,18 @@ export const getQrcode = async (id) => {
     } catch (err) {
         return err.response
     }
+}
+
+export const sellProduct= async (id,quantity) =>{
+  const userId = localStorage.getItem("UserId");
+  try {
+      const response = await axios.get(`/decrement/${id}/${quantity}?userId=${userId}`);
+
+      return response;
+  } catch (err) {
+      return err.response
+  }
+
+
+
 }

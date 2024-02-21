@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { Box, TextField, FormControl, Button, InputAdornment, IconButton } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { userLogin } from '../services/login';
-import { ToastContainer, toast } from 'react-toastify';
+import { Box, TextField, FormControl, Button } from '@mui/material';
+import { ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { NavLink, useNavigate } from 'react-router-dom';
+// import { NavLink, useNavigate } from 'react-router-dom';
 import LoginLayout from '../LoginLayout/LoginLayout';
 import Typography from '@mui/material/Typography';
 
 function ForgotPassword({handleLogin}) {
-  let navigate = useNavigate();
+  // let navigate = useNavigate();
 
   const [data, setData] = useState({ email: ''});
 

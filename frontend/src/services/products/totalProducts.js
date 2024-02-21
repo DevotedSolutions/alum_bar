@@ -1,5 +1,7 @@
 import axios from "../BaseUrl";
+import { checkTokenExpiration } from "./getAllProducts";
 export const totalProducts = async () => {
+    checkTokenExpiration();
     try {
         const response = await axios.get("/getTotal")
         return response;

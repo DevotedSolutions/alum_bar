@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer");
 let jwt = require('jsonwebtoken');
 let key="waqas";
 exports.signup = async (req, res) => {
+  console.log('here')
   const { username, email, password } = req.body;
 
   try {
@@ -57,6 +58,7 @@ exports.login = async (req, res) => {
   } catch (error) {
 
     res.status(500).json({ message: "Internal server error" });
+    console.log(error)
   }
 };
 

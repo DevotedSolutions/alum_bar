@@ -11,7 +11,7 @@ router.get('/getproducts',authMiddleware.authVerify,productController.getAllprod
 router.put('/updateproducts/:id',authMiddleware.authVerify,upload.single("image"),productController.updateProduct);
 router.delete('/deleteproducts/:id',authMiddleware.authVerify,productController.deleteProduct);
 router.get('/getqrcode/:id',productController.getQrcode);
-router.get('/decrement/:id',productController.DecrementQuantity);
+router.get('/decrement/:id/:quantity',productController.DecrementQuantity);
 router.get('/increment/:id',productController.IncrementQuantity);
 router.post('/updatequantity/:id',productController.updateQuantity);
 router.get('/getTotal',productController.TotalProducts);

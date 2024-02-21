@@ -9,7 +9,7 @@ import { getQrcode } from '../services/products/getAllProducts';
 import Pagination from '@mui/material/Pagination';
 import PaginationItem from '@mui/material/PaginationItem';
 import Stack from '@mui/material/Stack';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { UpdateQuantity } from '../services/products/updateQuantity';
 
 const style = {
@@ -31,15 +31,15 @@ const style = {
 };
 
 const InventoryPage = () => {
-  let navigate = useNavigate();
+  // let navigate = useNavigate();
   const [qrCodeUrlSell, setQRCodeUrlSell] = useState('');
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
   const [openSell, setOpenSell] = useState(false);
   const [searchData, setSearchData] = useState('');
-  const [page, setPage] = useState(1);
-  const [Size, setSize] = useState(5);
-  const [totalPages, setTotalPages] = useState(1);
+  // const [page, setPage] = useState(1);
+  // const [Size, setSize] = useState(5);
+  // const [totalPages, setTotalPages] = useState(1);
   const [totalQuantity, setTotalQuantity] = useState(0);
   // update quantity
   let [oneProduct, setOneProduct] = useState(null);
@@ -137,10 +137,10 @@ const InventoryPage = () => {
   // Function to fetch data from the server
   async function getData() {
     try {
-      const resp = await getAllProducts(page, Size);
+      const resp = await getAllProducts();
       if (resp.status === 200) {
         setData(resp.data.getdata);
-        setTotalPages(resp.data.totalPages);
+        // setTotalPages(resp.data.totalPages);
       } else {
         toast.error(resp.data.message);
       }
@@ -152,7 +152,7 @@ const InventoryPage = () => {
   // Fetch data on component when page/Size changes
   useEffect(() => {
     getData();
-  }, [page, Size]);
+  }, []);
 
   return (
     <Box sx={{ width: { xs: 'auto', sm: "auto" }, padding: "0 10px" }}>
@@ -226,7 +226,7 @@ const InventoryPage = () => {
             {qrCodeUrlSell && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <h3>QR Code:</h3>
-                <img src={qrCodeUrlSell} alt="QR Code" /><br />
+                <img src={qrCodeUrlSell} alt="QR Code"  width="180px"/><br />
                 <a href={qrCodeUrlSell} download="qrcode.png">Download</a>
                 <Button sx={{ margin: "4px 0" }} variant='contained' onClick={handleCloseSellModal}>Cancel</Button>
               </div>
@@ -284,7 +284,8 @@ const InventoryPage = () => {
                       <TableCell>
                         <Box sx={{ width: "100px" }}>
                           <img
-                            src={`http://localhost:1000/${item.image}`}
+                            // src={`http://localhost:1000/${item.image}`}
+                            src={`https://inventory.api.noutfermeture.com/${item.image}`}
                             style={{ width: '100%', height: '70px' }}
                             alt="Product"
                           />
@@ -299,7 +300,7 @@ const InventoryPage = () => {
                       <TableCell>
                         <Box sx={{ display: "flex", gap: "6px" }}>
                           <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpen(item._id) }}>Add more Quantity</Button>
-                          <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpenSellModal(item._id) }}>Generate Sell QR code</Button>
+                          <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpenSellModal(item._id)}}>Generate Sell QR code</Button>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -313,7 +314,7 @@ const InventoryPage = () => {
             </Table>
           </Box>
         </Grid>
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
           <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
             <Stack spacing={2}>
               <Pagination
@@ -333,7 +334,7 @@ const InventoryPage = () => {
               />
             </Stack>
           </div>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Box>
   );

@@ -4,7 +4,7 @@ const QRCode = require("qrcode");
 const mongoose = require("mongoose"); // Import Mongoose
 
 exports.AddProduct = async (req, res) => {
-  const { productName, productDescription, quantity, productcode, price } =
+  const { productName, productDescription, quantity, productcode, price, productCermone,productVitrage } =
     req.body;
   const image = req.file ? req.file.path : null;
 
@@ -30,6 +30,8 @@ exports.AddProduct = async (req, res) => {
       productcode,
       image: image,
       price,
+      productCermone,
+      productVitrage
     });
 
     const result = await product_data.save();
@@ -51,19 +53,17 @@ exports.getAllproduct = async (req, res) => {
 
     const totalPages = Math.ceil(totalProducts / size);
 
-    let getdata = await productSchema.find().skip(skip).limit(size);
+    let getdata = await productSchema.find().sort({ productName: 1 }).skip(skip).limit(size);
     if (!getdata) {
-      return res.status(400).json({ message: "data not found" });
+      return res.status(400).json({ message: "Data not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "get all products successfully",
-        getdata,
-        currentPage: page,
-        totalPages,
-      });
+    res.status(200).json({
+      message: "Get all products successfully",
+      getdata,
+      currentPage: page,
+      totalPages,
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
@@ -85,7 +85,7 @@ exports.finOneProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   const id = req.params.id;
-  const { productName, productDescription, quantity, productcode, price } =
+  const { productName, productDescription, quantity, productcode, price, productCermone,productVitrage } =
     req.body;
   const image = req.file ? req.file.path : req.body.image;
 
@@ -102,7 +102,7 @@ exports.updateProduct = async (req, res) => {
 
     const updadteproduct = await productSchema.findByIdAndUpdate(
       id,
-      { productName, productDescription, quantity, productcode, price, image },
+      { productName, productDescription, quantity, productcode, price, image, productCermone,productVitrage },
       { new: true }
     );
     console.log(updadteproduct);
@@ -152,7 +152,9 @@ exports.getQrcode = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const productUrl = `http://51.20.193.213:3000/api/decrement/${id}`;
+    const productUrl = `${id}`;
+    //const productUrl = `http://localhost:1000/api/decrement/${id}/${quantity}?userId=${userId}`;
+
 
     //now  Generating the QR code for the URL
     QRCode.toDataURL(productUrl, (err, url) => {
@@ -192,6 +194,8 @@ exports.getQrcode = async (req, res) => {
 exports.DecrementQuantity = async (req, res) => {
   try {
     const id = req.params.id;
+    const quantity = req.params.quantity;
+    const userId = req.query.userId;
 
     const product = await productSchema.findById(id);
 
@@ -204,13 +208,14 @@ console.log(product);
 
 
     // Decrement quantity
-    product.quantity -= 1;
+    product.quantity -= quantity;
     await product.save();
 
     // Create a sale record
     const sale = new saleModel({
+      productSoldBy: userId,
       product: product._id,
-      quantity: 1, // Assuming you decrement by 1 for each sale
+      quantity: quantity, // Assuming you decrement by 1 for each sale
       totalPrice: price,
     });
 
