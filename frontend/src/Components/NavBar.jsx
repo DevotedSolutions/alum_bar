@@ -60,36 +60,57 @@ const handleLogout = () => {
     {
       text: 'Dashboard',
       icon: <InboxIcon />,
-      onClick: () => navigate('/'),
+      onClick: () => {
+        navigate('/');
+       
+        setMobileOpen(false);
+      },
     },
     {
       text: 'Inventory',
       icon: <Inventory2TwoToneIcon />,
-      onClick: () => navigate('/inventory'),
+      onClick: () => {
+        navigate('/inventory');
+       
+        setMobileOpen(false);
+      },
     },
     {
       text: 'Add Product',
       icon: <AddIcon/>,
-      onClick: () => navigate('/allproduct'),
+      onClick: () => {
+        navigate('/allproduct');
+       
+        setMobileOpen(false);
+      },
     },
     {
-      text: 'Open Scannar',
+      text: 'Open Scanner',
       icon: <QrCodeScannerIcon/>,
-      onClick: () => navigate('/open-scanner'),
+      onClick: () => {
+        navigate('/open-scanner');
+       
+        setMobileOpen(false);
+      },
     },
     !isUser && {
       text: "Quotation App",
       icon: <AdbIcon />,
-      onClick: () => navigate("/designation"),
+      onClick: () => {
+        navigate("/designation");
+       
+        setMobileOpen(false);
+      },
     },
     {
       text: 'Log out',
       icon: <LogoutIcon/>,
-      onClick: () =>{ handleLogout()},
+      onClick: () => {
+        handleLogout();
+       
+        setMobileOpen(false);
+      },
     },
-
-
-
   ].filter(Boolean);
 
 

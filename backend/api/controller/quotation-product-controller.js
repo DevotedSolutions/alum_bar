@@ -63,12 +63,24 @@ exports.addDesignation = async(req,res) =>{
     try {
         const {designation , vitrage,cermone,priceList} = req.body;
        
+       
 
         const image = req.file ? req.file.path : null;
+        const updatedPriceList = priceList !== undefined ? priceList : [];
+        const duplicateCombination = updatedPriceList?.some((priceEntry, index) => {
+         return priceList.findIndex(
+             (entry, i) => i !== index && entry.width === priceEntry.width && entry.height === priceEntry.height
+         ) !== -1;
+     });
+
+     if (duplicateCombination) {
+         return res.status(400).json({ message: "Duplicate width and height combination found in priceList" });
+     }
+
       
 
         const newDesignation = await designationModel.create({
-            designation , vitrage,cermone,priceList,  image: image,
+            designation , vitrage,cermone,priceList:updatedPriceList,  image: image,
         })
 
         if(!newDesignation){
@@ -107,12 +119,21 @@ exports.updateDesignation = async(req,res)=>{
   try {
          const id = req.params.id;
          const {designation , vitrage,cermone,priceList} = req.body;
-         const image = req.file ? req.file.path : null;
+         const image = req.file ? req.file.path : req.body.image;
+         const updatedPriceList = priceList !== undefined ? priceList : [];
+         const duplicateCombination = updatedPriceList?.some((priceEntry, index) => {
+          return priceList.findIndex(
+              (entry, i) => i !== index && entry.width === priceEntry.width && entry.height === priceEntry.height
+          ) !== -1;
+      });
 
+      if (duplicateCombination) {
+          return res.status(400).json({ message: "Duplicate width and height combination found in priceList" });
+      }
 
          const updatedesign = await designationModel.findByIdAndUpdate(
           id,
-          {designation , vitrage,cermone,priceList,image},
+          {designation , vitrage,cermone,priceList:updatedPriceList,image},
           { new: true }
         );
 
@@ -126,6 +147,7 @@ exports.updateDesignation = async(req,res)=>{
 
       
     } catch (error) {
+      
       res.status(500).json({ message: error.message });
       
     }
@@ -158,3 +180,57 @@ exports.getDesignation = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+exports.deleteDesignation = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedDesignation = await designationModel.findByIdAndDelete(id);
+
+    if (!deletedDesignation) {
+      return res.status(404).json({ message: "Designation not found" });
+    }
+
+    res.status(200).json({ message: "Designation deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+exports.checkPrice = async (req, res) => {
+  try {
+    const { id, width, height } = req.query;
+    console.log(id, width, height)
+
+    // Validate ID, width, and height
+    if (!id || isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+      return res.status(400).json({ message: "Invalid ID, width, or height provided" });
+    }
+
+    const designation = await designationModel.findById(id);
+
+    if (!designation) {
+      return res.status(404).json({ message: "Designation not found for the given ID" });
+    }
+
+    const { priceList } = designation;
+    const numWidth = Number(width);
+    const numHeight = Number(height);
+    const matchedPrice = priceList.find(item => item.width === numWidth && item.height === numHeight);
+  
+
+    if (!matchedPrice) {
+      return res.status(404).json({ message: "Price not found for given dimensions" });
+    }
+
+    res.status(200).json({
+      message: "Price found for given dimensions",
+      price: matchedPrice.price
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+

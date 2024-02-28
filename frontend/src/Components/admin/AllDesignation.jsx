@@ -11,6 +11,7 @@ import {
 import { getAllDesignation } from "../../services/designation/getAllDesignation";
 import { toast } from "react-toastify";
 import UpdateDesignation from "./UpdateDesignation";
+import AddDesignation from "./AddDesignation";
 
 const AllDesignation = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -18,6 +19,7 @@ const AllDesignation = () => {
   //   const [pageSize, setPageSize] = useState(12);
   //   const [totalPages, setTotalPages] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen,setIsAddModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState();
   const [onUpdate, setOnUpdate] = useState(false);
   const isMobile = useMediaQuery("(max-width:800px)");
@@ -25,6 +27,10 @@ const AllDesignation = () => {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
+
+  const handleAddModalOpen = () =>{
+    setIsAddModalOpen(true)
+  }
   useEffect(() => {
     const getProducts = async () => {
       try {
@@ -58,6 +64,11 @@ const AllDesignation = () => {
   const isUpdate = () => {
     setOnUpdate(!onUpdate);
   };
+
+
+  const handleAddModalClose = () => {
+    setIsAddModalOpen(false);
+  };
   return (
     <>
       <UpdateDesignation
@@ -66,6 +77,15 @@ const AllDesignation = () => {
         selectedProduct={selectedProduct}
         isUpdate={isUpdate}
       />
+      <AddDesignation
+       isOpen={isAddModalOpen}
+       onClose={handleAddModalClose}
+       isUpdate={isUpdate}
+      />
+<Box sx={{
+  padding:"2px 15px"
+}}>
+<Button variant="contained" onClick={handleAddModalOpen}>Add Designation</Button>
       <Box
         sx={{
           display: "flex",
@@ -75,6 +95,7 @@ const AllDesignation = () => {
           padding: "8px 0px",
         }}
       >
+        
         {allProducts?.map((item, index) => (
           <Card
             sx={{
@@ -107,15 +128,17 @@ const AllDesignation = () => {
                     variant="contained"
                     sx={{
                       width: "100%",
+                      fontSize:"10px",
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {item?.designation && item?.designation.length > 30
+                    {/* {item?.designation && item?.designation.length > 30
                       ? `${item.designation.substring(
                           0,
                           item.designation.length / 2
                         )}...`
-                      : item?.designation}
+                      : item?.designation} */}
+                      {item?.designation}
                   </Button>
                 </div>
               </CardContent>
@@ -123,7 +146,9 @@ const AllDesignation = () => {
           </Card>
         ))}
       </Box>
+      </Box>
     </>
+
   );
 };
 

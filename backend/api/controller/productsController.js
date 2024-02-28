@@ -53,10 +53,26 @@ exports.getAllproduct = async (req, res) => {
 
     const totalPages = Math.ceil(totalProducts / size);
 
-    let getdata = await productSchema.find().sort({ productName: 1 }).skip(skip).limit(size);
+    let getdata = await productSchema.find().sort({ productcode: 1 }).skip(skip).limit(size);
+
     if (!getdata) {
       return res.status(400).json({ message: "Data not found" });
     }
+
+    // Custom sorting logic to sort products with codes starting with 'DC', 'DF', and 'DJ' at the top
+    getdata.sort((a, b) => {
+      const codeA = a.productcode.toUpperCase();
+      const codeB = b.productcode.toUpperCase();
+      if (codeA.startsWith('DC') || codeA.startsWith('DF') || codeA.startsWith('DJ')) {
+        if (codeB.startsWith('DC') || codeB.startsWith('DF') || codeB.startsWith('DJ')) {
+          return codeA.localeCompare(codeB); 
+        }
+        return -1;
+      } else if (codeB.startsWith('DC') || codeB.startsWith('DF') || codeB.startsWith('DJ')) {
+        return 1; 
+      }
+      return codeA.localeCompare(codeB); 
+    });
 
     res.status(200).json({
       message: "Get all products successfully",
@@ -65,9 +81,11 @@ exports.getAllproduct = async (req, res) => {
       totalPages,
     });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 exports.finOneProduct = async (req, res) => {
   let id = req.params.id;
