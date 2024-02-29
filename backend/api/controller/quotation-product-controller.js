@@ -201,7 +201,7 @@ exports.deleteDesignation = async (req, res) => {
 exports.checkPrice = async (req, res) => {
   try {
     const { id, width, height } = req.query;
-    console.log(id, width, height)
+    
 
     // Validate ID, width, and height
     if (!id || isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
@@ -233,4 +233,57 @@ exports.checkPrice = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+exports.getMinAndMaxDimensions = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+
+    const product = await designationModel.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Extract priceList from product
+    const { priceList } = product;
+
+    if (!priceList || priceList.length === 0) {
+      return res.status(200).json({ message: "Price list is empty for this product", minWidth: 0, maxWidth: 0, minHeight: 0, maxHeight: 0 });
+    }
+
+    let minWidth = priceList[0].width;
+    let maxWidth = priceList[0].width;
+    let minHeight = priceList[0].height;
+    let maxHeight = priceList[0].height;
+
+
+    for (const { width, height } of priceList) {
+      if (width < minWidth) {
+        minWidth = width;
+      }
+      if (width > maxWidth) {
+        maxWidth = width;
+      }
+      if (height < minHeight) {
+        minHeight = height;
+      }
+      if (height > maxHeight) {
+        maxHeight = height;
+      }
+    }
+
+    res.status(200).json({
+      message: "Minimum and maximum dimensions retrieved successfully",
+      minWidth,
+      maxWidth,
+      minHeight,
+      maxHeight
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 

@@ -12,6 +12,8 @@ router.get('/get-designation',quotationcontrl.getDesignation)
 router.put('/update-designation/:id',quotationupload.single("image"),quotationcontrl.updateDesignation);
 router.delete('/delete-designation/:id',quotationcontrl.deleteDesignation)
 router.get('/price' , quotationcontrl.checkPrice);
+router.get("/min-max-dimensions/:id", quotationcontrl.getMinAndMaxDimensions);
+
 
 
 
