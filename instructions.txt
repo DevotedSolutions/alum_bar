@@ -1,0 +1,12 @@
+Account Password: shabeer@diyopenings.com,DiyOpenings20
+
+Deploying React App on Digital Occean
+Create Node.js Droplet https://marketplace.digitalocean.com/apps/nodejs
+Password for DiyOpenings DiyOpenings20@S
+
+
+Open Ngnix: sudo nano /etc/nginx/sites-available/default
+Test Ngnix: sudo nginx -t
+Restart Ngnix: sudo systemctl reload nginx
+
+Let's Encrypt Certificate: https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04

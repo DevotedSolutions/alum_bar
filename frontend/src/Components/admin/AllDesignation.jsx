@@ -19,7 +19,7 @@ const AllDesignation = () => {
   //   const [pageSize, setPageSize] = useState(12);
   //   const [totalPages, setTotalPages] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAddModalOpen,setIsAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState();
   const [onUpdate, setOnUpdate] = useState(false);
   const isMobile = useMediaQuery("(max-width:800px)");
@@ -28,9 +28,9 @@ const AllDesignation = () => {
     setIsModalOpen(true);
   };
 
-  const handleAddModalOpen = () =>{
-    setIsAddModalOpen(true)
-  }
+  const handleAddModalOpen = () => {
+    setIsAddModalOpen(true);
+  };
   useEffect(() => {
     const getProducts = async () => {
       try {
@@ -65,7 +65,6 @@ const AllDesignation = () => {
     setOnUpdate(!onUpdate);
   };
 
-
   const handleAddModalClose = () => {
     setIsAddModalOpen(false);
   };
@@ -78,77 +77,79 @@ const AllDesignation = () => {
         isUpdate={isUpdate}
       />
       <AddDesignation
-       isOpen={isAddModalOpen}
-       onClose={handleAddModalClose}
-       isUpdate={isUpdate}
+        isOpen={isAddModalOpen}
+        onClose={handleAddModalClose}
+        isUpdate={isUpdate}
       />
-<Box sx={{
-  padding:"2px 15px"
-}}>
-<Button variant="contained" onClick={handleAddModalOpen}>Add Designation</Button>
       <Box
         sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          margin: isMobile ? "" : "10px 0px",
-          padding: "8px 0px",
+          padding: "2px 15px",
         }}
       >
-        
-        {allProducts?.map((item, index) => (
-          <Card
-            sx={{
-              width: "299px",
-              margin: "10px",
-              backgroundColor: "transparent",
-              boxShadow: "none",
-            }}
-            key={index}
-            onClick={() => {
-              handleCardClick(item);
-            }}
-          >
-            <CardActionArea>
-              <CardMedia
-                component="img"
-                height="250"
-                image={
-                  item?.image
-                    ? `https://inventory.api.noutfermeture.com/${item?.image}`
-                    : "/assets/images/default-img.png"
-                }
-                //image={default_img}
-                alt="product image"
-                sx={{ objectFit: "contain" }}
-              />
-              <CardContent sx={{ p: 0 }}>
-                <div style={{ width: "100%" }}>
-                  <Button
-                    variant="contained"
-                    sx={{
-                      width: "100%",
-                      fontSize:"10px",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {/* {item?.designation && item?.designation.length > 30
+        <Button variant="contained" onClick={handleAddModalOpen}>
+          Add Designation
+        </Button>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            margin: isMobile ? "" : "10px 0px",
+            padding: "8px 0px",
+          }}
+        >
+          {allProducts?.map((item, index) => (
+            <Card
+              sx={{
+                width: "299px",
+                margin: "10px",
+                backgroundColor: "transparent",
+                boxShadow: "none",
+              }}
+              key={index}
+              onClick={() => {
+                handleCardClick(item);
+              }}
+            >
+              <CardActionArea>
+                <CardMedia
+                  component="img"
+                  height="250"
+                  image={
+                    item?.image
+                      ? `https://app.noutfermeture.com/api/${item?.image}`
+                      : "/assets/images/default-img.png"
+                  }
+                  //image={default_img}
+                  alt="product image"
+                  sx={{ objectFit: "contain" }}
+                />
+                <CardContent sx={{ p: 0 }}>
+                  <div style={{ width: "100%" }}>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        width: "100%",
+                        fontSize: "10px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {/* {item?.designation && item?.designation.length > 30
                       ? `${item.designation.substring(
                           0,
                           item.designation.length / 2
                         )}...`
                       : item?.designation} */}
                       {item?.designation}
-                  </Button>
-                </div>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        ))}
-      </Box>
+                    </Button>
+                  </div>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          ))}
+        </Box>
       </Box>
     </>
-
   );
 };
 

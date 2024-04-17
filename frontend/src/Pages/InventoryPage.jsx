@@ -1,25 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Button, Grid, Typography, Table, TableBody, TableCell, TableHead, TableRow, FormControl, TextField } from '@mui/material';
-import { getAllProducts, getOneProduct } from '../services/products/getAllProducts';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Modal from '@mui/material/Modal';
-import ClearIcon from '@mui/icons-material/Clear';
-import { getQrcode } from '../services/products/getAllProducts';
-import Pagination from '@mui/material/Pagination';
-import PaginationItem from '@mui/material/PaginationItem';
-import Stack from '@mui/material/Stack';
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Button,
+  Grid,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  FormControl,
+  TextField,
+} from "@mui/material";
+import {
+  getAllProducts,
+  getOneProduct,
+} from "../services/products/getAllProducts";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Modal from "@mui/material/Modal";
+import ClearIcon from "@mui/icons-material/Clear";
+import { getQrcode } from "../services/products/getAllProducts";
+import Pagination from "@mui/material/Pagination";
+import PaginationItem from "@mui/material/PaginationItem";
+import Stack from "@mui/material/Stack";
 // import { useNavigate } from 'react-router-dom';
-import { UpdateQuantity } from '../services/products/updateQuantity';
+import { UpdateQuantity } from "../services/products/updateQuantity";
+import ExportOptions from "../Components/ExportOptions";
 
 const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
+  bgcolor: "background.paper",
+  border: "2px solid #000",
   boxShadow: 24,
   borderRadius: "12px",
   display: "flex",
@@ -32,11 +48,11 @@ const style = {
 
 const InventoryPage = () => {
   // let navigate = useNavigate();
-  const [qrCodeUrlSell, setQRCodeUrlSell] = useState('');
+  const [qrCodeUrlSell, setQRCodeUrlSell] = useState("");
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
   const [openSell, setOpenSell] = useState(false);
-  const [searchData, setSearchData] = useState('');
+  const [searchData, setSearchData] = useState("");
   // const [page, setPage] = useState(1);
   // const [Size, setSize] = useState(5);
   // const [totalPages, setTotalPages] = useState(1);
@@ -87,7 +103,7 @@ const InventoryPage = () => {
 
   // Function to clear the search input
   function clearSearch(e) {
-    setSearchData('');
+    setSearchData("");
   }
 
   // Function to open the update quantity modal
@@ -104,7 +120,7 @@ const InventoryPage = () => {
         console.log(resp.data.message);
       }
     } catch (error) {
-      console.error('Failed to make the request', error);
+      console.error("Failed to make the request", error);
     }
   };
 
@@ -127,10 +143,10 @@ const InventoryPage = () => {
       if (response.status === 200) {
         setQRCodeUrlSell(response.data.qrCodeUrl);
       } else {
-        console.error('Failed to generate QR code');
+        console.error("Failed to generate QR code");
       }
     } catch (error) {
-      console.error('Failed to make the request', error);
+      console.error("Failed to make the request", error);
     }
   };
 
@@ -145,7 +161,7 @@ const InventoryPage = () => {
         toast.error(resp.data.message);
       }
     } catch (error) {
-      toast.error('Check network connection');
+      toast.error("Check network connection");
     }
   }
 
@@ -155,7 +171,7 @@ const InventoryPage = () => {
   }, []);
 
   return (
-    <Box sx={{ width: { xs: 'auto', sm: "auto" }, padding: "0 10px" }}>
+    <Box sx={{ width: { xs: "auto", sm: "auto" }, padding: "0 10px" }}>
       <ToastContainer />
       {/* Update Quantity Modal */}
       <Modal
@@ -166,20 +182,24 @@ const InventoryPage = () => {
       >
         <Box sx={{ ...style, width: "30%" }}>
           <div>
-            <Typography variant='h5' sx={{ textAlign: "center" }}>Update Quantity</Typography>
+            <Typography variant="h5" sx={{ textAlign: "center" }}>
+              Update Quantity
+            </Typography>
             <div>
               <form onSubmit={handleQuantitySubmit}>
-                <Box sx={{ padding: '20px', borderRadius: '12px' }}>
+                <Box sx={{ padding: "20px", borderRadius: "12px" }}>
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
                       <Box>
                         <FormControl fullWidth>
                           <TextField
-                            type='number'
+                            type="number"
                             fullWidth
                             label="Previous Quantity"
                             disabled
-                            name="quantity" value={priviousQuantity} />
+                            name="quantity"
+                            value={priviousQuantity}
+                          />
                         </FormControl>
                       </Box>
                     </Grid>
@@ -187,7 +207,7 @@ const InventoryPage = () => {
                       <Box>
                         <FormControl fullWidth>
                           <TextField
-                            type='number'
+                            type="number"
                             fullWidth
                             label="Add Quantity"
                             required
@@ -198,12 +218,25 @@ const InventoryPage = () => {
                       </Box>
                     </Grid>
                     <Grid item xs={12}>
-                      <Box sx={{ margin: "6px 0", color: "#707070" }}>Total Quantity = {parseInt(priviousQuantity) + parseInt(totalQuantity)}</Box>
+                      <Box sx={{ margin: "6px 0", color: "#707070" }}>
+                        Total Quantity ={" "}
+                        {parseInt(priviousQuantity) + parseInt(totalQuantity)}
+                      </Box>
                       <Box display="flex" gap="6px">
-                        <Button variant="outlined" sx={{ textTransform: "capitalize" }} type="submit">
+                        <Button
+                          variant="outlined"
+                          sx={{ textTransform: "capitalize" }}
+                          type="submit"
+                        >
                           Update Quantity
                         </Button>
-                        <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={handleClose}>Cancel</Button>
+                        <Button
+                          variant="contained"
+                          sx={{ textTransform: "capitalize" }}
+                          onClick={handleClose}
+                        >
+                          Cancel
+                        </Button>
                       </Box>
                     </Grid>
                   </Grid>
@@ -224,15 +257,29 @@ const InventoryPage = () => {
         <Box sx={{ ...style, width: "30%" }}>
           <div>
             {qrCodeUrlSell && (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
                 <h3>QR Code:</h3>
-                <img src={qrCodeUrlSell} alt="QR Code"  width="180px"/><br />
-                <a href={qrCodeUrlSell} download="qrcode.png">Download</a>
-                <Button sx={{ margin: "4px 0" }} variant='contained' onClick={handleCloseSellModal}>Cancel</Button>
+                <img src={qrCodeUrlSell} alt="QR Code" width="180px" />
+                <br />
+                <a href={qrCodeUrlSell} download="qrcode.png">
+                  Download
+                </a>
+                <Button
+                  sx={{ margin: "4px 0" }}
+                  variant="contained"
+                  onClick={handleCloseSellModal}
+                >
+                  Cancel
+                </Button>
               </div>
             )}
             {/* <Button onClick={() => { navigate("/open-scanner") }}>Open Scanner</Button> */}
-           
           </div>
         </Box>
       </Modal>
@@ -240,19 +287,48 @@ const InventoryPage = () => {
       <Grid container>
         <Grid item xs={12}>
           <Box sx={{ borderRadius: "12px" }}>
-            <Typography sx={{ fontSize: "30px" }} variant='1'>Welcome to the inventory page</Typography>
+            <Typography sx={{ fontSize: "30px" }} variant="1">
+              Welcome to the inventory page
+            </Typography>
           </Box>
         </Grid>
         <Grid item xs={12}>
           <Box sx={{ borderRadius: "12px", display: "flex", gap: "5px" }}>
-            <Box sx={{ display: "flex", border: "0.5px solid gray", alignItems: "center", borderRadius: "8px", padding: "3px 10px" }}>
-              <input type='text' onChange={searchFun} placeholder='Search product..' value={searchData} style={{ outline: "none", border: "none" }} />
+            <Box
+              sx={{
+                display: "flex",
+                border: "0.5px solid gray",
+                alignItems: "center",
+                borderRadius: "8px",
+                padding: "3px 10px",
+              }}
+            >
+              <input
+                type="text"
+                onChange={searchFun}
+                placeholder="Search product.."
+                value={searchData}
+                style={{ outline: "none", border: "none" }}
+              />
               {searchData.length > 0 && (
-                <span onClick={clearSearch}><ClearIcon /></span>
+                <span onClick={clearSearch}>
+                  <ClearIcon />
+                </span>
               )}
             </Box>
-            <Box>
-              <Button sx={{ borderRadius: "8px", padding: "7px 20px", textTransform: "capitalize" }} variant='contained'>Search</Button>
+            <Box sx={{ display: "flex" }}>
+              <Button
+                sx={{
+                  borderRadius: "8px",
+                  padding: "7px 20px",
+                  textTransform: "capitalize",
+                }}
+                variant="contained"
+              >
+                Search
+              </Button>
+
+              <ExportOptions data={data} />
             </Box>
           </Box>
         </Grid>
@@ -272,39 +348,64 @@ const InventoryPage = () => {
               </TableHead>
               <TableBody>
                 {data.length > 0 ? (
-                  data.filter((item) => {
-                    const productName = item.productName.toLowerCase();
-                    const productDescription = item.productDescription.toLowerCase();
-                    const productcode = item.productcode.toLowerCase();
-                    const searchDataLowerCase = searchData.toLowerCase();
-                    return productName.includes(searchDataLowerCase) || productDescription.includes(searchDataLowerCase) || productcode.includes(searchDataLowerCase);
-                  }).map((item, index) => { 
-               console.log(item.price);
-                   return  <TableRow key={index}>
-                      <TableCell>
-                        <Box sx={{ width: "100px" }}>
-                          <img
-                            // src={`http://localhost:1000/${item.image}`}
-                            src={`https://inventory.api.noutfermeture.com/${item.image}`}
-                            style={{ width: '100%', height: '70px' }}
-                            alt="Product"
-                          />
-                        </Box>
-                      </TableCell>
-                      <TableCell>{item.productName}</TableCell>
-                      <TableCell>{item.productDescription}</TableCell>
-                      <TableCell>{item.productcode}</TableCell>
-                      <TableCell>{item.price}</TableCell>
-                   
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>
-                        <Box sx={{ display: "flex", gap: "6px" }}>
-                          <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpen(item._id) }}>Add more Quantity</Button>
-                          <Button variant='contained' sx={{ textTransform: "capitalize" }} onClick={() => { handleOpenSellModal(item._id)}}>Generate Sell QR code</Button>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-})
+                  data
+                    .filter((item) => {
+                      const productName = item.productName.toLowerCase();
+                      const productDescription =
+                        item.productDescription.toLowerCase();
+                      const productcode = item.productcode.toLowerCase();
+                      const searchDataLowerCase = searchData.toLowerCase();
+                      return (
+                        productName.includes(searchDataLowerCase) ||
+                        productDescription.includes(searchDataLowerCase) ||
+                        productcode.includes(searchDataLowerCase)
+                      );
+                    })
+                    .map((item, index) => {
+                      console.log(item.price);
+                      return (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Box sx={{ width: "100px" }}>
+                              <img
+                                // src={`http://localhost:1000/${item.image}`}
+                                src={`https://app.noutfermeture.com/api/${item.image}`}
+                                style={{ width: "100%", height: "70px" }}
+                                alt="Product"
+                              />
+                            </Box>
+                          </TableCell>
+                          <TableCell>{item.productName}</TableCell>
+                          <TableCell>{item.productDescription}</TableCell>
+                          <TableCell>{item.productcode}</TableCell>
+                          <TableCell>{item.price}</TableCell>
+
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>
+                            <Box sx={{ display: "flex", gap: "6px" }}>
+                              <Button
+                                variant="contained"
+                                sx={{ textTransform: "capitalize" }}
+                                onClick={() => {
+                                  handleOpen(item._id);
+                                }}
+                              >
+                                Add more Quantity
+                              </Button>
+                              <Button
+                                variant="contained"
+                                sx={{ textTransform: "capitalize" }}
+                                onClick={() => {
+                                  handleOpenSellModal(item._id);
+                                }}
+                              >
+                                Generate Sell QR code
+                              </Button>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                 ) : (
                   <TableRow>
                     <TableCell>Data not found</TableCell>

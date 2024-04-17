@@ -8,7 +8,7 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { updateDesignation } from "../../services/designation/updateDesignation";
@@ -26,14 +26,14 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   const [id, setId] = useState(selectedProduct ? selectedProduct?._id : "");
   const [showImg, setShowImg] = useState(
     selectedProduct?.image
-      ? `https://inventory.api.noutfermeture.com/${selectedProduct?.image}`
+      ? `https://app.noutfermeture.com/api/${selectedProduct?.image}`
       : `/assets/images/default-img.png`
   );
 
   useEffect(() => {
     setShowImg(
       selectedProduct?.image
-        ? `https://inventory.api.noutfermeture.com/${selectedProduct?.image}`
+        ? `https://app.noutfermeture.com/api/${selectedProduct?.image}`
         : `/assets/images/default-img.png`
     );
     setFormData({
@@ -44,11 +44,11 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       priceList: selectedProduct ? selectedProduct?.priceList : [],
     });
     setModalImage(null);
-   
+
     setId(selectedProduct ? selectedProduct?._id : "");
   }, [selectedProduct, onClose, isOpen]);
 
- console.log(formData.priceList)
+  console.log(formData.priceList);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -56,10 +56,6 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       [name]: value,
     });
   };
-
-
-
-  
 
   const handleImageChange = (e) => {
     const selectedImage = e.target.files[0];
@@ -77,24 +73,34 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
 
-    console.log(formData.priceList)
+    console.log(formData.priceList);
 
     const duplicateCombination = formData.priceList.some((entry, index) => {
       // Convert width and height to numbers
       const width = Number(entry.width);
       const height = Number(entry.height);
-    
+
       // Check for duplicate width and height combinations or empty width/height
-      return formData.priceList.findIndex(
-        (p, i) => i !== index && Number(p.width) === width && Number(p.height) === height
-      ) !== -1 || width === 0 || height === 0 || isNaN(width) || isNaN(height);
+      return (
+        formData.priceList.findIndex(
+          (p, i) =>
+            i !== index &&
+            Number(p.width) === width &&
+            Number(p.height) === height
+        ) !== -1 ||
+        width === 0 ||
+        height === 0 ||
+        isNaN(width) ||
+        isNaN(height)
+      );
     });
-    
+
     if (duplicateCombination) {
-      toast.error("Duplicate width and height combination found or empty width/height");
+      toast.error(
+        "Duplicate width and height combination found or empty width/height"
+      );
       return;
     }
-    
 
     const formDataAppend = new FormData();
     formDataAppend.append("designation", formData.designation);
@@ -104,17 +110,16 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     if (modalImage !== null) {
       formDataAppend.append("image", modalImage);
     } else {
-     
       formDataAppend.append("image", formData.image);
     }
-  
+
     formData.priceList.forEach((priceEntry, index) => {
       formDataAppend.append(`priceList[${index}][width]`, priceEntry.width);
       formDataAppend.append(`priceList[${index}][height]`, priceEntry.height);
       formDataAppend.append(`priceList[${index}][price]`, priceEntry.price);
     });
 
-    console.log(formData.priceList)
+    console.log(formData.priceList);
     try {
       const resp = await updateDesignation({ formDataAppend, id });
       if (resp && resp.status === 200) {
@@ -138,17 +143,20 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   const handleDelete = async () => {
     const deleteResp = await deleteDesignation({ id });
     if (deleteResp?.status === 200) {
-      toast.success(deleteResp.data.message)
+      toast.success(deleteResp.data.message);
       isUpdate();
     } else if (deleteResp?.status === 404) {
-      toast.error(deleteResp.data.message)
+      toast.error(deleteResp.data.message);
     } else {
-      toast.error("Error in Deleting Designation")
+      toast.error("Error in Deleting Designation");
     }
     onClose();
-  }
+  };
   const handleAddPriceEntry = () => {
-    const newPriceList = [...formData.priceList, { width: "", height: "", price: "" }];
+    const newPriceList = [
+      ...formData.priceList,
+      { width: "", height: "", price: "" },
+    ];
     setFormData({
       ...formData,
       priceList: newPriceList,
@@ -190,7 +198,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
-          width: {xs:'90%',md:"auto"},
+          width: { xs: "90%", md: "auto" },
           display: "flex",
           flexDirection: "row",
           borderRadius: "6px",
@@ -268,53 +276,67 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                   </Grid>
 
                   {/* Price List Section */}
-                  <Box sx={{ p:2 }}>
-                    {formData.priceList.length > 0 &&  formData.priceList.map((priceEntry, index) => (
-                      <Grid container spacing={2} key={index} sx={{ alignItems: "center", pb: 2 }}>
-                        <Grid item xs={12} sm={3}>
-                          <FormControl fullWidth>
-                            <TextField
-                              size="medium"
-                              type="number"
-                              fullWidth
-                              label="Largeur (mm)"
-                              name="width"
-                              value={priceEntry.width}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
+                  <Box sx={{ p: 2 }}>
+                    {formData.priceList.length > 0 &&
+                      formData.priceList.map((priceEntry, index) => (
+                        <Grid
+                          container
+                          spacing={2}
+                          key={index}
+                          sx={{ alignItems: "center", pb: 2 }}
+                        >
+                          <Grid item xs={12} sm={3}>
+                            <FormControl fullWidth>
+                              <TextField
+                                size="medium"
+                                type="number"
+                                fullWidth
+                                label="Largeur (mm)"
+                                name="width"
+                                value={priceEntry.width}
+                                onChange={(e) =>
+                                  handlePriceInputChange(index, e)
+                                }
+                              />
+                            </FormControl>
+                          </Grid>
+                          <Grid item xs={12} sm={3}>
+                            <FormControl fullWidth>
+                              <TextField
+                                fullWidth
+                                type="number"
+                                label="Hauteur (mm)"
+                                name="height"
+                                value={priceEntry.height}
+                                onChange={(e) =>
+                                  handlePriceInputChange(index, e)
+                                }
+                              />
+                            </FormControl>
+                          </Grid>
+                          <Grid item xs={12} sm={3}>
+                            <FormControl fullWidth>
+                              <TextField
+                                fullWidth
+                                type="number"
+                                label="Price"
+                                name="price"
+                                value={priceEntry.price}
+                                onChange={(e) =>
+                                  handlePriceInputChange(index, e)
+                                }
+                              />
+                            </FormControl>
+                          </Grid>
+                          <Grid item xs={12} sm={3}>
+                            <IconButton
+                              onClick={() => handleDeletePriceEntry(index)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Grid>
                         </Grid>
-                        <Grid item xs={12} sm={3}>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              type="number"
-                              label="Hauteur (mm)"
-                              name="height"
-                              value={priceEntry.height}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={3}>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              type="number"
-                              label="Price"
-                              name="price"
-                              value={priceEntry.price}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={3}>
-                          <IconButton onClick={() => handleDeletePriceEntry(index)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </Grid>
-                      </Grid>
-                    ))}
+                      ))}
                   </Box>
                   <Grid item xs={12}>
                     <Button variant="contained" onClick={handleAddPriceEntry}>
@@ -323,26 +345,30 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Box display="flex" sx={{flexDirection:{xs:"column",md:"row"}}} gap="6px">
+                    <Box
+                      display="flex"
+                      sx={{ flexDirection: { xs: "column", md: "row" } }}
+                      gap="6px"
+                    >
                       <Box display="flex" gap="6px">
-                      <Button
-                        variant="contained"
-                        sx={{
-                          whiteSpace: "nowrap",
-                        }}
-                        type="submit"
-                      >
-                        Update Product
-                      </Button>
-                      <Button
-                        variant="contained"
-                        onClick={handleCancel}
-                        sx={{
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Cancel
-                      </Button>
+                        <Button
+                          variant="contained"
+                          sx={{
+                            whiteSpace: "nowrap",
+                          }}
+                          type="submit"
+                        >
+                          Update Product
+                        </Button>
+                        <Button
+                          variant="contained"
+                          onClick={handleCancel}
+                          sx={{
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Cancel
+                        </Button>
                       </Box>
                       <Button
                         variant="contained"
