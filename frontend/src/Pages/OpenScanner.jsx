@@ -1,15 +1,22 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Typography, Button, IconButton, useMediaQuery } from "@mui/material";
-import { useTheme} from "@mui/material/styles";
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  useMediaQuery,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import QrReader from "react-qr-scanner";
 import { Modal } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { sellProduct } from "../services/products/getAllProducts";
-
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  getOneProduct,
+  sellProduct,
+} from "../services/products/getAllProducts";
 
 const containerStyle = {
   display: "flex",
@@ -18,18 +25,17 @@ const containerStyle = {
   margin: "16px",
 };
 
-
-
 const OpenScanner = () => {
   const modalRef = useRef(null);
   const [quantity, setQuantity] = useState(1);
   const [isModalOpen, setModalOpen] = useState(false);
   const [scanResultWebCam, setScanResultWebCam] = useState("");
+  const [product, setProduct] = useState(null);
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const boxStyle = {
     position: "relative",
-    width: isSmallScreen  ?"100%" :"50%", // Adjusted for mobile responsiveness
+    width: isSmallScreen ? "100%" : "50%", // Adjusted for mobile responsiveness
     bgcolor: "background.paper",
     border: "2px solid #000",
     boxShadow: 24,
@@ -48,11 +54,15 @@ const OpenScanner = () => {
     console.error(error);
   };
 
-  const handleScanWebCam = (result) => {
+  const handleScanWebCam = async (result) => {
     if (result) {
       setScanResultWebCam(result);
+      const response = await getOneProduct(result?.text);
+      if (response?.data?.data) {
+        setProduct(response?.data?.data);
+      }
+
       handleOpenModal();
-      console.log(result);
     }
   };
 
@@ -62,7 +72,7 @@ const OpenScanner = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    setScanResultWebCam('');
+    setScanResultWebCam("");
   };
 
   const handleSell = async () => {
@@ -72,8 +82,8 @@ const OpenScanner = () => {
     if (response.status === 200) {
       handleCloseModal();
       toast.success("Successfully sold Product");
-      navigate('/inventory');
-      setScanResultWebCam('');
+      navigate("/inventory");
+      setScanResultWebCam("");
     } else {
       toast.error("An Error Occured in Solding Product");
       handleCloseModal();
@@ -82,7 +92,11 @@ const OpenScanner = () => {
 
   useEffect(() => {
     const handleClickOutsideModal = (event) => {
-      if (isModalOpen && modalRef.current && !modalRef.current.contains(event.target)) {
+      if (
+        isModalOpen &&
+        modalRef.current &&
+        !modalRef.current.contains(event.target)
+      ) {
         window.location.reload();
         handleCloseModal();
       }
@@ -95,10 +109,7 @@ const OpenScanner = () => {
     };
   }, [isModalOpen]);
 
- 
-
   const cameraFacingMode = isSmallScreen ? "environment" : "user";
- 
 
   return (
     <div style={containerStyle}>
@@ -115,18 +126,18 @@ const OpenScanner = () => {
             <Typography variant="h6">QR Scanner</Typography>
             {navigator.getUserMedia ? (
               <QrReader
-              key={cameraFacingMode}
-              constraints={{
-                audio: false,
-                video: { facingMode: cameraFacingMode }} }
-        
+                key={cameraFacingMode}
+                constraints={{
+                  audio: false,
+                  video: { facingMode: cameraFacingMode },
+                }}
                 delay={300}
                 style={{ width: "100%" }}
                 onError={handleErrorWebCam}
                 onScan={handleScanWebCam}
               />
             ) : (
-              <p>http not support camera</p>
+              <p>http does not support camera</p>
             )}
 
             <Modal
@@ -143,12 +154,15 @@ const OpenScanner = () => {
                   top: "50%",
                   left: "50%",
                   transform: "translate(-50%, -50%)",
-                  width:isSmallScreen  ?"80%" :"30%",  // Adjusted for mobile responsiveness
+                  width: isSmallScreen ? "80%" : "30%", // Adjusted for mobile responsiveness
                 }}
               >
                 <div>
                   <Typography variant="h6" sx={{ textAlign: "center" }}>
                     Sell Items
+                  </Typography>
+                  <Typography variant="body1" sx={{ textAlign: "center" }}>
+                    {product?.productcode} {product?.productDescription}
                   </Typography>
                   <div
                     style={{
