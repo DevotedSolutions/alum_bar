@@ -14,38 +14,49 @@ const MyPDF = ({ data }) => {
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString();
   const formattedTime = currentDate.toLocaleTimeString();
+
+  const chunkedData = [];
+  for (let i = 0; i < data.length; i += 25) {
+    chunkedData.push(data.slice(i, i + 25));
+  }
+
   return (
     <Document>
-      <Page size={"A4"} style={styles.page} wrap>
-        <View style={styles.section}>
-          <Text style={styles.header}>Inventory Overview</Text>
+      {chunkedData.map((chunk, index) => (
+        <Page key={index} size={"A4"} style={styles.page}>
+          <View style={styles.section}>
+            <Text style={styles.header}>Inventory Overview</Text>
+            <Text style={styles.dateTime}>Page: {index + 1}</Text>
+            <Text style={styles.dateTime}>
+              Generated on:
+              {formattedDate} at {formattedTime}
+            </Text>
 
-          <Text style={styles.dateTime}>
-            Generated on: {formattedDate} at {formattedTime}
-          </Text>
-
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <Text style={styles.columnHeader}>Code</Text>
-              <Text style={styles.columnHeader}>Name</Text>
-              <Text style={styles.columnHeader}>Description</Text>
-              <Text style={styles.columnHeader}>Quantity</Text>
-            </View>
-            {/* Map through data and create table rows */}
-            {data.map((item) => (
-              <View style={styles.tableRow} key={item.code}>
-                <Text style={styles.column}>{item.code}</Text>
-                <Text style={styles.column}>{item.name}</Text>
-                <Text style={styles.column}>{item.description}</Text>
-                <Text style={styles.column}>{item.quantity}</Text>
+            <View style={styles.table}>
+              <View style={styles.tableRow}>
+                <Text style={styles.columnHeader}>Code</Text>
+                <Text style={styles.columnHeader}>Name</Text>
+                <Text style={styles.columnHeader}>Description</Text>
+                <Text style={styles.columnHeader}>Quantity</Text>
               </View>
-            ))}
+
+              {/* Map through data chunk and create table rows */}
+              {chunk.map((item) => (
+                <View style={styles.tableRow} key={item.code}>
+                  <Text style={styles.column}>{item.code}</Text>
+                  <Text style={styles.column}>{item.name}</Text>
+                  <Text style={styles.column}>{item.description}</Text>
+                  <Text style={styles.column}>{item.quantity}</Text>
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
-      </Page>
+        </Page>
+      ))}
     </Document>
   );
 };
+
 const styles = StyleSheet.create({
   page: {
     flexDirection: "row",
@@ -76,6 +87,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     backgroundColor: "#F2F2F2",
+    pageBreakInside: "avoid", // Avoid page break within rows
   },
   columnHeader: {
     width: "25%",
@@ -97,7 +109,7 @@ const styles = StyleSheet.create({
 });
 
 const ExportOptions = ({ data }) => {
-  const myData = data?.map((obj) => {
+  const myDataAll = data?.map((obj) => {
     const newObj = {
       code: obj?.productcode,
       name: obj?.productName,
@@ -106,6 +118,16 @@ const ExportOptions = ({ data }) => {
     };
 
     return newObj; // Return the modified object
+  });
+
+  const myData = myDataAll.sort((a, b) => {
+    if (a.code < b.code) return -1;
+    if (a.code > b.code) return 1;
+
+    if (a.description < b.description) return -1;
+    if (a.description > b.description) return 1;
+
+    return 0;
   });
 
   return (

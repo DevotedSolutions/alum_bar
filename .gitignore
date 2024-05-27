@@ -5,7 +5,7 @@ backend/node_modules
 /.pnp
 .pnp.js
 frontend/node_modules
-/quotation-app
+quotation-app
 # testing
 /coverage
 
