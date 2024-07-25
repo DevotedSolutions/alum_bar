@@ -1,0 +1,100 @@
+{
+  "profiles": [
+    {
+      "name": "Dormant Frappe",
+      "code": "DF 30-01"
+    },
+    {
+      "name": "Dormant Frappe CJ",
+      "code": "DF 30-02"
+    },
+    {
+      "name": "Traverse 63",
+      "code": "DF 30-03"
+    },
+    {
+      "name": "Traverse 80",
+      "code": "DF 30-04"
+    },
+    {
+      "name": "Batee",
+      "code": "DF 30-05"
+    },
+    {
+      "name": "Ouvrant Fenetre Francaise",
+      "code": "DF 30-06"
+    },
+    {
+      "name": "Ouvrant Fenetre Anglaise",
+      "code": "DF 30-07"
+    },
+    {
+      "name": "Ouvrant Fenetre Anglaise Compas",
+      "code": "DF 30-08"
+    },
+    {
+      "name": "Ouvrant Porte Francaise",
+      "code": "DF 30-09"
+    },
+    {
+      "name": "Ouvrant Porte Anglaise",
+      "code": "DF 30-10"
+    },
+    {
+      "name": "Parclose Simple",
+      "code": "DF 30-11"
+    },
+    {
+      "name": "Lame Remplissage 120",
+      "code": "DF 30-12"
+    },
+    {
+      "name": "Profil Cavalier Traverse",
+      "code": "DF 30-13"
+    },
+    {
+      "name": "Seuille a Battue",
+      "code": "DF 30-16"
+    },
+    {
+      "name": "Barreau",
+      "code": "DF 30-17"
+    },
+    {
+      "name": "Tige de Cremone",
+      "code": "DF 30-18"
+    },
+    {
+      "name": "Ouvrant Volet Battant",
+      "code": "DF 30-20"
+    },
+    {
+      "name": "Profil Bas De Porte",
+      "code": "DF 30-22"
+    }
+  ],
+  "accessories": [
+    { "name": "Kit Poignee Fenetre Anglaise", "code": "DAFK-001" },
+    { "name": "Kit Poignee Fenetre Francaise", "code": "DAFK-002" },
+    { "name": "Kit Serrure 3 pts", "code": "DAFK-003" },
+    { "name": "Kit Serrure 1 pt", "code": "DAFK-004" },
+    { "name": "Bouchon Batee", "code": "DAF-001" },
+    { "name": "Embout Seuille", "code": "DAF-002" },
+    { "name": "Cale Barreau", "code": "DAF-003" },
+    { "name": "Bouchon pour Barreau", "code": "DAF-004" },
+    { "name": "Cale Drainage  60 x 24 x 5", "code": "DAF-005" },
+    { "name": "Cale Equerre Porte", "code": "DAF-006" },
+    { "name": "Cale Equerre Fenetre", "code": "DAF-007" },
+    { "name": "Cale Equerre Volet Battant", "code": "DAF-008" },
+    { "name": "Verrou Semi Fixe 150", "code": "DAF-022" },
+    { "name": "Verrou Semi Fixe 300", "code": "DAF-023" },
+    { "name": "Paumelle", "code": "DAF-024" },
+    { "name": "Cavalier Traverse Fixe", "code": "DAF-025" },
+    { "name": "Equerre 23.5 x 10.5", "code": "DM-001" },
+    { "name": "Busette avec Clapet", "code": "DM-005" },
+    { "name": "Joint Bubble Frappe", "code": "DGF 001" },
+    { "name": "Joint a Clipper Frappe", "code": "DGF 002" },
+    { "name": "Joint a Bourrer 6 mm", "code": "DGF 003" },
+    { "name": "Joint a Bourrer 8 mm", "code": "DGF 004" }
+  ]
+}

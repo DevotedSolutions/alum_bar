@@ -1,0 +1,40 @@
+@font-face {
+  font-family: 'Source Sans Pro bold';
+  src: url('./fonts/sourcesanspro-bold-webfont.woff2');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'source sans pro light';
+  src: url('./fonts/sourcesanspro-bold-webfont.woff');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: myFirstFont;
+  src: url('./fonts/AvenirLTStd-Black.otf');
+}
+
+@font-face {
+  font-family: myAvenirLight;
+  src: url('./fonts/AvenirLTStd-Book.otf');
+  font-weight: bold;
+}
+* {
+  font-family: myAvenirLight!important;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Source Sans Pro bold'  !important;
+}
+
+
+body {
+  font-family: 'source sans pro light' !important;
+}
+.btn{
+  font-family: 'source sans pro light' !important;
+}

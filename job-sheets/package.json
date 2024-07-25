@@ -1,0 +1,40 @@
+{
+  "name": "quotation-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@david.kucsai/react-pdf-table": "^0.4.1",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.6",
+    "@mui/material": "^5.15.6",
+    "@react-pdf/renderer": "^3.3.8",
+    "axios": "^1.6.7",
+    "html2canvas": "^1.4.1",
+    "i": "^0.3.7",
+    "jspdf": "^2.5.1",
+    "npm": "^10.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-pdf": "^7.7.0",
+    "react-router-dom": "^6.22.0",
+    "react-toastify": "^10.0.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "vite": "^4.4.5"
+  }
+}
