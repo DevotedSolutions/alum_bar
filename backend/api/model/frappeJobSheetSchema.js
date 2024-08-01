@@ -13,7 +13,7 @@ const profileSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  type: {
+  param: {
     type: String,
     required: true,
   },
@@ -24,6 +24,10 @@ const profileSchema = new mongoose.Schema({
   length: {
     type: Number,
     required: true,
+  },
+  next: {
+    type: String,
+    required: false,
   },
 });
 
@@ -38,9 +42,27 @@ const accessorySchema = new mongoose.Schema({
   },
   color: {
     type: String,
+  },
+  quantity: {
+    type: Number,
     required: true,
   },
-  length: {
+});
+
+const glazzing = new mongoose.Schema({
+  code: {
+    type: String,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+  },
+  width: {
+    type: Number,
+    required: true,
+  },
+  height: {
     type: Number,
     required: true,
   },
@@ -68,6 +90,9 @@ const frappeJSSchema = mongoose.Schema({
   handleDirection: {
     type: String,
     required: true,
+  },
+  handleHeight: {
+    type: mongoose.Schema.Types.Mixed,
   },
   lang: {
     type: String,
@@ -104,8 +129,21 @@ const frappeJSSchema = mongoose.Schema({
   glazzing: {
     type: String,
   },
+  basement: {
+    type: String,
+  },
+  blade: {
+    type: Number,
+  },
+  thirdParty: {
+    type: String,
+  },
+  thirdPartyValue: {
+    type: Number,
+  },
   profiles: [profileSchema],
   accessories: [accessorySchema],
+  glazzingValues: [glazzing],
   createdAt: {
     type: Date,
     default: Date.now, // This sets the default value to the current date and time

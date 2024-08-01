@@ -347,7 +347,7 @@ exports.getPE2Data = ({
         quantity: Math.round(largerWidth ? S57 : S56),
       },
     ],
-    glazzing: largerWidth
+    glazzingValues: largerWidth
       ? [
           {
             code: glazzingVal,
