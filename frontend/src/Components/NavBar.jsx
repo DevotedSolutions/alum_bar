@@ -1,25 +1,26 @@
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import { useNavigate } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import MenuIcon from '@mui/icons-material/Menu';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Inventory2TwoToneIcon from '@mui/icons-material/Inventory2TwoTone';
-import AddIcon from '@mui/icons-material/Add';
-import LogoutIcon from '@mui/icons-material/Logout';
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
-import AdbIcon from '@mui/icons-material/Adb';
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import { useNavigate } from "react-router-dom";
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
+import Divider from "@mui/material/Divider";
+import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
+import InboxIcon from "@mui/icons-material/MoveToInbox";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import MenuIcon from "@mui/icons-material/Menu";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Inventory2TwoToneIcon from "@mui/icons-material/Inventory2TwoTone";
+import AddIcon from "@mui/icons-material/Add";
+import LogoutIcon from "@mui/icons-material/Logout";
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import CalculateIcon from "@mui/icons-material/Calculate";
+import FunctionsIcon from "@mui/icons-material/Functions";
 const drawerWidth = 280;
 
 // interface Props {
@@ -31,19 +32,17 @@ const drawerWidth = 280;
 // }
 
 export default function DrawerAppBar(props) {
-  let navigate = useNavigate()
+  let navigate = useNavigate();
 
-// logout functionality
-const handleLogout = () => {
-  localStorage.removeItem('isAdmin');
-  localStorage.removeItem('tokenDevoted');
-  localStorage.removeItem('UserId')
+  // logout functionality
+  const handleLogout = () => {
+    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("tokenDevoted");
+    localStorage.removeItem("UserId");
 
-  // Navigate to the login page
-  navigate('/login');
-};
-
-
+    // Navigate to the login page
+    navigate("/login");
+  };
 
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -52,98 +51,142 @@ const handleLogout = () => {
     setMobileOpen(!mobileOpen);
   };
 
-
   const isUser = localStorage.getItem("tokenDevoted");
-
+  const isAdmin = localStorage.getItem("isAdmin");
 
   const itemsList = [
     {
-      text: 'Dashboard',
+      text: "Dashboard",
       icon: <InboxIcon />,
       onClick: () => {
-        navigate('/');
-       
+        navigate("/");
+
         setMobileOpen(false);
       },
     },
     {
-      text: 'Inventory',
+      text: "Inventory",
       icon: <Inventory2TwoToneIcon />,
       onClick: () => {
-        navigate('/inventory');
-       
+        navigate("/inventory");
+
         setMobileOpen(false);
       },
     },
     {
-      text: 'Add Product',
-      icon: <AddIcon/>,
+      text: "Add Product",
+      icon: <AddIcon />,
       onClick: () => {
-        navigate('/allproduct');
-       
+        navigate("/allproduct");
+
         setMobileOpen(false);
       },
     },
     {
-      text: 'Open Scanner',
-      icon: <QrCodeScannerIcon/>,
+      text: "Open Scanner",
+      icon: <QrCodeScannerIcon />,
       onClick: () => {
-        navigate('/open-scanner');
-       
+        navigate("/open-scanner");
+
         setMobileOpen(false);
       },
     },
-    !isUser && {
+    isAdmin && {
       text: "Quotation App",
-      icon: <AdbIcon />,
+      icon: <CalculateIcon />,
       onClick: () => {
         navigate("/designation");
-       
+
+        setMobileOpen(false);
+      },
+    },
+    isAdmin && {
+      text: "Job Sheets",
+      icon: <FunctionsIcon />,
+      onClick: () => {
+        navigate("/jobsheets");
+
         setMobileOpen(false);
       },
     },
     {
-      text: 'Log out',
-      icon: <LogoutIcon/>,
+      text: "Log out",
+      icon: <LogoutIcon />,
       onClick: () => {
         handleLogout();
-       
+
         setMobileOpen(false);
       },
     },
   ].filter(Boolean);
 
-
-
-
-
-
-
   const drawer = (
-    <div >
-      <Box sx={{
+    <div>
+      <Box
+        sx={{
+          display: "flex",
 
-        display: "flex",
+          alignItems: "center",
 
-        alignItems: "center",
-
-        height: "130px",
-
-      }}>
-
-
-        <Box sx={{
-          width: "100%", maxWidth: "70px", height: "70px", marginLeft: "20px"
-        }}>  <img src='/assets/images/dasby.jpeg'  alt='img' width="100%" 
-        height="100%" style={{ borderRadius: "50%",border:"0.3px solid gray" }}></img></Box>
-
-        <Box ><Typography variant='h3' sx={{ fontSize: "14px", 
-        fontWeight: "bold", padding: "0 5px",textTransform:"capitalize" }}> Dasby Pofile System</Typography>
-          <Typography variant='h3' sx={{ fontSize: "10px", fontWeight: "600", padding: "0 5px", marginTop: "3px", color: "#707070" }}>Address:  Royal Road St Paul Phoenix Mauritius</Typography>
-          <Typography variant='h3' sx={{ fontSize: "10px", fontWeight: "600", padding: "0 5px", marginTop: "3px", color: "#707070" }}>Phone: +230 6062720</Typography>
+          height: "130px",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "70px",
+            height: "70px",
+            marginLeft: "20px",
+          }}
+        >
+          {" "}
+          <img
+            src="/assets/images/dasby.jpeg"
+            alt="img"
+            width="100%"
+            height="100%"
+            style={{ borderRadius: "50%", border: "0.3px solid gray" }}
+          ></img>
         </Box>
 
-
+        <Box>
+          <Typography
+            variant="h3"
+            sx={{
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "0 5px",
+              textTransform: "capitalize",
+            }}
+          >
+            {" "}
+            Dasby Pofile System
+          </Typography>
+          <Typography
+            variant="h3"
+            sx={{
+              fontSize: "10px",
+              fontWeight: "600",
+              padding: "0 5px",
+              marginTop: "3px",
+              color: "#707070",
+            }}
+          >
+            Address: Royal Road St Paul Phoenix Mauritius
+          </Typography>
+          <Typography
+            variant="h3"
+            sx={{
+              fontSize: "10px",
+              fontWeight: "600",
+              padding: "0 5px",
+              marginTop: "3px",
+              color: "#707070",
+            }}
+          >
+            Phone: +230 6062720
+          </Typography>
+        </Box>
       </Box>
       <Toolbar />
 
@@ -153,9 +196,7 @@ const handleLogout = () => {
         {itemsList.map((item, index) => (
           <ListItem key={index} disablePadding>
             <ListItemButton onClick={item.onClick}>
-              <ListItemIcon>
-                {item.icon}
-              </ListItemIcon>
+              <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
@@ -177,7 +218,8 @@ const handleLogout = () => {
     </div>
   );
 
-  const container = window !== undefined ? () => window().document.body : undefined;
+  const container =
+    window !== undefined ? () => window().document.body : undefined;
 
   return (
     <Box sx={{ wborder: "1px solid black", display: "flex" }}>
@@ -195,11 +237,16 @@ const handleLogout = () => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 2, display: { sm: "none" } }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography sx={{ color: "white" }} variant="h6" noWrap component="div">
+          <Typography
+            sx={{ color: "white" }}
+            variant="h6"
+            noWrap
+            component="div"
+          >
             Welcome
           </Typography>
         </Toolbar>
@@ -219,8 +266,11 @@ const handleLogout = () => {
             keepMounted: true, // Better open performance on mobile.
           }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            display: { xs: "block", sm: "none" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
           }}
         >
           {drawer}
@@ -228,8 +278,11 @@ const handleLogout = () => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            display: { xs: "none", sm: "block" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
           }}
           open
         >

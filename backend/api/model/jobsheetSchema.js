@@ -7,7 +7,11 @@ const jobSheetSchema = mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now, // This sets the default value to the current date and time
+    default: Date.now,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
   },
 });
 

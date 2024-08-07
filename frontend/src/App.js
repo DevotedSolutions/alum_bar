@@ -1,7 +1,6 @@
-
 import { Route, Routes } from "react-router-dom";
 import { Navigate } from "react-router-dom";
-import { useState ,useEffect} from "react";
+import { useState, useEffect } from "react";
 import LogIn from "./Components/LogIn";
 // import ShowProducts from "./Pages/ShowProduct/ShowProducts";
 
@@ -13,74 +12,74 @@ import AllProducts from "./Components/Products/AllProduct";
 import OpenScanner from "./Pages/OpenScanner";
 import Signup from "./Components/Signup";
 import LastWeekSales from "./Components/LastWeekSales";
-import ResetPassword from './Components/ResetPassword'
-import ForgotPassword from './Components/ForgotPassword'
+import ResetPassword from "./Components/ResetPassword";
+import ForgotPassword from "./Components/ForgotPassword";
 import { checkTokenExpiration } from "./services/products/getAllProducts";
 import AllDesignation from "./Components/admin/AllDesignation";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import JobSheet from "./Pages/JobSheet";
+import JobSheetDetails from "./Pages/JobSheetDetail";
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    Boolean(localStorage.getItem("tokenDevoted")) ||
+      Boolean(localStorage.getItem("isAdmin"))
+  );
 
-  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem('tokenDevoted'))
-  || Boolean(localStorage.getItem('isAdmin')));
+  const [isAdminLogin, setIsAdminLogin] = useState(
+    Boolean(localStorage.getItem("isAdmin"))
+  );
 
-  const [isAdminLogin ,setIsAdminLogin] = useState(Boolean(localStorage.getItem('isAdmin')))
-
-
-  
- useEffect(()=>{
-  checkTokenExpiration();
- },[])
-  
+  useEffect(() => {
+    checkTokenExpiration();
+  }, []);
 
   const handleLogin = () => {
-    
     setIsLoggedIn(true);
 
-    if(isAdminLogin){
-      setIsAdminLogin(true)
+    if (isAdminLogin) {
+      setIsAdminLogin(true);
     }
   };
 
-  
-
-
-
-  console.log(isLoggedIn);
   return (
+    <>
+      <ToastContainer />
+      <Routes>
+        {isLoggedIn ? (
+          <Route element={<LayOut />}>
+            <Route index path="/" element={<DashBoard />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/allproduct" element={<AllProducts />} />
+            <Route path="/open-scanner" element={<OpenScanner />} />
+            <Route path="/lastweek" element={<LastWeekSales />} />
 
-<>
-<ToastContainer/>
-    <Routes>
+            {isAdminLogin && (
+              <Route path="/designation" element={<AllDesignation />} />
+            )}
+            {isAdminLogin && <Route path="/jobsheets" element={<JobSheet />} />}
+            {isAdminLogin && (
+              <Route path="/jobsheets/:id" element={<JobSheetDetails />} />
+            )}
 
-      {isLoggedIn ? (
-        <Route element={<LayOut />}>
-          <Route index path="/*" element={<DashBoard />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/allproduct" element={<AllProducts/>} />
-          <Route path="/open-scanner" element={<OpenScanner />} />
-          <Route path="/lastweek" element={<LastWeekSales />} />
-         {isAdminLogin && <Route path="/designation" element={<AllDesignation/>}/>}
-        </Route>
-      ) : (
-     
-        <Route path="/*" element={<Navigate to="/login" />} />
-      )}
+            <Route path="/*" element={<Navigate to="/" />} />
+          </Route>
+        ) : (
+          <Route path="/*" element={<Navigate to="/login" />} />
+        )}
 
-
-      <Route path="/signup" element={<Signup handleLogin={handleLogin} />} />
-      <Route path="/login" element={<LogIn handleLogin={handleLogin} admin={setIsAdminLogin} />} />
-      <Route path="/forgot-password" element={<ForgotPassword/>} />
-      <Route path="/reset-password/:id" element={<ResetPassword  />} />
-
-    </Routes>
-
+        <Route path="/signup" element={<Signup handleLogin={handleLogin} />} />
+        <Route
+          path="/login"
+          element={<LogIn handleLogin={handleLogin} admin={setIsAdminLogin} />}
+        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:id" element={<ResetPassword />} />
+      </Routes>
     </>
   );
 }
 
 export default App;
-
