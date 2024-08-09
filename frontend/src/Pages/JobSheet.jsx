@@ -44,6 +44,7 @@ const styles = {
 const JobSheetPage = () => {
   const [jobSheets, setJobSheets] = useState([]);
   const [update, setUpdate] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getData();
@@ -125,6 +126,7 @@ const JobSheetPage = () => {
                 <TableCell>Created Date</TableCell>
                 <TableCell>Sheets Inside</TableCell>
                 <TableCell>Details</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -144,7 +146,7 @@ const JobSheetPage = () => {
                     {moment(sheet.createdAt).format("YYYY-MM-DD HH:mm")}
                   </TableCell>
                   <TableCell>{sheet.numberOfSheets}</TableCell>
-                  <TableCell style={{ display: "flex" }}>
+                  <TableCell>
                     <Button
                       edge="end"
                       variant="contained"
@@ -154,9 +156,15 @@ const JobSheetPage = () => {
                         alignItems: "center",
                         textTransform: "capitalize",
                       }}
+                      onClick={() => {
+                        navigate(`${sheet._id}`);
+                      }}
                     >
                       <Info style={{ paddingRight: "5px" }} /> Details
                     </Button>
+                  </TableCell>
+
+                  <TableCell>
                     <IconButton
                       edge="end"
                       style={{ paddingLeft: "12px" }}

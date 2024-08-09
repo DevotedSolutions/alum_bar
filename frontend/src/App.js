@@ -20,6 +20,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import JobSheet from "./Pages/JobSheet";
 import JobSheetDetails from "./Pages/JobSheetDetail";
+import JobSheetList from "./Pages/JobSheetList";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -61,7 +62,13 @@ function App() {
             )}
             {isAdminLogin && <Route path="/jobsheets" element={<JobSheet />} />}
             {isAdminLogin && (
-              <Route path="/jobsheets/:id" element={<JobSheetDetails />} />
+              <Route path="/jobsheets/:id" element={<JobSheetList />} />
+            )}
+            {isAdminLogin && (
+              <Route
+                path="/jobsheets/:id/:sheetID"
+                element={<JobSheetDetails />}
+              />
             )}
 
             <Route path="/*" element={<Navigate to="/" />} />

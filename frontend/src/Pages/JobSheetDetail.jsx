@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   TextField,
@@ -14,14 +14,23 @@ import {
   MenuItem,
 } from "@mui/material";
 import moment from "moment";
-import { getJobSheetDetails } from "../services/jobSheets/getAllJobSheets";
+import {
+  addNewFrappeJS,
+  getFrappeSheetByID,
+  getJobSheetDetails,
+  updateFrappeJS,
+} from "../services/jobSheets/getAllJobSheets";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeftOutlined, Save } from "@mui/icons-material";
 
 const textFieldStyles = { marginBottom: "16px" };
 
 const JobSheetDetails = () => {
-  const { id } = useParams();
+  const { id, sheetID } = useParams();
+
+  const isNewSheet = sheetID === "newSheet";
+
   const [formData, setFormData] = useState({
     title: "",
     jobSheet: id,
@@ -46,6 +55,33 @@ const JobSheetDetails = () => {
     thirdPartyValue: 0,
     color: "",
   });
+
+  async function getData() {
+    try {
+      const resp = await getFrappeSheetByID(sheetID);
+      if (resp.status === 200) {
+        const item = resp.data[0];
+        setFormData(item);
+
+        setData({
+          profiles: item.profiles,
+          accessories: item.accessories,
+          glazzingValues: item.glazzingValues,
+        });
+        // setTotalPages(resp.data.totalPages);
+      } else {
+        toast.error(resp.data.message);
+      }
+    } catch (error) {
+      toast.error("Check network connection");
+    }
+  }
+
+  useEffect(() => {
+    if (!isNewSheet) {
+      getData();
+    }
+  }, []);
 
   const [data, setData] = useState({
     profiles: [],
@@ -77,9 +113,21 @@ const JobSheetDetails = () => {
       toast.error(resp.data.message);
     }
   };
+  const navigate = useNavigate();
 
   return (
     <div style={{ padding: "16px" }}>
+      <Button
+        sx={{
+          display: "flex",
+          alignItems: "center",
+        }}
+        onClick={() => {
+          navigate(-1);
+        }}
+      >
+        <ArrowLeftOutlined /> Back
+      </Button>
       <Typography variant="h4" gutterBottom>
         Job Sheet Details
       </Typography>
@@ -341,93 +389,133 @@ const JobSheetDetails = () => {
       <Button variant="contained" color="primary" onClick={handleGetSheet}>
         Get Sheet
       </Button>
-      <div>
-        <Typography variant="h6" gutterBottom>
-          Profiles
-        </Typography>
-        <TableContainer component={Paper}>
-          <Table aria-label="profiles table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Code</TableCell>
-                <TableCell>Color</TableCell>
-                <TableCell>Param</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Length</TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.profiles.map((profile) => (
-                <TableRow key={profile._id}>
-                  <TableCell>{profile.name}</TableCell>
-                  <TableCell>{profile.code}</TableCell>
-                  <TableCell>{profile.color}</TableCell>
-                  <TableCell>{profile.param}</TableCell>
-                  <TableCell>{profile.quantity}</TableCell>
-                  <TableCell>{profile.length}</TableCell>
-                  <TableCell>{profile.next}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-      <div>
-        <Typography variant="h6" gutterBottom>
-          Accessories
-        </Typography>
-        <TableContainer component={Paper}>
-          <Table aria-label="accessories table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Code</TableCell>
-                <TableCell>Color</TableCell>
-                <TableCell>Quantity</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.accessories.map((accessory) => (
-                <TableRow key={accessory._id}>
-                  <TableCell>{accessory.name}</TableCell>
-                  <TableCell>{accessory.code}</TableCell>
-                  <TableCell>{accessory.color}</TableCell>
-                  <TableCell>{accessory.quantity}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-      <div>
-        <Typography variant="h6" gutterBottom>
-          Glazing
-        </Typography>
-        <TableContainer component={Paper}>
-          <Table aria-label="glazing table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Code</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Width</TableCell>
-                <TableCell>Height</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.glazzingValues.map((glazzing) => (
-                <TableRow key={glazzing._id}>
-                  <TableCell>{glazzing.code}</TableCell>
-                  <TableCell>{glazzing.quantity}</TableCell>
-                  <TableCell>{glazzing.width}</TableCell>
-                  <TableCell>{glazzing.height}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
+      {data?.profiles?.length > 0 && (
+        <div style={{ margin: "10px 0" }}>
+          <Typography variant="h6" gutterBottom>
+            Profiles
+          </Typography>
+          <Grid container width={"100%"} justifyContent={"center"}>
+            <TableContainer component={Paper} style={{ width: "850px" }}>
+              <Table aria-label="profiles table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Code</TableCell>
+                    <TableCell>Color</TableCell>
+                    <TableCell>Param</TableCell>
+                    <TableCell>Quantity</TableCell>
+                    <TableCell>Length</TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {data.profiles.map((profile) => (
+                    <TableRow key={profile._id}>
+                      <TableCell>{profile.name}</TableCell>
+                      <TableCell>{profile.code}</TableCell>
+                      <TableCell>{profile.color}</TableCell>
+                      <TableCell>{profile.param}</TableCell>
+                      <TableCell>{profile.quantity}</TableCell>
+                      <TableCell>{profile.length}</TableCell>
+                      <TableCell>{profile.next}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
+        </div>
+      )}
+      {data?.accessories?.length > 0 && (
+        <div style={{ margin: "10px 0" }}>
+          <Typography variant="h6" gutterBottom>
+            Accessories
+          </Typography>
+          <Grid container width={"100%"} justifyContent={"center"}>
+            <TableContainer component={Paper} style={{ width: "850px" }}>
+              <Table aria-label="accessories table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Code</TableCell>
+                    <TableCell>Color</TableCell>
+                    <TableCell>Quantity</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {data.accessories.map((accessory) => (
+                    <TableRow key={accessory._id}>
+                      <TableCell>{accessory.name}</TableCell>
+                      <TableCell>{accessory.code}</TableCell>
+                      <TableCell>{accessory.color}</TableCell>
+                      <TableCell>{accessory.quantity}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
+        </div>
+      )}
+
+      {data?.glazzingValues?.length > 0 && (
+        <div style={{ margin: "10px 0" }}>
+          <Typography variant="h6" gutterBottom>
+            Glazing
+          </Typography>
+          <Grid container width={"100%"} justifyContent={"center"}>
+            <TableContainer component={Paper} style={{ width: "850px" }}>
+              <Table aria-label="glazing table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Code</TableCell>
+                    <TableCell>Quantity</TableCell>
+                    <TableCell>Width</TableCell>
+                    <TableCell>Height</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {data.glazzingValues.map((glazzing) => (
+                    <TableRow key={glazzing._id}>
+                      <TableCell>{glazzing.code}</TableCell>
+                      <TableCell>{glazzing.quantity}</TableCell>
+                      <TableCell>{glazzing.width}</TableCell>
+                      <TableCell>{glazzing.height}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
+        </div>
+      )}
+      {data.profiles.length > 0 && (
+        <Button
+          variant="contained"
+          color="primary"
+          style={{ margin: "20px 0" }}
+          startIcon={<Save />}
+          onClick={async () => {
+            const resp = isNewSheet
+              ? await addNewFrappeJS({
+                  ...formData,
+                  ...data,
+                })
+              : await updateFrappeJS({
+                  ...formData,
+                  ...data,
+                });
+
+            if (resp.status === 200) {
+              toast.success("Job Sheet Saved");
+            } else {
+              toast.error(resp.data.message);
+            }
+          }}
+        >
+          Save Sheet
+        </Button>
+      )}
     </div>
   );
 };
