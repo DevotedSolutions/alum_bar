@@ -192,6 +192,23 @@ export const getSumFrappeJS = async (id) => {
   }
 };
 
+export const createFrappeExcel = async (id) => {
+  checkTokenExpiration();
+  try {
+    const token = localStorage.getItem("tokenDevoted");
+    const isAdmin = localStorage.getItem("isAdmin");
+    const response = await axios.get(`/export-to-excel/${id}`, {
+      headers: {
+        Authorization: `${token ? token : isAdmin}`,
+      },
+    });
+
+    return response;
+  } catch (err) {
+    return err.response;
+  }
+};
+
 export const getJobSheetDetails = async (data) => {
   checkTokenExpiration();
   try {

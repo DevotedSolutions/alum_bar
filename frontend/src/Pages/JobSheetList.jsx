@@ -22,6 +22,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
   GetSheetOptimization,
+  createFrappeExcel,
   deleteSheet,
   getFrappeJobSheets,
   getSumFrappeJS,
@@ -53,6 +54,7 @@ const JobSheetList = () => {
     sumProfiles: [],
   });
   const [optimizedData, setOptimizedData] = useState([]);
+  const [excelExport, setExcelExport] = useState(null);
 
   const { id } = useParams();
 
@@ -230,6 +232,12 @@ const JobSheetList = () => {
           const resp = await getSumFrappeJS(id);
           if (resp.status === 200) {
             setSumData(resp.data);
+            const resp1 = await createFrappeExcel(id);
+            if (resp1.status) {
+              setExcelExport(
+                `https://app.noutfermeture.com/api/jobsheets/${id}.xlsx`
+              );
+            }
           } else {
             toast.error(resp.data.message);
           }
@@ -328,6 +336,24 @@ const JobSheetList = () => {
           <Grid container width={"100%"} justifyContent={"center"}>
             <OptimizedSheetTable data={optimizedData} />
           </Grid>
+        </>
+      )}
+      {excelExport && (
+        <>
+          <Button variant="contained">
+            <a
+              style={{
+                textDecoration: "none",
+                color: "#FAFAFA",
+
+                textTransform: "capitalize",
+              }}
+              href={excelExport}
+              target="_blank"
+            >
+              Export as XLSX
+            </a>
+          </Button>
         </>
       )}
     </div>

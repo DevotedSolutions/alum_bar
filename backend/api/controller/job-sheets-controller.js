@@ -1,3 +1,5 @@
+const { exportToPDF } = require("./frappeProducts/exportPDF");
+const { exporttoXLSX } = require("./frappeProducts/exportToXLSX");
 const jobSheetSchema = require("../model/jobsheetSchema");
 const frappeJSSchema = require("../model/frappeJobSheetSchema");
 const { getPSP1Data } = require("./frappeProducts/psp1");
@@ -5,11 +7,25 @@ const { getSOU1Data } = require("./frappeProducts/sou1");
 const { getPE2Data } = require("./frappeProducts/pe2");
 const { getPF1Data } = require("./frappeProducts/pf1");
 const { getVB2Data } = require("./frappeProducts/vb2");
+const { optimizeJobSheet } = require("./frappeProducts/optimize");
 
 exports.getAllJobSheets = async (req, res) => {
   try {
     const jobSheets = await jobSheetSchema.find({});
-    res.status(200).json(jobSheets);
+
+    const jobSheetsWithCounts = await Promise.all(
+      jobSheets.map(async (jobSheet) => {
+        const relatedSheets = await frappeJSSchema.find({
+          jobSheet: jobSheet._id,
+        });
+        return {
+          ...jobSheet._doc,
+          numberOfSheets: relatedSheets.length,
+        };
+      })
+    );
+
+    res.status(200).json(jobSheetsWithCounts);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -23,6 +39,23 @@ exports.getFrappeJSByJobSheet = async (req, res) => {
     if (!frappeJS.length) {
       return res.status(404).json({
         message: "No FrappeJS documents found for the provided JobSheet ID",
+      });
+    }
+    res.status(200).json(frappeJS);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getOneFrappeJSByID = async (req, res) => {
+  const { sheetID } = req.params;
+
+  try {
+    const frappeJS = await frappeJSSchema.find({ _id: sheetID });
+
+    if (!frappeJS.length) {
+      return res.status(404).json({
+        message: "No FrappeJS documents found for the provided  ID",
       });
     }
     res.status(200).json(frappeJS);
@@ -50,15 +83,50 @@ exports.addJobSheet = async (req, res) => {
   }
 };
 
+exports.deleteJobSheet = async (req, res) => {
+  const id = req.params.jobSheetId;
+
+  try {
+    if (!id) {
+      return res.status(400).json({ message: "please provide jobSheetId !!" });
+    }
+    let doc = await jobSheetSchema.findByIdAndDelete(id);
+    if (!doc) {
+      return res.status(400).json({ message: "Could not find a product." });
+    }
+    res.status(200).json({ message: "Product  deleted successfully", doc });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+exports.deleteSheet = async (req, res) => {
+  const id = req.params.jobSheetId;
+  const type = req.params.type;
+
+  try {
+    if (!id) {
+      return res.status(400).json({ message: "please provide jobSheetId !!" });
+    }
+    if (type === "frappe") {
+      let doc = await frappeJSSchema.findByIdAndDelete(id);
+      if (!doc) {
+        return res.status(400).json({ message: "Could not find a product." });
+      }
+      res.status(200).json({ message: "Product  deleted successfully", doc });
+    } else {
+      res.status(500).json({ message: "Job sheet type is not correct.", doc });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
 exports.addFrappeJS = async (req, res) => {
   const {
     title,
     jobSheet,
-    client,
-    projet,
-    repere,
-    handleDirection,
-    handleHeight,
+
     lang,
     jointCovers,
     threshold,
@@ -75,25 +143,20 @@ exports.addFrappeJS = async (req, res) => {
 
   try {
     if (
-      (!title,
-      !jobSheet,
-      !client,
-      !projet,
-      !repere,
-      !handleDirection,
-      !handleHeight,
-      !lang,
-      !jointCovers,
-      !threshold,
-      !closing,
-      !windowRef,
-      !glazzing,
-      !quantity,
-      !profiles,
-      !accessories,
-      !glazzingValues,
-      !height,
-      !width)
+      !title ||
+      !jobSheet ||
+      !lang ||
+      !jointCovers ||
+      !threshold ||
+      !closing ||
+      !windowRef ||
+      !glazzing ||
+      !quantity ||
+      !profiles ||
+      !accessories ||
+      !glazzingValues ||
+      !height ||
+      !width
     ) {
       return res.status(400).json({ message: "Data is missing!" });
     }
@@ -103,6 +166,60 @@ exports.addFrappeJS = async (req, res) => {
     });
 
     const result = await frappeJS_data.save();
+    res.status(200).json({ message: "FrappeJS added successfully", result });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.updateFrappeJS = async (req, res) => {
+  const {
+    _id,
+    title,
+    jobSheet,
+    lang,
+    jointCovers,
+    threshold,
+    closing,
+    windowRef,
+    quantity,
+    width,
+    height,
+    glazzing,
+    profiles,
+    accessories,
+    glazzingValues,
+  } = req.body;
+
+  try {
+    if (
+      !_id ||
+      !title ||
+      !jobSheet ||
+      !lang ||
+      !jointCovers ||
+      !threshold ||
+      !closing ||
+      !windowRef ||
+      !glazzing ||
+      !quantity ||
+      !profiles ||
+      !accessories ||
+      !glazzingValues ||
+      !height ||
+      !width
+    ) {
+      return res.status(400).json({ message: "Data is missing!" });
+    }
+
+    const result = await frappeJSSchema.findByIdAndUpdate(
+      _id,
+      {
+        ...req.body,
+      },
+      { new: true, runValidators: true } // Returns the updated document and runs validation
+    );
+
     res.status(200).json({ message: "FrappeJS added successfully", result });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -201,40 +318,59 @@ exports.getOptimizedJobSheet = async (req, res) => {
   const { profiles } = req.body;
 
   try {
-    const BAR_LENGTH = 5795;
-    const optimizedSheet1 = JobSheetOptimizationAlgo1(
-      deepCopyProfiles(profiles),
-      BAR_LENGTH
-    );
-    const optimizedSheet2 = JobSheetOptimizationAlgo2(
-      deepCopyProfiles(profiles),
-      BAR_LENGTH
-    );
-
-    let totalWastage1 = optimizedSheet1.reduce((sum, profile) => {
-      return sum + (profile.Wastage < 700 ? profile.Wastage : 0);
-    }, 0);
-    let totalWastage2 = optimizedSheet2.reduce((sum, profile) => {
-      return sum + (profile.Wastage < 700 ? profile.Wastage : 0);
-    }, 0);
-
-    let totalUsage1 = optimizedSheet1.reduce((sum, profile) => {
-      return sum + profile.Total;
-    }, 0);
-    let totalUsage2 = optimizedSheet2.reduce((sum, profile) => {
-      return sum + profile.Total;
-    }, 0);
-
-    const optimizedSheet =
-      totalUsage1 < totalUsage2
-        ? optimizedSheet1
-        : totalUsage2 < totalUsage1
-        ? optimizedSheet2
-        : totalWastage1 > totalWastage2
-        ? optimizedSheet2
-        : optimizedSheet1;
+    const optimizedSheet = optimizeJobSheet(profiles);
 
     res.status(200).json([...optimizedSheet]);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.exporttoPDF = async (req, res) => {
+  const { jobSheetId } = req.params;
+
+  try {
+    const frappeJSObjects = await frappeJSSchema.find({ jobSheet: jobSheetId });
+    if (!frappeJSObjects.length) {
+      return res.status(404).json({
+        message: "No FrappeJS documents found for the provided JobSheet ID",
+      });
+    }
+
+    const optimizedSheet = exportToPDF(
+      jobSheetId,
+      frappeJSObjects,
+      calculateAllGlazzingQuantities(frappeJSObjects),
+      calculateAllAccessoryQuantities(frappeJSObjects),
+      calculateAllProfileQuantities(frappeJSObjects)
+    );
+
+    res.status(200).json(optimizedSheet);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.exporttoExcel = async (req, res) => {
+  const { jobSheetId } = req.params;
+
+  try {
+    const frappeJSObjects = await frappeJSSchema.find({ jobSheet: jobSheetId });
+    if (!frappeJSObjects.length) {
+      return res.status(404).json({
+        message: "No FrappeJS documents found for the provided JobSheet ID",
+      });
+    }
+
+    const optimizedSheet = exporttoXLSX(
+      jobSheetId,
+      frappeJSObjects,
+      calculateAllGlazzingQuantities(frappeJSObjects),
+      calculateAllAccessoryQuantities(frappeJSObjects),
+      calculateAllProfileQuantities(frappeJSObjects)
+    );
+
+    res.status(200).json(optimizedSheet);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -355,151 +491,4 @@ function calculateAllProfileQuantities(jobSheets) {
     console.error("Error calculating profile quantities:", error);
     throw error;
   }
-}
-
-function JobSheetOptimizationAlgo1(profiles, BAR_LENGTH) {
-  const MIN_WASTE = 100;
-
-  // Sort profiles by descending length
-  profiles.sort((a, b) => b.length - a.length);
-
-  let result = [];
-  let remainingProfiles = [...profiles];
-
-  while (remainingProfiles.length > 0) {
-    let currentBar = {
-      num: result.length + 1,
-      Total: BAR_LENGTH + 5,
-      Wastage: 0,
-      Bars: [],
-    };
-
-    let currentLength = BAR_LENGTH;
-    let cutBars = [];
-
-    let tempNum = null;
-
-    for (let i = 0; i < remainingProfiles.length; i++) {
-      let profile = remainingProfiles[i];
-      let length = profile.length + 5;
-
-      while (profile.quantity > 0 && length <= currentLength) {
-        if (
-          currentLength < MIN_WASTE ||
-          currentLength < remainingProfiles[remainingProfiles.length - 1].length
-        ) {
-          break;
-        }
-
-        if (currentLength - length < MIN_WASTE) {
-          let qty = Math.min(
-            profile.quantity,
-            Math.floor(currentLength / length)
-          );
-          if (qty > 0) {
-            currentLength -= length * qty;
-            profile.quantity -= qty;
-            cutBars.push({ Length: length - 5, Quantity: qty });
-          }
-        } else if (
-          currentLength - length > MIN_WASTE &&
-          currentLength - length >
-            remainingProfiles[remainingProfiles.length - 1].length
-        ) {
-          let qty = Math.min(
-            profile.quantity,
-            Math.floor(currentLength / length)
-          );
-          if (qty > 0) {
-            currentLength -= length * qty;
-            profile.quantity -= qty;
-            cutBars.push({ Length: length - 5, Quantity: qty });
-          }
-        } else if (profile.quantity > 0 && length < currentLength) {
-          if (tempNum) {
-            let profileT = remainingProfiles[tempNum];
-            if (profileT.length > currentLength) {
-              tempNum = i;
-            } else {
-              tempNum = Math.min(tempNum, i);
-            }
-          } else {
-            tempNum = i;
-          }
-        }
-        if (i === remainingProfiles.length - 1 && tempNum !== null) {
-          let profileL = remainingProfiles[tempNum];
-          let lengthL = profileL.length + 5;
-          let qty = Math.min(
-            profileL.quantity,
-            Math.floor(currentLength / lengthL)
-          );
-          if (qty > 0) {
-            currentLength -= lengthL * qty;
-            profileL.quantity -= qty;
-            cutBars.push({ Length: lengthL - 5, Quantity: qty });
-          }
-
-          break;
-        }
-        break;
-      }
-    }
-
-    // Remove fully cut profiles
-    remainingProfiles = remainingProfiles.filter(
-      (profile) => profile.quantity > 0
-    );
-
-    currentBar.Bars = cutBars;
-    currentBar.Wastage = currentLength;
-    result.push(currentBar);
-  }
-
-  return result;
-}
-function JobSheetOptimizationAlgo2(profiles, BAR_LENGTH) {
-  let totalLength = profiles.reduce((sum, profile) => {
-    return sum + (profile.length + 5) * profile.quantity;
-  }, 0);
-
-  let minBars = Math.ceil(totalLength / BAR_LENGTH);
-
-  for (let i = 0; i < profiles.length; i++) {
-    let adjustedLength = totalLength - (profiles[i].length + 5);
-    let barsNeeded = Math.ceil(adjustedLength / BAR_LENGTH);
-
-    if (barsNeeded <= minBars - 1) {
-      let remainingProfiles = profiles
-        .map((p, index) => {
-          if (index === i && p.quantity > 1) {
-            return { ...p, quantity: p.quantity - 1 };
-          } else if (index !== i) {
-            return { ...p };
-          }
-        })
-        .filter((val) => val);
-
-      let result = JobSheetOptimizationAlgo1(remainingProfiles, BAR_LENGTH);
-
-      if (result.length <= minBars - 1) {
-        return [
-          ...result,
-          {
-            num: minBars,
-            Total: BAR_LENGTH + 5,
-            Wastage: 5795 - profiles[i].length,
-            Bars: [
-              {
-                Length: profiles[i].length,
-                Quantity: 1,
-              },
-            ],
-          },
-        ];
-      }
-    }
-  }
-
-  return JobSheetOptimizationAlgo1(profiles, BAR_LENGTH);
 }
