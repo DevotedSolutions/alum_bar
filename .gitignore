@@ -6,6 +6,7 @@ backend/node_modules
 .pnp.js
 frontend/node_modules
 quotation-app
+measurement-app
 # testing
 /coverage
 /instructions.txt

@@ -7,7 +7,19 @@ const { getSOU1Data } = require("./frappeProducts/sou1");
 const { getPE2Data } = require("./frappeProducts/pe2");
 const { getPF1Data } = require("./frappeProducts/pf1");
 const { getVB2Data } = require("./frappeProducts/vb2");
+const { getF1Data } = require("./frappeProducts/f1");
 const { optimizeJobSheet } = require("./frappeProducts/optimize");
+const { getF2Data } = require("./frappeProducts/f2");
+const { getF3Data } = require("./frappeProducts/f3");
+const { getF4Data } = require("./frappeProducts/f4");
+const { getOF1Data } = require("./frappeProducts/of1");
+const { getOF2Data } = require("./frappeProducts/of2");
+const { getSOU2Data } = require("./frappeProducts/sou2");
+const { getVB1Data } = require("./frappeProducts/vb1");
+const { getPOB1Data } = require("./frappeProducts/pob1");
+const { getPOB2Data } = require("./frappeProducts/pob2");
+const { getPOBE1Data } = require("./frappeProducts/pobe1");
+const { getPOBE2Data } = require("./frappeProducts/pobe2");
 
 exports.getAllJobSheets = async (req, res) => {
   try {
@@ -257,11 +269,32 @@ exports.getFrappeProfilesAcc = async (req, res) => {
       !basement
     ) {
       return res.status(400).json({ message: "Some Data is missing!" });
+    } else if (windowRef === "F1") {
+      const data = getF1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "F2") {
+      const data = getF2Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "F3") {
+      const data = getF3Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "F4") {
+      const data = getF4Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "OF1") {
+      const data = getOF1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "OF2") {
+      const data = getOF2Data({ ...req.body });
+      res.status(200).json({ ...data });
     } else if (windowRef === "PSP 1") {
       const data = getPSP1Data({ ...req.body });
       res.status(200).json({ ...data });
     } else if (windowRef === "SO 1") {
       const data = getSOU1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "SO 2") {
+      const data = getSOU2Data({ ...req.body });
       res.status(200).json({ ...data });
     } else if (windowRef === "PE 2") {
       const data = getPE2Data({ ...req.body });
@@ -271,6 +304,21 @@ exports.getFrappeProfilesAcc = async (req, res) => {
       res.status(200).json({ ...data });
     } else if (windowRef === "PF 2") {
       const data = getVB2Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "VB 1") {
+      const data = getVB1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "POB 1") {
+      const data = getPOB1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "POB E1") {
+      const data = getPOBE1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "POB 2") {
+      const data = getPOB2Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "POB E2") {
+      const data = getPOBE2Data({ ...req.body });
       res.status(200).json({ ...data });
     } else {
       return res

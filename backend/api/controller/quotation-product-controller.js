@@ -1,7 +1,7 @@
 const designationModel = require("../model/designationSchema");
 const gammeModel = require("../model/gammeSchema");
 const productSchema = require("../model/productSchema");
-
+// get all products
 exports.getProducts = async (req, res) => {
   try {
     let { page, size } = req.query;
@@ -63,9 +63,11 @@ exports.addDesignation = async (req, res) => {
     });
 
     if (duplicateCombination) {
-      return res.status(400).json({
-        message: "Duplicate width and height combination found in priceList",
-      });
+      return res
+        .status(400)
+        .json({
+          message: "Duplicate width and height combination found in priceList",
+        });
     }
 
     const newDesignation = await designationModel.create({
@@ -86,6 +88,23 @@ exports.addDesignation = async (req, res) => {
   }
 };
 
+// exports.addDesignation = async (req, res) => {
+//   try {
+//       const designations = req.body;
+//       console.log(designations);
+
+//       // Iterate over each designation in the array
+//       for (const { designation, vitrage, cermone, priceList } of designations) {
+//           // Create a new designation in the database
+//           await designationModel.create({ designation, vitrage, cermone, priceList });
+//       }
+
+//       res.status(200).json({ message: "Designations saved successfully" });
+//   } catch (error) {
+//       res.status(500).json({ message: error.message });
+//   }
+// };
+
 exports.updateDesignation = async (req, res) => {
   try {
     const id = req.params.id;
@@ -104,9 +123,11 @@ exports.updateDesignation = async (req, res) => {
     });
 
     if (duplicateCombination) {
-      return res.status(400).json({
-        message: "Duplicate width and height combination found in priceList",
-      });
+      return res
+        .status(400)
+        .json({
+          message: "Duplicate width and height combination found in priceList",
+        });
     }
 
     const updatedesign = await designationModel.findByIdAndUpdate(
@@ -227,13 +248,15 @@ exports.getMinAndMaxDimensions = async (req, res) => {
     const { priceList } = product;
 
     if (!priceList || priceList.length === 0) {
-      return res.status(200).json({
-        message: "Price list is empty for this product",
-        minWidth: 0,
-        maxWidth: 0,
-        minHeight: 0,
-        maxHeight: 0,
-      });
+      return res
+        .status(200)
+        .json({
+          message: "Price list is empty for this product",
+          minWidth: 0,
+          maxWidth: 0,
+          minHeight: 0,
+          maxHeight: 0,
+        });
     }
 
     let minWidth = priceList[0].width;
@@ -265,6 +288,57 @@ exports.getMinAndMaxDimensions = async (req, res) => {
     });
   } catch (error) {
     console.error("Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.saveQuotes = async (req, res) => {
+  try {
+    const quotes = req.body;
+
+    const savedQuotes = await quoteSchema.insertMany(quotes);
+
+    res.status(201).json({
+      message: "Quotes saved successfully!",
+      data: savedQuotes,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred while saving quotes",
+      error: error.message,
+    });
+  }
+};
+
+exports.getAllQuotesSorted = async (req, res) => {
+  try {
+    const quotes = await quoteSchema.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      message: "Quotes retrieved and sorted successfully",
+      data: quotes,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred while retrieving and sorting quotes",
+      error: error.message,
+    });
+  }
+};
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedOrder = await quoteSchema.findByIdAndDelete(id);
+
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json({ message: "Order deleted successfully" });
+  } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
 };
