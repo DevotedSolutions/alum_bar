@@ -20,6 +20,14 @@ const { getPOB1Data } = require("./frappeProducts/pob1");
 const { getPOB2Data } = require("./frappeProducts/pob2");
 const { getPOBE1Data } = require("./frappeProducts/pobe1");
 const { getPOBE2Data } = require("./frappeProducts/pobe2");
+const { getFPData } = require("./frappeProducts/fp");
+const { getPSP2Data } = require("./frappeProducts/psp2");
+const { getVP1Data } = require("./frappeProducts/vp1");
+const { getVP2Data } = require("./frappeProducts/vp2");
+const { getPE1Data } = require("./frappeProducts/pe1");
+const { getPE2TraData } = require("./frappeProducts/pe2-tra");
+const { getPCV1Data } = require("./frappeProducts/pcv1");
+const { getPCV2Data } = require("./frappeProducts/pcv2");
 
 exports.getAllJobSheets = async (req, res) => {
   try {
@@ -290,6 +298,9 @@ exports.getFrappeProfilesAcc = async (req, res) => {
     } else if (windowRef === "PSP 1") {
       const data = getPSP1Data({ ...req.body });
       res.status(200).json({ ...data });
+    } else if (windowRef === "PSP 2") {
+      const data = getPSP2Data({ ...req.body });
+      res.status(200).json({ ...data });
     } else if (windowRef === "SO 1") {
       const data = getSOU1Data({ ...req.body });
       res.status(200).json({ ...data });
@@ -299,14 +310,35 @@ exports.getFrappeProfilesAcc = async (req, res) => {
     } else if (windowRef === "PE 2") {
       const data = getPE2Data({ ...req.body });
       res.status(200).json({ ...data });
+    } else if (windowRef === "PE 2 Tra") {
+      const data = getPE2TraData({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "PE 1") {
+      const data = getPE1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "PCV 1") {
+      const data = getPCV1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "PCV 2") {
+      const data = getPCV2Data({ ...req.body });
+      res.status(200).json({ ...data });
     } else if (windowRef === "PF 1") {
       const data = getPF1Data({ ...req.body });
       res.status(200).json({ ...data });
     } else if (windowRef === "PF 2") {
       const data = getVB2Data({ ...req.body });
       res.status(200).json({ ...data });
+    } else if (windowRef === "FP") {
+      const data = getFPData({ ...req.body });
+      res.status(200).json({ ...data });
     } else if (windowRef === "VB 1") {
       const data = getVB1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "VP 1") {
+      const data = getVP1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "VP 2") {
+      const data = getVP2Data({ ...req.body });
       res.status(200).json({ ...data });
     } else if (windowRef === "POB 1") {
       const data = getPOB1Data({ ...req.body });

@@ -1,6 +1,6 @@
 const dataset = require("../frappeDataset.json");
 
-exports.getPE2Data = ({
+exports.getPE2TraData = ({
   windowRef,
   height,
   width,
@@ -68,21 +68,12 @@ exports.getPE2Data = ({
   const R51 = (quantity * 2 * P51) / 1000;
   const R52 = (quantity * 4 * P52) / 1000;
   const S50 = (R50 + R51 + R52) * 1.07;
-  const R55 =
-    ((basementOffset ? quantity * 4 : quantity * 2) * (P50 - 140)) / 1000;
-  const R56 =
-    ((basementOffset ? quantity * 4 : quantity * 2) *
-      (P51 - (largerWidth ? 370 : 140))) /
-    1000;
-  const R57 =
-    ((largerWidth ? quantity * 8 : basementOffset ? quantity * 4 : 0) *
-      (largerWidth ? Math.round(P59 - 120) / 4 : H51)) /
-    1000;
-  const R58 = (quantity * 4 * P59) / 1000;
-  const R59 = (quantity * 8 * P46) / 1000;
+  const R55 = (quantity * 2 * (P50 - 140)) / 1000;
+  const R56 = (quantity * 8 * (P51 - (largerWidth ? 370 : 140))) / 1000;
+  const R57 = (quantity * 8 * (Math.round(P59 - 120) / 4)) / 1000;
+  const R58 = (quantity * 2 * P59) / 1000;
 
   const S56 = (R55 + R56 + R57 + R58) * 1.07;
-  const S57 = (R55 + R57 + R58 + R59) * 1.07;
 
   const glazzingVal = getGlazzingVal(glazzing);
 
@@ -128,7 +119,7 @@ exports.getPE2Data = ({
         code: profiles[3]?.code,
         color,
         param: "Width",
-        quantity: largerWidth ? quantity * 3 : O46,
+        quantity: 3,
         length: P46,
       },
       {
@@ -190,43 +181,32 @@ exports.getPE2Data = ({
         code: profiles[10]?.code,
         color,
         param: "Width",
-        quantity: basementOffset ? quantity * 4 : quantity * 2,
+        quantity: quantity * 2,
         length: P50 - 140,
       },
+
       {
         name: profiles[10]?.name,
         code: profiles[10]?.code,
         color,
         param: "Width",
-        quantity: largerWidth ? quantity * 8 : 0,
-        length: largerWidth ? P46 : 0,
-      },
-      {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
-        color,
-        param: "Width",
-        quantity: basementOffset ? quantity * 4 : quantity * 2,
-        length: P51 - (largerWidth ? 370 : 140),
+        quantity: quantity * 8,
+        length: P51 - 140,
       },
       {
         name: profiles[10]?.name,
         code: profiles[10]?.code,
         color,
         param: "Height",
-        quantity: largerWidth
-          ? quantity * 8
-          : basementOffset
-          ? quantity * 2
-          : 0,
-        length: largerWidth ? Math.round((P59 - 120) / 4) : H51,
+        quantity: quantity * 8,
+        length: Math.round((P59 - 120) / 4),
       },
       {
         name: profiles[10]?.name,
         code: profiles[10]?.code,
         color,
         param: "Height",
-        quantity: quantity * 4,
+        quantity: quantity * 2,
         length: P59,
       },
 
@@ -313,7 +293,7 @@ exports.getPE2Data = ({
         name: accessories[15]?.name,
         code: accessories[15]?.code,
         color,
-        quantity: (largerWidth ? O46L : O46) * 2,
+        quantity: 3 * quantity * 2,
       },
       {
         name: accessories[16]?.name,
@@ -337,47 +317,32 @@ exports.getPE2Data = ({
         name: accessories[19]?.name,
         code: accessories[19]?.code,
         color: "",
-        quantity: Math.round(largerWidth ? S57 : S56),
+        quantity: Math.round(S56),
       },
 
       {
         name: accessories[21]?.name,
         code: accessories[21]?.code,
         color: "",
-        quantity: Math.round(largerWidth ? S57 : S56),
+        quantity: Math.round(S56),
       },
     ],
-    glazzingValues: largerWidth
-      ? [
-          {
-            code: glazzingVal,
-            quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
-            width: [9, 10]?.includes(glazzingVal) ? 0 : P50 - 145,
-            height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
-          },
-          {
-            code: glazzingVal,
-            quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity * 4 : 0,
-            width: [9, 10]?.includes(glazzingVal) ? 0 : 185,
-            height: [9, 10]?.includes(glazzingVal)
-              ? 0
-              : Math.round((P59 - 120) / 4) - 5,
-          },
-        ]
-      : [
-          {
-            code: glazzingVal,
-            quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
-            width: [9, 10]?.includes(glazzingVal) ? 0 : P51 - 145,
-            height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
-          },
-          {
-            code: glazzingVal,
-            quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
-            width: [9, 10]?.includes(glazzingVal) ? 0 : P50 - 145,
-            height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
-          },
-        ],
+    glazzingValues: [
+      {
+        code: glazzingVal,
+        quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
+        width: [9, 10]?.includes(glazzingVal) ? 0 : P50 - 145,
+        height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
+      },
+      {
+        code: glazzingVal,
+        quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity * 4 : 0,
+        width: [9, 10]?.includes(glazzingVal) ? 0 : 185,
+        height: [9, 10]?.includes(glazzingVal)
+          ? 0
+          : Math.round((P59 - 120) / 4) - 5,
+      },
+    ],
   };
   return {
     ...data,

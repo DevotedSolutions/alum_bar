@@ -1,6 +1,6 @@
 const dataset = require("../frappeDataset.json");
 
-exports.getPE2Data = ({
+exports.getPCV2Data = ({
   windowRef,
   height,
   width,
@@ -17,6 +17,10 @@ exports.getPE2Data = ({
   const profiles = dataset?.profiles || [];
   const accessories = dataset?.accessories || [];
 
+  const isSmallSize = width < 1301;
+  const isMediumSize = width > 1300 && width < 1551;
+  const isLargeSize = width > 1550;
+
   const jointCoverOffset = jointCovers === "yes";
   const thresholdOffset = threshold === "yes";
   const basementOffset = basement === "yes";
@@ -25,22 +29,24 @@ exports.getPE2Data = ({
 
   const P38 = jointCoverOffset ? height + 18 : height;
 
-  const P51 =
-    width > 1999
-      ? 1000
-      : width > 1899
-      ? 900
-      : width > 1799
-      ? 800
-      : width > 1699
-      ? 700
-      : width > 1499
-      ? 600
-      : largerWidth
-      ? 560
-      : 330;
-  const P50 = (jointCoverOffset ? width - 36 : width - 54) - P51;
-  let P46 = largerWidth ? 190 : P51 - 140;
+  let O32 = jointCoverOffset ? width - 36 : width - 54;
+
+  let P40 = isSmallSize
+    ? Math.round((O32 - 520) / 4)
+    : isMediumSize
+    ? Math.round((O32 - 600) / 5)
+    : Math.round((O32 - 680) / 6);
+  const P50 = isLargeSize
+    ? P40 * 3 + 340
+    : isMediumSize
+    ? P40 * 2 + 260
+    : P40 + 180;
+  const P51 = O32 - P50;
+  const P45 = isSmallSize
+    ? P50 - 140
+    : isMediumSize
+    ? Math.round((P50 - 180) / 2)
+    : Math.round((P50 - 220) / 3);
 
   const P52 =
     height -
@@ -68,21 +74,17 @@ exports.getPE2Data = ({
   const R51 = (quantity * 2 * P51) / 1000;
   const R52 = (quantity * 4 * P52) / 1000;
   const S50 = (R50 + R51 + R52) * 1.07;
-  const R55 =
-    ((basementOffset ? quantity * 4 : quantity * 2) * (P50 - 140)) / 1000;
-  const R56 =
-    ((basementOffset ? quantity * 4 : quantity * 2) *
-      (P51 - (largerWidth ? 370 : 140))) /
-    1000;
-  const R57 =
-    ((largerWidth ? quantity * 8 : basementOffset ? quantity * 4 : 0) *
-      (largerWidth ? Math.round(P59 - 120) / 4 : H51)) /
-    1000;
-  const R58 = (quantity * 4 * P59) / 1000;
-  const R59 = (quantity * 8 * P46) / 1000;
 
-  const S56 = (R55 + R56 + R57 + R58) * 1.07;
-  const S57 = (R55 + R57 + R58 + R59) * 1.07;
+  const R56 =
+    (quantity * (isSmallSize ? 20 : isMediumSize ? 26 : 28) * P45) / 1000;
+  const R59 = (quantity * (isSmallSize ? 4 : 8) * 240) / 1000;
+  const R57 = (quantity * 8 * 600) / 1000;
+  const R58 = (quantity * 4 * (P52 - 1420)) / 1000;
+
+  const R60 = (quantity * (isSmallSize ? 2 : 4) * (P52 - 700)) / 1000;
+  const R61 = (quantity * (isLargeSize ? 4 : 2) * (P52 - 140)) / 1000;
+
+  const S56 = (R56 + R57 + R58 + R59 + R60 + R61) * 1.07;
 
   const glazzingVal = getGlazzingVal(glazzing);
 
@@ -110,27 +112,19 @@ exports.getPE2Data = ({
         name: profiles[3]?.name,
         code: profiles[3]?.code,
         color,
-        param: "Height",
-        quantity: largerWidth ? quantity : 0,
-        length: largerWidth ? P52 - 140 : 0,
+        param: "Width",
+        quantity: quantity * (isSmallSize ? 6 : 8),
+        length: P45,
       },
       {
         name: profiles[3]?.name,
         code: profiles[3]?.code,
         color,
-        param: "Width",
-        quantity: largerWidth ? 0 : O46,
-        length: largerWidth ? 0 : P50 - 140,
+        param: "Height",
+        quantity: quantity * (isLargeSize ? 4 : isMediumSize ? 3 : 2),
+        length: P52 - 140,
       },
 
-      {
-        name: profiles[3]?.name,
-        code: profiles[3]?.code,
-        color,
-        param: "Width",
-        quantity: largerWidth ? quantity * 3 : O46,
-        length: P46,
-      },
       {
         name: profiles[4]?.name,
         code: profiles[4]?.code,
@@ -146,7 +140,7 @@ exports.getPE2Data = ({
         color,
         param: "Width",
         quantity: quantity * 2,
-        length: (jointCoverOffset ? width - 36 : width - 54) - P51,
+        length: P50,
       },
       {
         name: profiles[langIsEN ? 9 : 8]?.name,
@@ -169,20 +163,8 @@ exports.getPE2Data = ({
         code: profiles[11]?.code,
         color,
         param: "Width",
-        quantity: largerWidth
-          ? Math.ceil((P59 - 5) / 120) * quantity
-          : basementOffset
-          ? quantity * blade
-          : 0,
-        length: largerWidth ? P51 - 375 : P50 - 145,
-      },
-      {
-        name: profiles[11]?.name,
-        code: profiles[11]?.code,
-        color,
-        param: "Width",
-        quantity: basementOffset ? quantity * blade : 0,
-        length: largerWidth ? P59 - 5 : P51 - 145,
+        quantity: quantity * (isLargeSize ? 28 : isMediumSize ? 28 : 24),
+        length: P45 - 5,
       },
 
       {
@@ -190,36 +172,24 @@ exports.getPE2Data = ({
         code: profiles[10]?.code,
         color,
         param: "Width",
-        quantity: basementOffset ? quantity * 4 : quantity * 2,
-        length: P50 - 140,
-      },
-      {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
-        color,
-        param: "Width",
-        quantity: largerWidth ? quantity * 8 : 0,
-        length: largerWidth ? P46 : 0,
-      },
-      {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
-        color,
-        param: "Width",
-        quantity: basementOffset ? quantity * 4 : quantity * 2,
-        length: P51 - (largerWidth ? 370 : 140),
+        quantity: (isLargeSize ? 28 : isMediumSize ? 26 : 20) * quantity,
+        length: P45,
       },
       {
         name: profiles[10]?.name,
         code: profiles[10]?.code,
         color,
         param: "Height",
-        quantity: largerWidth
-          ? quantity * 8
-          : basementOffset
-          ? quantity * 2
-          : 0,
-        length: largerWidth ? Math.round((P59 - 120) / 4) : H51,
+        quantity: quantity * (isSmallSize ? 4 : 8),
+        length: 240,
+      },
+      {
+        name: profiles[10]?.name,
+        code: profiles[10]?.code,
+        color,
+        param: "Height",
+        quantity: quantity * 8,
+        length: 600,
       },
       {
         name: profiles[10]?.name,
@@ -227,7 +197,23 @@ exports.getPE2Data = ({
         color,
         param: "Height",
         quantity: quantity * 4,
-        length: P59,
+        length: P52 - 1420,
+      },
+      {
+        name: profiles[10]?.name,
+        code: profiles[10]?.code,
+        color,
+        param: "Height",
+        quantity: quantity * (isSmallSize ? 2 : 4),
+        length: P52 - 700,
+      },
+      {
+        name: profiles[10]?.name,
+        code: profiles[10]?.code,
+        color,
+        param: "Height",
+        quantity: quantity * (isLargeSize ? 4 : 2),
+        length: P52 - 140,
       },
 
       {
@@ -239,14 +225,6 @@ exports.getPE2Data = ({
         length: jointCoverOffset ? width - 50 : width - 68,
       },
 
-      {
-        name: profiles[15]?.name,
-        code: profiles[15]?.code,
-        color: "AS",
-        param: "Height",
-        quantity: quantity * 2,
-        length: 400,
-      },
       {
         name: profiles[17]?.name,
         code: profiles[17]?.code,
@@ -266,10 +244,10 @@ exports.getPE2Data = ({
     ],
     accessories: [
       {
-        name: accessories[2]?.name,
-        code: accessories[2]?.code,
+        name: accessories[3]?.name,
+        code: accessories[3]?.code,
         color,
-        quantity: (closing === "3 pts" ? 1 : 0) * quantity,
+        quantity: (closing === "1 pt" ? 1 : 0) * quantity,
       },
       {
         name: accessories[4]?.name,
@@ -288,7 +266,7 @@ exports.getPE2Data = ({
         name: accessories[8]?.name,
         code: accessories[8]?.code,
         color: "",
-        quantity: 4 * quantity,
+        quantity: (isSmallSize ? 20 : isMediumSize ? 26 : 28) * quantity,
       },
       {
         name: accessories[9]?.name,
@@ -313,7 +291,7 @@ exports.getPE2Data = ({
         name: accessories[15]?.name,
         code: accessories[15]?.code,
         color,
-        quantity: (largerWidth ? O46L : O46) * 2,
+        quantity: (isSmallSize ? 8 : isMediumSize ? 11 : 12) * quantity * 2,
       },
       {
         name: accessories[16]?.name,
@@ -337,47 +315,36 @@ exports.getPE2Data = ({
         name: accessories[19]?.name,
         code: accessories[19]?.code,
         color: "",
-        quantity: Math.round(largerWidth ? S57 : S56),
+        quantity: Math.round(S56),
       },
 
       {
-        name: accessories[21]?.name,
-        code: accessories[21]?.code,
+        name: accessories[20]?.name,
+        code: accessories[20]?.code,
         color: "",
-        quantity: Math.round(largerWidth ? S57 : S56),
+        quantity: Math.round(S56),
       },
     ],
-    glazzingValues: largerWidth
-      ? [
-          {
-            code: glazzingVal,
-            quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
-            width: [9, 10]?.includes(glazzingVal) ? 0 : P50 - 145,
-            height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
-          },
-          {
-            code: glazzingVal,
-            quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity * 4 : 0,
-            width: [9, 10]?.includes(glazzingVal) ? 0 : 185,
-            height: [9, 10]?.includes(glazzingVal)
-              ? 0
-              : Math.round((P59 - 120) / 4) - 5,
-          },
-        ]
-      : [
-          {
-            code: glazzingVal,
-            quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
-            width: [9, 10]?.includes(glazzingVal) ? 0 : P51 - 145,
-            height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
-          },
-          {
-            code: glazzingVal,
-            quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
-            width: [9, 10]?.includes(glazzingVal) ? 0 : P50 - 145,
-            height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
-          },
-        ],
+    glazzingValues: [
+      {
+        code: glazzingVal,
+        quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
+        width: [9, 10]?.includes(glazzingVal) ? 0 : P45 - 5,
+        height: [9, 10]?.includes(glazzingVal) ? 0 : P52 - 1425,
+      },
+      {
+        code: glazzingVal,
+        quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
+        width: [9, 10]?.includes(glazzingVal) ? 0 : P45 - 5,
+        height: [9, 10]?.includes(glazzingVal) ? 0 : P52 - 705,
+      },
+      {
+        code: glazzingVal,
+        quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
+        width: [9, 10]?.includes(glazzingVal) ? 0 : P45 - 5,
+        height: [9, 10]?.includes(glazzingVal) ? 0 : P52 - 145,
+      },
+    ],
   };
   return {
     ...data,
