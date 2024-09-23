@@ -61,6 +61,7 @@ const InventoryPage = () => {
   let [oneProduct, setOneProduct] = useState(null);
   const [priviousQuantity, setPriviousQuantity] = useState(0);
   const [newQuantity, setNewQuantity] = useState();
+  const [loading, setLoading] = useState(false);
 
   // Function to handle the new quantity input
   function handleNewQuantity(e) {
@@ -153,7 +154,9 @@ const InventoryPage = () => {
   // Function to fetch data from the server
   async function getData() {
     try {
+      setLoading(true);
       const resp = await getAllProducts();
+      setLoading(false);
       if (resp.status === 200) {
         setData(resp.data.getdata);
         // setTotalPages(resp.data.totalPages);
@@ -333,87 +336,100 @@ const InventoryPage = () => {
           </Box>
         </Grid>
         <Grid item xs={12}>
-          <Box sx={{ borderRadius: "12px" }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Image</TableCell>
-                  <TableCell>Product Name</TableCell>
-                  <TableCell>Product Description</TableCell>
-                  <TableCell>Product Code</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Quantity</TableCell>
-                  <TableCell>Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.length > 0 ? (
-                  data
-                    .filter((item) => {
-                      const productName = item.productName.toLowerCase();
-                      const productDescription =
-                        item.productDescription.toLowerCase();
-                      const productcode = item.productcode.toLowerCase();
-                      const searchDataLowerCase = searchData.toLowerCase();
-                      return (
-                        productName.includes(searchDataLowerCase) ||
-                        productDescription.includes(searchDataLowerCase) ||
-                        productcode.includes(searchDataLowerCase)
-                      );
-                    })
-                    .map((item, index) => {
-                      console.log(item.price);
-                      return (
-                        <TableRow key={index}>
-                          <TableCell>
-                            <Box sx={{ width: "100px" }}>
-                              <img
-                                // src={`http://localhost:1000/${item.image}`}
-                                src={`https://app.noutfermeture.com/api/${item.image}`}
-                                style={{ width: "100%", height: "70px" }}
-                                alt="Product"
-                              />
-                            </Box>
-                          </TableCell>
-                          <TableCell>{item.productName}</TableCell>
-                          <TableCell>{item.productDescription}</TableCell>
-                          <TableCell>{item.productcode}</TableCell>
-                          <TableCell>{item.price}</TableCell>
-
-                          <TableCell>{item.quantity}</TableCell>
-                          <TableCell>
-                            <Box sx={{ display: "flex", gap: "6px" }}>
-                              <Button
-                                variant="contained"
-                                sx={{ textTransform: "capitalize" }}
-                                onClick={() => {
-                                  handleOpen(item._id);
-                                }}
-                              >
-                                Add more Quantity
-                              </Button>
-                              <Button
-                                variant="contained"
-                                sx={{ textTransform: "capitalize" }}
-                                onClick={() => {
-                                  handleOpenSellModal(item._id);
-                                }}
-                              >
-                                Generate Sell QR code
-                              </Button>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                ) : (
+          {loading ? (
+            <Grid
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "15px",
+              }}
+            >
+              <Typography>Loading...</Typography>
+            </Grid>
+          ) : (
+            <Box sx={{ borderRadius: "12px" }}>
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell>Data not found</TableCell>
+                    <TableCell>Image</TableCell>
+                    <TableCell>Product Name</TableCell>
+                    <TableCell>Product Description</TableCell>
+                    <TableCell>Product Code</TableCell>
+                    <TableCell>Price</TableCell>
+                    <TableCell>Quantity</TableCell>
+                    <TableCell>Action</TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Box>
+                </TableHead>
+                <TableBody>
+                  {data.length > 0 ? (
+                    data
+                      .filter((item) => {
+                        const productName = item.productName.toLowerCase();
+                        const productDescription =
+                          item.productDescription.toLowerCase();
+                        const productcode = item.productcode.toLowerCase();
+                        const searchDataLowerCase = searchData.toLowerCase();
+                        return (
+                          productName.includes(searchDataLowerCase) ||
+                          productDescription.includes(searchDataLowerCase) ||
+                          productcode.includes(searchDataLowerCase)
+                        );
+                      })
+                      .map((item, index) => {
+                        console.log(item.price);
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <Box sx={{ width: "100px" }}>
+                                <img
+                                  // src={`http://localhost:1000/${item.image}`}
+                                  src={`https://app.noutfermeture.com/api/${item.image}`}
+                                  style={{ width: "100%", height: "70px" }}
+                                  alt="Product"
+                                />
+                              </Box>
+                            </TableCell>
+                            <TableCell>{item.productName}</TableCell>
+                            <TableCell>{item.productDescription}</TableCell>
+                            <TableCell>{item.productcode}</TableCell>
+                            <TableCell>{item.price}</TableCell>
+
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell>
+                              <Box sx={{ display: "flex", gap: "6px" }}>
+                                <Button
+                                  variant="contained"
+                                  sx={{ textTransform: "capitalize" }}
+                                  onClick={() => {
+                                    handleOpen(item._id);
+                                  }}
+                                >
+                                  Add more Quantity
+                                </Button>
+                                <Button
+                                  variant="contained"
+                                  sx={{ textTransform: "capitalize" }}
+                                  onClick={() => {
+                                    handleOpenSellModal(item._id);
+                                  }}
+                                >
+                                  Generate Sell QR code
+                                </Button>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                  ) : (
+                    <TableRow>
+                      <TableCell>Data not found</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </Box>
+          )}
         </Grid>
         {/* <Grid item xs={12}>
           <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>

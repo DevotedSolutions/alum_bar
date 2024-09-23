@@ -1,6 +1,6 @@
 const dataset = require("../frappeDataset.json");
 
-exports.getPSP1Data = ({
+exports.getPCP1Data = ({
   windowRef,
   height,
   width,
@@ -35,7 +35,7 @@ exports.getPSP1Data = ({
       : 48);
   const H51 = basementOffset ? blade * 120 : 0;
   const P59 = P52 - (basementOffset ? 180 + H51 : 140);
-  const P55 = Math.ceil(P59 / 120);
+  const P55 = Math.ceil((P52 - 126) / 120);
   const O46 = basementOffset ? quantity : 0;
   const R41 =
     ((thresholdOffset ? quantity : quantity * 2) *
@@ -87,56 +87,32 @@ exports.getPSP1Data = ({
       },
 
       {
-        name: profiles[langIsEN ? 9 : 8]?.name,
-        code: profiles[langIsEN ? 9 : 8]?.code,
+        name: profiles[16]?.name,
+        code: profiles[16]?.code,
         color,
         param: "Width",
         quantity: quantity * 2,
         length: P51,
       },
+
       {
-        name: profiles[langIsEN ? 9 : 8]?.name,
-        code: profiles[langIsEN ? 9 : 8]?.code,
+        name: profiles[16]?.name,
+        code: profiles[16]?.code,
         color,
         param: "Height",
         quantity: quantity * 2,
         length: P52,
       },
+
       {
         name: profiles[11]?.name,
         code: profiles[11]?.code,
         color,
         param: "Width",
-        quantity:
-          glazzingVal === 9
-            ? quantity * blade + quantity * P55
-            : quantity * blade,
-        length: P51 - 145,
+        quantity: glazzingVal === 9 ? P55 * quantity : 0,
+        length: P51 - 126,
       },
-      {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
-        color,
-        param: "Width",
-        quantity: basementOffset ? quantity * 4 : quantity * 2,
-        length: P51 - 140,
-      },
-      {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
-        color,
-        param: "Height",
-        quantity: basementOffset ? quantity * 2 : 0,
-        length: H51,
-      },
-      {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
-        color,
-        param: "Height",
-        quantity: quantity * 2,
-        length: P59,
-      },
+
       {
         name: profiles[13]?.name,
         code: profiles[13]?.code,
@@ -144,23 +120,6 @@ exports.getPSP1Data = ({
         param: "Width",
         quantity: quantity,
         length: jointCoverOffset ? width - 50 : width - 68,
-      },
-
-      {
-        name: profiles[15]?.name,
-        code: profiles[15]?.code,
-        color: "AS",
-        param: "Height",
-        quantity: quantity * 2,
-        length: 400,
-      },
-      {
-        name: profiles[17]?.name,
-        code: profiles[17]?.code,
-        color: "AS",
-        param: "Width",
-        quantity: quantity,
-        length: P51 - 59,
       },
     ],
     accessories: [
@@ -197,12 +156,6 @@ exports.getPSP1Data = ({
         quantity: 4 * quantity,
       },
       {
-        name: accessories[15]?.name,
-        code: accessories[15]?.code,
-        color: "",
-        quantity: O46 * 2,
-      },
-      {
         name: accessories[16]?.name,
         code: accessories[16]?.code,
         color: "",
@@ -220,31 +173,13 @@ exports.getPSP1Data = ({
         color: "",
         quantity: Math.round(S41 + S50),
       },
-      {
-        name: accessories[19]?.name,
-        code: accessories[19]?.code,
-        color: "",
-        quantity: Math.round(S56),
-      },
-      {
-        name: accessories[20]?.name,
-        code: accessories[20]?.code,
-        color: "",
-        quantity: Math.round([1, 4, 7, 11].includes(glazzingVal) ? S56 : 0),
-      },
-      {
-        name: accessories[21]?.name,
-        code: accessories[21]?.code,
-        color: "",
-        quantity: Math.round([5, 6, 9].includes(glazzingVal) ? S56 : 0),
-      },
     ],
     glazzingValues: [
       {
         code: glazzingVal,
         quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
-        width: [9, 10]?.includes(glazzingVal) ? 0 : P51 - 145,
-        height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
+        width: [9, 10]?.includes(glazzingVal) ? 0 : P51 - 126,
+        height: [9, 10]?.includes(glazzingVal) ? 0 : P52 - 126,
       },
     ],
   };

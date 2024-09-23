@@ -28,6 +28,10 @@ const { getPE1Data } = require("./frappeProducts/pe1");
 const { getPE2TraData } = require("./frappeProducts/pe2-tra");
 const { getPCV1Data } = require("./frappeProducts/pcv1");
 const { getPCV2Data } = require("./frappeProducts/pcv2");
+const { getPCVHaut1Data } = require("./frappeProducts/pcv-haut1");
+const { getPCVHaut2Data } = require("./frappeProducts/pcv-haut2");
+const { getPCP1Data } = require("./frappeProducts/pcp");
+const { getPCP2Data } = require("./frappeProducts/pcp2");
 
 exports.getAllJobSheets = async (req, res) => {
   try {
@@ -351,6 +355,18 @@ exports.getFrappeProfilesAcc = async (req, res) => {
       res.status(200).json({ ...data });
     } else if (windowRef === "POB E2") {
       const data = getPOBE2Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "PCV Haut1") {
+      const data = getPCVHaut1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "PCV Haut2") {
+      const data = getPCVHaut2Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "PCP 1") {
+      const data = getPCP1Data({ ...req.body });
+      res.status(200).json({ ...data });
+    } else if (windowRef === "PCP 2") {
+      const data = getPCP2Data({ ...req.body });
       res.status(200).json({ ...data });
     } else {
       return res

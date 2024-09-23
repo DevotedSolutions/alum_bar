@@ -1,6 +1,6 @@
 const dataset = require("../frappeDataset.json");
 
-exports.getPSP1Data = ({
+exports.getPCVHaut1Data = ({
   windowRef,
   height,
   width,
@@ -21,9 +21,14 @@ exports.getPSP1Data = ({
   const thresholdOffset = threshold === "yes";
   const basementOffset = basement === "yes";
   const langIsEN = lang === "EN";
+  const largerWidth = width > 1400;
 
   const P38 = jointCoverOffset ? height + 18 : height;
-  const P51 = width - (jointCoverOffset ? 30 : 48);
+
+  const P51 = jointCoverOffset ? width - 30 : width - 48;
+  let P46 = largerWidth ? 190 : P51 - 140;
+  const P45 = Math.round((P51 - 220) / 3);
+
   const P52 =
     height -
     (jointCoverOffset
@@ -35,8 +40,7 @@ exports.getPSP1Data = ({
       : 48);
   const H51 = basementOffset ? blade * 120 : 0;
   const P59 = P52 - (basementOffset ? 180 + H51 : 140);
-  const P55 = Math.ceil(P59 / 120);
-  const O46 = basementOffset ? quantity : 0;
+
   const R41 =
     ((thresholdOffset ? quantity : quantity * 2) *
       (jointCoverOffset ? width + 36 : width)) /
@@ -45,18 +49,22 @@ exports.getPSP1Data = ({
     (quantity * 2 * (!thresholdOffset && jointCoverOffset ? P38 + 18 : P38)) /
     1000;
   const S41 = (R41 + R42) * 1.07;
+
   const R51 = (quantity * 2 * P51) / 1000;
   const R52 = (quantity * 2 * P52) / 1000;
   const S50 = (R51 + R52) * 1.07;
+
   const R56 =
     ((basementOffset ? quantity * 4 : quantity * 2) * (P51 - 140)) / 1000;
-  const R57 = ((basementOffset ? quantity * 2 : 0) * H51) / 1000;
-  const R58 = (quantity * 2 * P59) / 1000;
-  const S56 = (R56 + R57 + R58) * 1.07;
+  const R58 = ((basementOffset ? quantity * 2 : 0) * H51) / 1000;
+  const R60 =
+    (quantity * 2 * (basementOffset ? P52 - 180 - H51 : P52 - 140)) / 1000;
+
+  const S56 = (R56 + R58 + R60) * 1.07;
 
   const glazzingVal = getGlazzingVal(glazzing);
 
-  return {
+  const data = {
     profiles: [
       {
         name: profiles[jointCoverOffset ? 1 : 0]?.name,
@@ -82,7 +90,7 @@ exports.getPSP1Data = ({
         code: profiles[3]?.code,
         color,
         param: "Height",
-        quantity: O46,
+        quantity: basementOffset ? quantity : 0,
         length: P51 - 140,
       },
 
@@ -107,12 +115,10 @@ exports.getPSP1Data = ({
         code: profiles[11]?.code,
         color,
         param: "Width",
-        quantity:
-          glazzingVal === 9
-            ? quantity * blade + quantity * P55
-            : quantity * blade,
+        quantity: basementOffset ? quantity * blade : 0,
         length: P51 - 145,
       },
+
       {
         name: profiles[10]?.name,
         code: profiles[10]?.code,
@@ -121,6 +127,7 @@ exports.getPSP1Data = ({
         quantity: basementOffset ? quantity * 4 : quantity * 2,
         length: P51 - 140,
       },
+
       {
         name: profiles[10]?.name,
         code: profiles[10]?.code,
@@ -135,8 +142,9 @@ exports.getPSP1Data = ({
         color,
         param: "Height",
         quantity: quantity * 2,
-        length: P59,
+        length: basementOffset ? P52 - 180 - H51 : P52 - 140,
       },
+
       {
         name: profiles[13]?.name,
         code: profiles[13]?.code,
@@ -145,15 +153,15 @@ exports.getPSP1Data = ({
         quantity: quantity,
         length: jointCoverOffset ? width - 50 : width - 68,
       },
-
       {
         name: profiles[15]?.name,
         code: profiles[15]?.code,
         color: "AS",
-        param: "Height",
+        param: "Width",
         quantity: quantity * 2,
         length: 400,
       },
+
       {
         name: profiles[17]?.name,
         code: profiles[17]?.code,
@@ -171,10 +179,10 @@ exports.getPSP1Data = ({
         quantity: (closing === "3 pts" ? 1 : 0) * quantity,
       },
       {
-        name: accessories[5]?.name,
-        code: accessories[5]?.code,
-        color: "",
-        quantity: quantity,
+        name: accessories[3]?.name,
+        code: accessories[3]?.code,
+        color,
+        quantity: (closing === "1 pt" ? 1 : 0) * quantity,
       },
 
       {
@@ -199,9 +207,10 @@ exports.getPSP1Data = ({
       {
         name: accessories[15]?.name,
         code: accessories[15]?.code,
-        color: "",
-        quantity: O46 * 2,
+        color,
+        quantity: 2 * quantity,
       },
+
       {
         name: accessories[16]?.name,
         code: accessories[16]?.code,
@@ -244,9 +253,19 @@ exports.getPSP1Data = ({
         code: glazzingVal,
         quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
         width: [9, 10]?.includes(glazzingVal) ? 0 : P51 - 145,
-        height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
+        height: [9, 10]?.includes(glazzingVal)
+          ? 0
+          : basementOffset
+          ? P52 - 185 - H51
+          : P52 - 145,
       },
     ],
+  };
+  return {
+    ...data,
+    profiles: data?.profiles?.filter(
+      (profile) => profile.quantity > 0 || profile.length > 0
+    ),
   };
 };
 

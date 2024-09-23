@@ -60,7 +60,7 @@ exports.getPSP2Data = ({
     ((basementOffset ? quantity * 4 : quantity * 2) * (P50 - 140)) / 1000;
   const R56 =
     ((basementOffset ? quantity * 4 : quantity * 2) * (P51 - 140)) / 1000;
-  const R57 = ((basementOffset ? quantity * 4 : 0) * (H51 - 140)) / 1000;
+  const R57 = ((basementOffset ? quantity * 4 : 0) * H51) / 1000;
   const R58 = (quantity * 4 * P59) / 1000;
   const S56 = (R55 + R56 + R57 + R58) * 1.07;
 

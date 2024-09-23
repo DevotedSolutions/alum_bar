@@ -1,6 +1,6 @@
 const dataset = require("../frappeDataset.json");
 
-exports.getPSP1Data = ({
+exports.getPCP2Data = ({
   windowRef,
   height,
   width,
@@ -13,6 +13,8 @@ exports.getPSP1Data = ({
   closing,
   basement,
   blade,
+  thirdParty,
+  thirdPartyValue,
 }) => {
   const profiles = dataset?.profiles || [];
   const accessories = dataset?.accessories || [];
@@ -21,9 +23,12 @@ exports.getPSP1Data = ({
   const thresholdOffset = threshold === "yes";
   const basementOffset = basement === "yes";
   const langIsEN = lang === "EN";
+  const thirdPartyOffset = thirdParty === "yes";
 
   const P38 = jointCoverOffset ? height + 18 : height;
-  const P51 = width - (jointCoverOffset ? 30 : 48);
+  const O32 = jointCoverOffset ? width - 36 : width - 54;
+  const P50 = thirdPartyOffset ? thirdPartyValue : O32 / 2;
+  const P51 = O32 - P50;
   const P52 =
     height -
     (jointCoverOffset
@@ -35,7 +40,7 @@ exports.getPSP1Data = ({
       : 48);
   const H51 = basementOffset ? blade * 120 : 0;
   const P59 = P52 - (basementOffset ? 180 + H51 : 140);
-  const P55 = Math.ceil(P59 / 120);
+  const P55 = Math.ceil((P52 - 126) / 120);
   const O46 = basementOffset ? quantity : 0;
   const R41 =
     ((thresholdOffset ? quantity : quantity * 2) *
@@ -45,14 +50,10 @@ exports.getPSP1Data = ({
     (quantity * 2 * (!thresholdOffset && jointCoverOffset ? P38 + 18 : P38)) /
     1000;
   const S41 = (R41 + R42) * 1.07;
+  const R50 = (quantity * 2 * P50) / 1000;
   const R51 = (quantity * 2 * P51) / 1000;
-  const R52 = (quantity * 2 * P52) / 1000;
-  const S50 = (R51 + R52) * 1.07;
-  const R56 =
-    ((basementOffset ? quantity * 4 : quantity * 2) * (P51 - 140)) / 1000;
-  const R57 = ((basementOffset ? quantity * 2 : 0) * H51) / 1000;
-  const R58 = (quantity * 2 * P59) / 1000;
-  const S56 = (R56 + R57 + R58) * 1.07;
+  const R52 = (quantity * 4 * P52) / 1000;
+  const S50 = (R50 + R51 + R52) * 1.07;
 
   const glazzingVal = getGlazzingVal(glazzing);
 
@@ -78,65 +79,58 @@ exports.getPSP1Data = ({
       },
 
       {
-        name: profiles[3]?.name,
-        code: profiles[3]?.code,
+        name: profiles[4]?.name,
+        code: profiles[4]?.code,
         color,
         param: "Height",
-        quantity: O46,
-        length: P51 - 140,
+        quantity: quantity,
+        length: P52 - 63,
       },
 
       {
-        name: profiles[langIsEN ? 9 : 8]?.name,
-        code: profiles[langIsEN ? 9 : 8]?.code,
+        name: profiles[16]?.name,
+        code: profiles[16]?.code,
+        color,
+        param: "Width",
+        quantity: quantity * 2,
+        length: P50,
+      },
+      {
+        name: profiles[16]?.name,
+        code: profiles[16]?.code,
         color,
         param: "Width",
         quantity: quantity * 2,
         length: P51,
       },
+
       {
-        name: profiles[langIsEN ? 9 : 8]?.name,
-        code: profiles[langIsEN ? 9 : 8]?.code,
+        name: profiles[16]?.name,
+        code: profiles[16]?.code,
         color,
         param: "Height",
-        quantity: quantity * 2,
+        quantity: quantity * 4,
         length: P52,
       },
+
       {
         name: profiles[11]?.name,
         code: profiles[11]?.code,
         color,
         param: "Width",
-        quantity:
-          glazzingVal === 9
-            ? quantity * blade + quantity * P55
-            : quantity * blade,
-        length: P51 - 145,
+        quantity: glazzingVal === 9 ? P55 * quantity : 0,
+        length: P50 - 126,
       },
+
       {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
+        name: profiles[11]?.name,
+        code: profiles[11]?.code,
         color,
         param: "Width",
-        quantity: basementOffset ? quantity * 4 : quantity * 2,
-        length: P51 - 140,
+        quantity: glazzingVal === 9 ? P55 * quantity : 0,
+        length: P51 - 126,
       },
-      {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
-        color,
-        param: "Height",
-        quantity: basementOffset ? quantity * 2 : 0,
-        length: H51,
-      },
-      {
-        name: profiles[10]?.name,
-        code: profiles[10]?.code,
-        color,
-        param: "Height",
-        quantity: quantity * 2,
-        length: P59,
-      },
+
       {
         name: profiles[13]?.name,
         code: profiles[13]?.code,
@@ -145,22 +139,13 @@ exports.getPSP1Data = ({
         quantity: quantity,
         length: jointCoverOffset ? width - 50 : width - 68,
       },
-
       {
         name: profiles[15]?.name,
         code: profiles[15]?.code,
         color: "AS",
-        param: "Height",
+        param: "Width",
         quantity: quantity * 2,
         length: 400,
-      },
-      {
-        name: profiles[17]?.name,
-        code: profiles[17]?.code,
-        color: "AS",
-        param: "Width",
-        quantity: quantity,
-        length: P51 - 59,
       },
     ],
     accessories: [
@@ -169,6 +154,12 @@ exports.getPSP1Data = ({
         code: accessories[2]?.code,
         color,
         quantity: (closing === "3 pts" ? 1 : 0) * quantity,
+      },
+      {
+        name: accessories[4]?.name,
+        code: accessories[4]?.code,
+        color: "",
+        quantity: quantity,
       },
       {
         name: accessories[5]?.name,
@@ -181,38 +172,38 @@ exports.getPSP1Data = ({
         name: accessories[8]?.name,
         code: accessories[8]?.code,
         color: "",
-        quantity: 2 * quantity,
+        quantity: 4 * quantity,
       },
       {
         name: accessories[9]?.name,
         code: accessories[9]?.code,
         color: "",
-        quantity: 4 * quantity,
+        quantity: 8 * quantity,
+      },
+      {
+        name: accessories[13]?.name,
+        code: accessories[13]?.code,
+        color,
+        quantity: 2 * quantity,
       },
 
       {
         name: accessories[14]?.name,
         code: accessories[14]?.code,
         color,
-        quantity: 4 * quantity,
-      },
-      {
-        name: accessories[15]?.name,
-        code: accessories[15]?.code,
-        color: "",
-        quantity: O46 * 2,
+        quantity: 8 * quantity,
       },
       {
         name: accessories[16]?.name,
         code: accessories[16]?.code,
         color: "",
-        quantity: ((thresholdOffset ? 2 : 4) + 4) * quantity,
+        quantity: ((thresholdOffset ? 2 : 4) + 8) * quantity,
       },
       {
         name: accessories[17]?.name,
         code: accessories[17]?.code,
         color: "",
-        quantity: 2 * quantity,
+        quantity: 4 * quantity,
       },
       {
         name: accessories[18]?.name,
@@ -220,31 +211,19 @@ exports.getPSP1Data = ({
         color: "",
         quantity: Math.round(S41 + S50),
       },
-      {
-        name: accessories[19]?.name,
-        code: accessories[19]?.code,
-        color: "",
-        quantity: Math.round(S56),
-      },
-      {
-        name: accessories[20]?.name,
-        code: accessories[20]?.code,
-        color: "",
-        quantity: Math.round([1, 4, 7, 11].includes(glazzingVal) ? S56 : 0),
-      },
-      {
-        name: accessories[21]?.name,
-        code: accessories[21]?.code,
-        color: "",
-        quantity: Math.round([5, 6, 9].includes(glazzingVal) ? S56 : 0),
-      },
     ],
     glazzingValues: [
       {
         code: glazzingVal,
         quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
-        width: [9, 10]?.includes(glazzingVal) ? 0 : P51 - 145,
-        height: [9, 10]?.includes(glazzingVal) ? 0 : P59 - 5,
+        width: [9, 10]?.includes(glazzingVal) ? 0 : P51 - 126,
+        height: [9, 10]?.includes(glazzingVal) ? 0 : P52 - 126,
+      },
+      {
+        code: glazzingVal,
+        quantity: glazzingVal > 0 && glazzingVal <= 11 ? quantity : 0,
+        width: [9, 10]?.includes(glazzingVal) ? 0 : P50 - 126,
+        height: [9, 10]?.includes(glazzingVal) ? 0 : P52 - 126,
       },
     ],
   };

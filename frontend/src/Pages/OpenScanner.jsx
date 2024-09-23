@@ -8,7 +8,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import QrReader from "react-qr-scanner";
+//import QrReader from "react-qr-scanner";
 import { Modal } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
@@ -17,6 +17,7 @@ import {
   getOneProduct,
   sellProduct,
 } from "../services/products/getAllProducts";
+import Html5QrcodePlugin from "../Components/HTML5QRCode";
 
 const containerStyle = {
   display: "flex",
@@ -27,6 +28,8 @@ const containerStyle = {
 
 const OpenScanner = () => {
   const modalRef = useRef(null);
+  const scannerRef = useRef(null);
+  const [isScanning, setIsScanning] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [isModalOpen, setModalOpen] = useState(false);
   const [scanResultWebCam, setScanResultWebCam] = useState("");
@@ -125,18 +128,29 @@ const OpenScanner = () => {
           >
             <Typography variant="h6">QR Scanner</Typography>
             {navigator.getUserMedia ? (
-              <QrReader
-                key={cameraFacingMode}
-                constraints={{
-                  audio: false,
-                  video: { facingMode: cameraFacingMode },
-                }}
-                delay={300}
-                style={{ width: "100%" }}
-                onError={handleErrorWebCam}
-                onScan={handleScanWebCam}
+              <Html5QrcodePlugin
+                fps={10}
+                qrbox={{ width: 250, height: 250 }}
+                disableFlip={false}
+                qrCodeSuccessCallback={handleScanWebCam}
               />
             ) : (
+              // <QrReader
+              //   key={cameraFacingMode}
+              //   constraints={{
+              //     audio: false,
+              //     video: { facingMode: cameraFacingMode },
+              //   }}
+              //   delay={3000}
+              //   style={{
+              //     width: "100%",
+              //     borderWidth: 2,
+              //     borderColor: "#00FF00",
+              //     backgroundColor: "transparent",
+              //   }}
+              //   onError={handleErrorWebCam}
+              //   onScan={handleScanWebCam}
+              // />
               <p>http does not support camera</p>
             )}
 

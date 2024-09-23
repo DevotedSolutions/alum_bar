@@ -77,6 +77,38 @@ const JobSheetDetails = () => {
     }
   }
 
+  const windowRefValues = [
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "FP",
+    "OF1",
+    "OF2",
+    "PCP 1",
+    "PCP 2",
+    "PCV 1",
+    "PCV 2",
+    "PCV Haut1",
+    "PCV Haut2",
+    "PE 1",
+    "PE 2",
+    "PE 2 Tra",
+    "PF 1",
+    "PF 2",
+    "POB 1",
+    "POB 2",
+    "POB E1",
+    "POB E2",
+    "PSP 1",
+    "PSP 2",
+    "SO 1",
+    "SO 2",
+    "VB 1",
+    "VP 1",
+    "VP 2",
+  ];
+
   useEffect(() => {
     if (!isNewSheet) {
       getData();
@@ -259,7 +291,7 @@ const JobSheetDetails = () => {
             required
             sx={textFieldStyles}
           >
-            {["PSP 1", "SO 1", "PE 2", "PF 1", "PF 2"]?.map((val) => {
+            {windowRefValues?.map((val) => {
               return <MenuItem value={val}>{val}</MenuItem>;
             })}
           </TextField>
@@ -360,12 +392,7 @@ const JobSheetDetails = () => {
             onChange={handleChange}
             fullWidth
             sx={textFieldStyles}
-            select
-          >
-            {[542, 775]?.map((val) => {
-              return <MenuItem value={val}>{val}</MenuItem>;
-            })}
-          </TextField>
+          ></TextField>
           <TextField
             label="Height"
             name="height"
