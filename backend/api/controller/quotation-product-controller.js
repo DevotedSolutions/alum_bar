@@ -1,6 +1,8 @@
 const designationModel = require("../model/designationSchema");
 const gammeModel = require("../model/gammeSchema");
 const productSchema = require("../model/productSchema");
+const Client = require("../model/client");
+
 // get all products
 exports.getProducts = async (req, res) => {
   try {
@@ -63,11 +65,9 @@ exports.addDesignation = async (req, res) => {
     });
 
     if (duplicateCombination) {
-      return res
-        .status(400)
-        .json({
-          message: "Duplicate width and height combination found in priceList",
-        });
+      return res.status(400).json({
+        message: "Duplicate width and height combination found in priceList",
+      });
     }
 
     const newDesignation = await designationModel.create({
@@ -123,11 +123,9 @@ exports.updateDesignation = async (req, res) => {
     });
 
     if (duplicateCombination) {
-      return res
-        .status(400)
-        .json({
-          message: "Duplicate width and height combination found in priceList",
-        });
+      return res.status(400).json({
+        message: "Duplicate width and height combination found in priceList",
+      });
     }
 
     const updatedesign = await designationModel.findByIdAndUpdate(
@@ -248,15 +246,13 @@ exports.getMinAndMaxDimensions = async (req, res) => {
     const { priceList } = product;
 
     if (!priceList || priceList.length === 0) {
-      return res
-        .status(200)
-        .json({
-          message: "Price list is empty for this product",
-          minWidth: 0,
-          maxWidth: 0,
-          minHeight: 0,
-          maxHeight: 0,
-        });
+      return res.status(200).json({
+        message: "Price list is empty for this product",
+        minWidth: 0,
+        maxWidth: 0,
+        minHeight: 0,
+        maxHeight: 0,
+      });
     }
 
     let minWidth = priceList[0].width;
@@ -340,5 +336,36 @@ exports.deleteOrder = async (req, res) => {
     res.status(200).json({ message: "Order deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.saveQuotation = async (req, res) => {
+  const { clientName, email, phone } = req.body;
+
+  const file = req.file ? req.file.path : null;
+  try {
+    const newClient = new Client({
+      clientName,
+      email,
+      phone,
+      filePath: file,
+    });
+
+    await newClient.save(); // Save the client info to MongoDB
+
+    res.send("File uploaded and client info saved successfully");
+  } catch (error) {
+    res.status(500).send("Error saving client info to MongoDB");
+  }
+};
+
+exports.getQuotations = async (req, res) => {
+  try {
+    const clients = await Client.find();
+
+    res.status(200).json(clients);
+  } catch (error) {
+    console.error("Error fetching clients:", error);
+    res.status(500).send("Error fetching client information");
   }
 };

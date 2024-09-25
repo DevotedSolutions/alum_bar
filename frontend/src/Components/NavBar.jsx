@@ -19,17 +19,10 @@ import Inventory2TwoToneIcon from "@mui/icons-material/Inventory2TwoTone";
 import AddIcon from "@mui/icons-material/Add";
 import LogoutIcon from "@mui/icons-material/Logout";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import AttachmentIcon from "@mui/icons-material/Attachment";
 import CalculateIcon from "@mui/icons-material/Calculate";
 import FunctionsIcon from "@mui/icons-material/Functions";
 const drawerWidth = 280;
-
-// interface Props {
-//   /**
-//    * Injected by the documentation to work in an iframe.
-//    * You won't need it on your project.
-//    */
-//   window?: () => Window;
-// }
 
 export default function DrawerAppBar(props) {
   let navigate = useNavigate();
@@ -96,6 +89,15 @@ export default function DrawerAppBar(props) {
       icon: <CalculateIcon />,
       onClick: () => {
         navigate("/designation");
+
+        setMobileOpen(false);
+      },
+    },
+    isAdmin && {
+      text: "Quotation Export",
+      icon: <AttachmentIcon />,
+      onClick: () => {
+        navigate("/quotation-export");
 
         setMobileOpen(false);
       },

@@ -14,7 +14,7 @@ import pdfLogoBottom from "../../assets/pdfLogoBottom.jpeg";
 import { ROUND } from "../../utility/priceFormula";
 import backgroundUrl from "../../assets/LogoBackground.png";
 
-const PdfDocument = ({ cartItems,clientDetails,quotation}) => {
+const PdfDocument = ({ cartItems, clientDetails, quotation }) => {
   console.log(backgroundUrl);
   const currentDate = new Date().toLocaleDateString();
   const totalQuantity = cartItems.reduce((acc, curr) => acc + curr.quantity, 0);
@@ -153,20 +153,15 @@ const PdfDocument = ({ cartItems,clientDetails,quotation}) => {
             marginTop: "200px",
             flexDirection: "row",
             justifyContent: "space-between",
-            
           }}
         >
-          
-      
-           
           <View>
-          <Image src={pdfLogoBottom} style={{ width: "150px" }} />
+            <Image src={pdfLogoBottom} style={{ width: "150px" }} />
             <View
               style={{
                 display: "flex",
                 flexDirection: "row",
                 marginTop: "50px",
-                
               }}
             >
               <View>
@@ -178,7 +173,7 @@ const PdfDocument = ({ cartItems,clientDetails,quotation}) => {
                     marginBottom: "30px",
                   }}
                 >
-                  Devis No:
+                  Devis No :
                 </Text>
                 <Text style={styles.text_customer_head}>Nom Client</Text>
                 <Text style={styles.text_customer_head}>Tel</Text>
@@ -193,12 +188,27 @@ const PdfDocument = ({ cartItems,clientDetails,quotation}) => {
                     marginBottom: "30px",
                   }}
                 >
-                 {clientDetails.nomClient.includes(' ') ? clientDetails?.nomClient?.split(' ')[0]+quotation : clientDetails?.nomClient+quotation}
+                  {clientDetails.nomClient.includes(" ")
+                    ? clientDetails?.nomClient?.split(" ")[0] + quotation
+                    : clientDetails?.nomClient + quotation}
                 </Text>
-                <Text style={{...styles.text_customer_detail,textTransform: 'capitalize'}}>{clientDetails?.nomClient}</Text>
-                <Text style={styles.text_customer_detail}>{clientDetails?.tel}</Text>
-                <Text style={styles.text_customer_detail}>{clientDetails?.email}</Text>
-                <Text style={styles.text_customer_detail}>{clientDetails?.mesureFinale ? "OUI" :"NON"}</Text>
+                <Text
+                  style={{
+                    ...styles.text_customer_detail,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {clientDetails?.nomClient}
+                </Text>
+                <Text style={styles.text_customer_detail}>
+                  {clientDetails?.tel}
+                </Text>
+                <Text style={styles.text_customer_detail}>
+                  {clientDetails?.email}
+                </Text>
+                <Text style={styles.text_customer_detail}>
+                  {clientDetails?.mesureFinale ? "OUI" : "NON"}
+                </Text>
               </View>
             </View>
           </View>
@@ -543,10 +553,14 @@ const PdfDocument = ({ cartItems,clientDetails,quotation}) => {
                   <Text>{item.designation}</Text>
                 </View>
                 <View style={{ ...styles.tablecell, width: "130%" }}>
-                  <Text>{item.cermone === "undefined" ? "" : item.cermone}</Text>
+                  <Text>
+                    {item.cermone === "undefined" ? "" : item.cermone}
+                  </Text>
                 </View>
                 <View style={{ ...styles.tablecell, width: "100%" }}>
-                  <Text>{item.vitrage === "undefined" ? "" :  item.vitrage}</Text>
+                  <Text>
+                    {item.vitrage === "undefined" ? "" : item.vitrage}
+                  </Text>
                 </View>
                 <View style={{ ...styles.tablecell, width: "100%" }}>
                   <View style={{ flexDirection: "row", height: "100%" }}>
@@ -784,7 +798,7 @@ const PdfDocument = ({ cartItems,clientDetails,quotation}) => {
                 50 % du Montant a la confirmation de commande
               </Text>
               <Text style={{ fontSize: "12px" }}>
-                {" "}{" "}
+                {" "}
                 50 % 5 Jours avant Livraison
               </Text>
             </View>

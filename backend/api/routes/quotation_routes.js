@@ -1,6 +1,7 @@
 const express = require("express");
 const quotationcontrl = require("../controller/quotation-product-controller");
 const quotationupload = require("../middle/quotationMiddleware");
+const pdfUpload = require("../middle/quatationfileMiddleware");
 const router = express.Router();
 
 router.get("/get-all-products", quotationcontrl.getProducts);
@@ -22,5 +23,11 @@ router.get("/min-max-dimensions/:id", quotationcontrl.getMinAndMaxDimensions);
 router.post("/save-quotes", quotationcontrl.saveQuotes);
 router.get("/all-quotes", quotationcontrl.getAllQuotesSorted);
 router.delete("/delete-order/:id", quotationcontrl.deleteOrder);
+router.post(
+  "/add-quotation",
+  pdfUpload.single("pdf"),
+  quotationcontrl.saveQuotation
+);
+router.get("/get-quotations", quotationcontrl.getQuotations);
 
 module.exports = router;

@@ -1,0 +1,122 @@
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  IconButton,
+  Grid,
+} from "@mui/material";
+import {
+  Assignment,
+  CheckCircle,
+  HourglassEmpty,
+  Add,
+  Info,
+  Delete,
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import moment from "moment";
+import { getAllQuotations } from "../services/designation/getAllDesignation";
+
+const styles = {
+  root: {
+    padding: "16px",
+  },
+  addButton: {
+    marginBottom: "30px",
+  },
+  table: {
+    width: "850px",
+  },
+};
+
+const QuotationExport = () => {
+  const [quotations, setquotations] = useState([]);
+  const [update, setUpdate] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getData();
+  }, [update]);
+
+  async function getData() {
+    try {
+      const resp = await getAllQuotations();
+      if (resp.status === 200) {
+        setquotations(resp.data);
+        // setTotalPages(resp.data.totalPages);
+      } else {
+        toast.error(resp.data.message);
+      }
+    } catch (error) {
+      toast.error("Check network connection");
+    }
+  }
+
+  return (
+    <div
+      style={{
+        padding: "16px",
+        width: "100%",
+      }}
+    >
+      <Grid container width={"100%"} justifyContent={"center"}>
+        <TableContainer component={Paper} style={styles.table}>
+          <Table style={styles.table} aria-label="Job Sheets">
+            <TableHead>
+              <TableRow>
+                <TableCell>Client Name</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Created At</TableCell>
+                <TableCell>Quotation</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {quotations.map((sheet) => (
+                <TableRow key={sheet.id}>
+                  <TableCell>{sheet.clientName}</TableCell>
+                  <TableCell>{sheet.phone}</TableCell>
+                  <TableCell>{sheet.email}</TableCell>
+                  <TableCell>
+                    {moment(sheet.uploadedAt).format("YYYY-MM-DD HH:mm")}
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      href={`https://app.noutfermeture.com/api/${sheet?.filePath}`}
+                      target="_blank"
+                      style={{
+                        textDecoration: "none",
+                      }}
+                    >
+                      <Button
+                        edge="end"
+                        variant="contained"
+                        size="small"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        Download
+                      </Button>
+                    </a>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Grid>
+    </div>
+  );
+};
+
+export default QuotationExport;

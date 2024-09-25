@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import LogIn from "./Components/LogIn";
+import "./App.css";
 // import ShowProducts from "./Pages/ShowProduct/ShowProducts";
 
 import LayOut from "./layout/LayOut";
@@ -21,6 +22,7 @@ import "react-toastify/dist/ReactToastify.css";
 import JobSheet from "./Pages/JobSheet";
 import JobSheetDetails from "./Pages/JobSheetDetail";
 import JobSheetList from "./Pages/JobSheetList";
+import QuotationExport from "./Pages/QuotationExport";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -60,6 +62,10 @@ function App() {
             {isAdminLogin && (
               <Route path="/designation" element={<AllDesignation />} />
             )}
+            {isAdminLogin && (
+              <Route path="/quotation-export" element={<QuotationExport />} />
+            )}
+
             {isAdminLogin && <Route path="/jobsheets" element={<JobSheet />} />}
             {isAdminLogin && (
               <Route path="/jobsheets/:id" element={<JobSheetList />} />
