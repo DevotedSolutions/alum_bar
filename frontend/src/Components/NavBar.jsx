@@ -18,6 +18,7 @@ import Typography from "@mui/material/Typography";
 import Inventory2TwoToneIcon from "@mui/icons-material/Inventory2TwoTone";
 import AddIcon from "@mui/icons-material/Add";
 import LogoutIcon from "@mui/icons-material/Logout";
+import UserIcon from "@mui/icons-material/Person2TwoTone";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import CalculateIcon from "@mui/icons-material/Calculate";
@@ -29,8 +30,8 @@ export default function DrawerAppBar(props) {
 
   // logout functionality
   const handleLogout = () => {
-    localStorage.removeItem("isAdmin");
-    localStorage.removeItem("tokenDevoted");
+    localStorage.removeItem("UserRole");
+    localStorage.removeItem("tokenDesby");
     localStorage.removeItem("UserId");
 
     // Navigate to the login page
@@ -44,8 +45,8 @@ export default function DrawerAppBar(props) {
     setMobileOpen(!mobileOpen);
   };
 
-  const isUser = localStorage.getItem("tokenDevoted");
-  const isAdmin = localStorage.getItem("isAdmin");
+  const isUser = localStorage.getItem("tokenDesby");
+  const isAdmin = localStorage.getItem("UserRole") === "admin";
 
   const itemsList = [
     {
@@ -80,6 +81,15 @@ export default function DrawerAppBar(props) {
       icon: <QrCodeScannerIcon />,
       onClick: () => {
         navigate("/open-scanner");
+
+        setMobileOpen(false);
+      },
+    },
+    isAdmin && {
+      text: "User Management",
+      icon: <UserIcon />,
+      onClick: () => {
+        navigate("/users");
 
         setMobileOpen(false);
       },

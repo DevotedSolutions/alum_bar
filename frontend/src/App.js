@@ -23,15 +23,15 @@ import JobSheet from "./Pages/JobSheet";
 import JobSheetDetails from "./Pages/JobSheetDetail";
 import JobSheetList from "./Pages/JobSheetList";
 import QuotationExport from "./Pages/QuotationExport";
+import UserManagement from "./Pages/UserManagement";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
-    Boolean(localStorage.getItem("tokenDevoted")) ||
-      Boolean(localStorage.getItem("isAdmin"))
+    Boolean(localStorage.getItem("tokenDesby"))
   );
 
   const [isAdminLogin, setIsAdminLogin] = useState(
-    Boolean(localStorage.getItem("isAdmin"))
+    localStorage.getItem("UserRole") === "admin"
   );
 
   useEffect(() => {
@@ -65,7 +65,9 @@ function App() {
             {isAdminLogin && (
               <Route path="/quotation-export" element={<QuotationExport />} />
             )}
-
+            {isAdminLogin && (
+              <Route path="/users" element={<UserManagement />} />
+            )}
             {isAdminLogin && <Route path="/jobsheets" element={<JobSheet />} />}
             {isAdminLogin && (
               <Route path="/jobsheets/:id" element={<JobSheetList />} />

@@ -112,7 +112,6 @@ exports.getAllproduct = async (req, res) => {
 exports.finOneProduct = async (req, res) => {
   let id = req.params.id;
 
-  console.log(id, "data..............");
   try {
     let data = await productSchema.findById(id);
     res.status(200).json({ message: " products found successfully", data });

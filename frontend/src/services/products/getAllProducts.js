@@ -2,14 +2,14 @@ import axios from "../BaseUrl";
 import { jwtDecode } from "jwt-decode";
 
 export function checkTokenExpiration() {
-  const token = localStorage.getItem("tokenDevoted");
+  const token = localStorage.getItem("tokenDesby");
 
   if (token) {
     try {
       const decodedToken = jwtDecode(token);
 
       if (decodedToken.exp * 1000 < Date.now()) {
-        localStorage.removeItem("tokenDevoted");
+        localStorage.removeItem("tokenDesby");
         localStorage.removeItem("UserId");
         console.log("Token has expired. Please log in again.");
       }
@@ -20,13 +20,11 @@ export function checkTokenExpiration() {
 }
 
 export const getAllProducts = async () => {
-  checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
-    const isAdmin = localStorage.getItem("isAdmin");
+    const token = localStorage.getItem("tokenDesby");
     const response = await axios.get(`/getproducts`, {
       headers: {
-        Authorization: `${token ? token : isAdmin}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -37,7 +35,12 @@ export const getAllProducts = async () => {
 };
 export const getOneProduct = async (id) => {
   try {
-    const response = await axios.get(`getoneproduct/${id}`);
+    const token = localStorage.getItem("tokenDesby");
+    const response = await axios.get(`getoneproduct/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     return response;
   } catch (err) {
@@ -45,8 +48,13 @@ export const getOneProduct = async (id) => {
   }
 };
 export const getQrcode = async (id) => {
+  const token = localStorage.getItem("tokenDesby");
   try {
-    const response = await axios.get(`getqrcode/${id}`);
+    const response = await axios.get(`getqrcode/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     return response;
   } catch (err) {
@@ -55,10 +63,16 @@ export const getQrcode = async (id) => {
 };
 
 export const sellProduct = async (id, quantity) => {
+  const token = localStorage.getItem("tokenDesby");
   const userId = localStorage.getItem("UserId");
   try {
     const response = await axios.get(
-      `/decrement/${id}/${quantity}?userId=${userId}`
+      `/decrement/${id}/${quantity}?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
     return response;

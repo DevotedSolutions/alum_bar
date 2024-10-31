@@ -6,9 +6,10 @@ import {
   TextField,
   Typography,
   Button,
-  IconButton, // Import IconButton component
+  IconButton,
+  MenuItem, // Import IconButton component
 } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete'; // Import delete icon
+import DeleteIcon from "@mui/icons-material/Delete"; // Import delete icon
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { updateDesignation } from "../../services/designation/updateDesignation";
@@ -25,6 +26,17 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
 
   const [showImg, setShowImg] = useState(`/assets/images/default-img.png`);
   const [modalImage, setModalImage] = useState(null);
+
+  const categories = [
+    "Jalousie",
+    "Fenetre Coulissante",
+    "Porte Coulissante",
+    "Fixe",
+    "Fenetre Frappe Francaise",
+    "Fenetre Frappe Anglaise",
+    "Porte Frappe",
+    "Volet Roulant",
+  ];
 
   useEffect(() => {
     setShowImg(`/assets/images/default-img.png`);
@@ -60,7 +72,10 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
   };
 
   const handleAddPriceEntry = () => {
-    const newPriceList = [...formData.priceList, { width: "", height: "", price: "" }];
+    const newPriceList = [
+      ...formData.priceList,
+      { width: "", height: "", price: "" },
+    ];
     setFormData({
       ...formData,
       priceList: newPriceList,
@@ -94,13 +109,20 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
     }
 
     const duplicateCombination = formData.priceList.some((entry, index) => {
-      return formData.priceList.findIndex(
-        (p, i) => i !== index && p.width === entry.width && p.height === entry.height
-      ) !== -1 || entry.width === "" || entry.height === "";
+      return (
+        formData.priceList.findIndex(
+          (p, i) =>
+            i !== index && p.width === entry.width && p.height === entry.height
+        ) !== -1 ||
+        entry.width === "" ||
+        entry.height === ""
+      );
     });
-  
+
     if (duplicateCombination) {
-      toast.error("Duplicate width and height combination found or empty width/height");
+      toast.error(
+        "Duplicate width and height combination found or empty width/height"
+      );
       return;
     }
 
@@ -108,6 +130,7 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
     formDataAppend.append("designation", formData.designation);
     formDataAppend.append("vitrage", formData.vitrage);
     formDataAppend.append("cermone", formData.cermone);
+    formDataAppend.append("category", formData.category);
     formDataAppend.append("image", modalImage || formData.image);
 
     formData.priceList.forEach((priceEntry, index) => {
@@ -137,10 +160,7 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
   };
 
   return (
-    <Modal
-      open={isOpen}
-      onClose={onClose}
-    >
+    <Modal open={isOpen} onClose={onClose}>
       <Box
         sx={{
           position: "absolute",
@@ -153,8 +173,8 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
           display: "flex",
           flexDirection: "row",
           borderRadius: "6px",
-          maxHeight: "90vh", 
-          overflowY: "auto", 
+          maxHeight: "90vh",
+          overflowY: "auto",
         }}
       >
         <Grid container>
@@ -217,6 +237,26 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
                       <FormControl fullWidth>
                         <TextField
                           fullWidth
+                          label="Product Category"
+                          name="category"
+                          select
+                          value={formData.category}
+                          onChange={handleInputChange}
+                        >
+                          {categories.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </FormControl>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Box>
+                      <FormControl fullWidth>
+                        <TextField
+                          fullWidth
                           label="Product Cermone"
                           name="cermone"
                           value={formData.cermone}
@@ -227,55 +267,64 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
                   </Grid>
 
                   {/* Price List Section */}
-                  <Box sx={{
-                      p:2
-                    }}>
-                  {formData.priceList.map((priceEntry, index) => (
-                    <Grid container spacing={2} key={index} sx={{alignItems:"center",pb:1}}>
-                      <Grid item xs={12} sm={3}>
-                        <FormControl fullWidth>
-                          <TextField
-                          type="number"
-                          size="medium"
-                            fullWidth
-                            label="Largeur (mm)"
-                            name="width"
-                            value={priceEntry.width}
-                            onChange={(e) => handlePriceInputChange(index, e)}
-                          />
-                        </FormControl>
+                  <Box
+                    sx={{
+                      p: 2,
+                    }}
+                  >
+                    {formData.priceList.map((priceEntry, index) => (
+                      <Grid
+                        container
+                        spacing={2}
+                        key={index}
+                        sx={{ alignItems: "center", pb: 1 }}
+                      >
+                        <Grid item xs={12} sm={3}>
+                          <FormControl fullWidth>
+                            <TextField
+                              type="number"
+                              size="medium"
+                              fullWidth
+                              label="Largeur (mm)"
+                              name="width"
+                              value={priceEntry.width}
+                              onChange={(e) => handlePriceInputChange(index, e)}
+                            />
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              type="number"
+                              label="Hauteur (mm)"
+                              name="height"
+                              value={priceEntry.height}
+                              onChange={(e) => handlePriceInputChange(index, e)}
+                            />
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              type="number"
+                              label="Price"
+                              name="price"
+                              value={priceEntry.price}
+                              onChange={(e) => handlePriceInputChange(index, e)}
+                            />
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                          <IconButton
+                            onClick={() => handleDeletePriceEntry(index)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={12} sm={3}>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            type="number"
-                            label="Hauteur (mm)"
-                            name="height"
-                            value={priceEntry.height}
-                            onChange={(e) => handlePriceInputChange(index, e)}
-                          />
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs={12} sm={3}>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            type="number"
-                            label="Price"
-                            name="price"
-                            value={priceEntry.price}
-                            onChange={(e) => handlePriceInputChange(index, e)}
-                          />
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs={12} sm={3}>
-                        <IconButton onClick={() => handleDeletePriceEntry(index)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  ))}
+                    ))}
                   </Box>
                   <Grid item xs={12}>
                     <Button variant="contained" onClick={handleAddPriceEntry}>

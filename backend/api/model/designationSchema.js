@@ -1,37 +1,40 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const priceSchema = mongoose.Schema({
   width: {
     type: Number,
-    required: true
+    required: true,
   },
   height: {
     type: Number,
-    required: true
+    required: true,
   },
   price: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const designationSchema = mongoose.Schema({
   designation: {
     type: String,
-    required: true
+    required: true,
   },
   vitrage: {
-    type: String
+    type: String,
   },
   cermone: {
-    type: String
+    type: String,
   },
-  priceList: [priceSchema], 
+  category: {
+    type: String,
+  },
+  priceList: [priceSchema],
   image: {
-    type: String
-  }
+    type: String,
+  },
 });
 
-const designationModel = mongoose.model('designation', designationSchema);
+const designationModel = mongoose.model("designation", designationSchema);
 
 module.exports = designationModel;

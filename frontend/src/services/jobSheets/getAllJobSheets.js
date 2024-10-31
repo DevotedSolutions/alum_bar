@@ -2,14 +2,14 @@ import axios from "../BaseUrl";
 import { jwtDecode } from "jwt-decode";
 
 export function checkTokenExpiration() {
-  const token = localStorage.getItem("tokenDevoted");
+  const token = localStorage.getItem("tokenDesby");
 
   if (token) {
     try {
       const decodedToken = jwtDecode(token);
 
       if (decodedToken.exp * 1000 < Date.now()) {
-        localStorage.removeItem("tokenDevoted");
+        localStorage.removeItem("tokenDesby");
         localStorage.removeItem("UserId");
         console.log("Token has expired. Please log in again.");
       }
@@ -22,11 +22,11 @@ export function checkTokenExpiration() {
 export const getAllJobSheets = async () => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.get(`/all-jobsheets`, {
       headers: {
-        Authorization: `${token ? token : isAdmin}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -39,11 +39,11 @@ export const getAllJobSheets = async () => {
 export const getFrappeJobSheets = async (sheetID) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.get(`/frappejs/${sheetID}`, {
       headers: {
-        Authorization: `${token ? token : isAdmin}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -56,14 +56,14 @@ export const getFrappeJobSheets = async (sheetID) => {
 export const addNewJobSheet = async (data) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.post(
       `/add-jobsheet`,
       { ...data },
       {
         headers: {
-          Authorization: `${token ? token : isAdmin}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -77,14 +77,14 @@ export const addNewJobSheet = async (data) => {
 export const deleteJobSheet = async (id) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.delete(
       `/delete-jobsheet/${id}`,
 
       {
         headers: {
-          Authorization: `${token ? token : isAdmin}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -98,14 +98,14 @@ export const deleteJobSheet = async (id) => {
 export const deleteSheet = async (type, id) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.delete(
       `/delete-jobsheet/${type}/${id}`,
 
       {
         headers: {
-          Authorization: `${token ? token : isAdmin}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -119,11 +119,11 @@ export const deleteSheet = async (type, id) => {
 export const getFrappeSheetByID = async (id) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.get(`/onefrappejs/${id}`, {
       headers: {
-        Authorization: `${token ? token : isAdmin}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -136,14 +136,14 @@ export const getFrappeSheetByID = async (id) => {
 export const addNewFrappeJS = async (data) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.post(
       `/add-frappejs`,
       { ...data },
       {
         headers: {
-          Authorization: `${token ? token : isAdmin}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -157,14 +157,14 @@ export const addNewFrappeJS = async (data) => {
 export const updateFrappeJS = async (data) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.post(
       `/update-frappejs`,
       { ...data },
       {
         headers: {
-          Authorization: `${token ? token : isAdmin}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -178,11 +178,11 @@ export const updateFrappeJS = async (data) => {
 export const getSumFrappeJS = async (id) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.get(`/sum-frappejs/${id}`, {
       headers: {
-        Authorization: `${token ? token : isAdmin}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -195,11 +195,11 @@ export const getSumFrappeJS = async (id) => {
 export const createFrappeExcel = async (id) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.get(`/export-to-excel/${id}`, {
       headers: {
-        Authorization: `${token ? token : isAdmin}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -212,14 +212,14 @@ export const createFrappeExcel = async (id) => {
 export const getJobSheetDetails = async (data) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.post(
       `/frappe-pro-acc`,
       { ...data },
       {
         headers: {
-          Authorization: `${token ? token : isAdmin}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -233,7 +233,7 @@ export const getJobSheetDetails = async (data) => {
 export const GetSheetOptimization = async (data) => {
   checkTokenExpiration();
   try {
-    const token = localStorage.getItem("tokenDevoted");
+    const token = localStorage.getItem("tokenDesby");
     const isAdmin = localStorage.getItem("isAdmin");
     const response = await axios.post(
       `/optimizeProfile`,
@@ -242,7 +242,7 @@ export const GetSheetOptimization = async (data) => {
       },
       {
         headers: {
-          Authorization: `${token ? token : isAdmin}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );

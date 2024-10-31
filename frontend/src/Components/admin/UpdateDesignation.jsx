@@ -7,12 +7,14 @@ import {
   Typography,
   Button,
   IconButton,
+  MenuItem,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { updateDesignation } from "../../services/designation/updateDesignation";
 import { deleteDesignation } from "../../services/designation/deleteDesignation";
+import Papa from "papaparse";
 
 const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   const [formData, setFormData] = useState({
@@ -21,6 +23,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     vitrage: selectedProduct ? selectedProduct?.vitrage : "",
     cermone: selectedProduct ? selectedProduct?.cermone : "",
     priceList: selectedProduct ? selectedProduct?.priceList : [],
+    category: selectedProduct ? selectedProduct?.category : "",
   });
   const [modalImage, setModalImage] = useState(null);
   const [id, setId] = useState(selectedProduct ? selectedProduct?._id : "");
@@ -29,6 +32,17 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       ? `https://app.noutfermeture.com/api/${selectedProduct?.image}`
       : `/assets/images/default-img.png`
   );
+
+  const categories = [
+    "Jalousie",
+    "Fenetre Coulissante",
+    "Porte Coulissante",
+    "Fixe",
+    "Fenetre Frappe Francaise",
+    "Fenetre Frappe Anglaise",
+    "Porte Frappe",
+    "Volet Roulant",
+  ];
 
   useEffect(() => {
     setShowImg(
@@ -42,13 +56,13 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       vitrage: selectedProduct ? selectedProduct?.vitrage : "",
       cermone: selectedProduct ? selectedProduct?.cermone : "",
       priceList: selectedProduct ? selectedProduct?.priceList : [],
+      category: selectedProduct ? selectedProduct?.category : "",
     });
     setModalImage(null);
 
     setId(selectedProduct ? selectedProduct?._id : "");
   }, [selectedProduct, onClose, isOpen]);
 
-  console.log(formData.priceList);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -72,8 +86,6 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
-
-    console.log(formData.priceList);
 
     const duplicateCombination = formData.priceList.some((entry, index) => {
       // Convert width and height to numbers
@@ -106,6 +118,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     formDataAppend.append("designation", formData.designation);
     formDataAppend.append("vitrage", formData.vitrage);
     formDataAppend.append("cermone", formData.cermone);
+    formDataAppend.append("category", formData.category);
 
     if (modalImage !== null) {
       formDataAppend.append("image", modalImage);
@@ -119,7 +132,6 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       formDataAppend.append(`priceList[${index}][price]`, priceEntry.price);
     });
 
-    console.log(formData.priceList);
     try {
       const resp = await updateDesignation({ formDataAppend, id });
       if (resp && resp.status === 200) {
@@ -181,6 +193,47 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       priceList: newPriceList,
     });
   };
+
+  function exportPrices() {
+    const csv = Papa.unparse(formData?.priceList);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${formData.designation}_prices.csv`;
+    a.click();
+  }
+
+  function importPrices(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      complete: async (results) => {
+        const parsedPrices = results.data.map((row) => ({
+          width: parseFloat(row.width),
+          height: parseFloat(row.height),
+          price: parseFloat(row.price),
+          _id: row._id, // Optional if you need it
+        }));
+
+        try {
+          setFormData({
+            ...formData,
+            priceList: parsedPrices,
+          });
+        } catch (error) {
+          console.error("Error updating prices:", error);
+        }
+      },
+      error: (error) => {
+        console.error("Error parsing CSV:", error);
+      },
+    });
+  }
+
+  console.log(formData?.priceList);
 
   return (
     <Modal
@@ -266,6 +319,27 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                       <FormControl fullWidth>
                         <TextField
                           fullWidth
+                          label="Product Category"
+                          name="category"
+                          select
+                          value={formData.category}
+                          onChange={handleInputChange}
+                        >
+                          {categories.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </FormControl>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Box>
+                      <FormControl fullWidth>
+                        <TextField
+                          fullWidth
                           label="Product Cermone"
                           name="cermone"
                           value={formData.cermone}
@@ -339,9 +413,37 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                       ))}
                   </Box>
                   <Grid item xs={12}>
-                    <Button variant="contained" onClick={handleAddPriceEntry}>
-                      Add Price
-                    </Button>
+                    <Box
+                      display="flex"
+                      sx={{
+                        flexDirection: {
+                          xs: "column",
+                          md: "row",
+                          alignItems: "center",
+                        },
+                      }}
+                      gap="6px"
+                    >
+                      <Button variant="contained" onClick={handleAddPriceEntry}>
+                        Add Price
+                      </Button>
+                      <Button
+                        variant="contained"
+                        onClick={exportPrices}
+                        sx={{
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Export Prices
+                      </Button>
+
+                      <input
+                        name="Import"
+                        type="file"
+                        accept=".csv"
+                        onChange={(e) => importPrices(e)}
+                      />
+                    </Box>
                   </Grid>
 
                   <Grid item xs={12}>

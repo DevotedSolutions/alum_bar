@@ -1,8 +1,8 @@
 const designationModel = require("../model/designationSchema");
 const gammeModel = require("../model/gammeSchema");
 const productSchema = require("../model/productSchema");
+const quoteSchema = require("../model/QuoteSchema");
 const Client = require("../model/client");
-
 // get all products
 exports.getProducts = async (req, res) => {
   try {
@@ -49,7 +49,7 @@ exports.getGamme = async (req, res) => {
 
 exports.addDesignation = async (req, res) => {
   try {
-    const { designation, vitrage, cermone, priceList } = req.body;
+    const { designation, vitrage, cermone, priceList, category } = req.body;
 
     const image = req.file ? req.file.path : null;
     const updatedPriceList = priceList !== undefined ? priceList : [];
@@ -76,6 +76,7 @@ exports.addDesignation = async (req, res) => {
       cermone,
       priceList: updatedPriceList,
       image: image,
+      category,
     });
 
     if (!newDesignation) {
@@ -108,7 +109,7 @@ exports.addDesignation = async (req, res) => {
 exports.updateDesignation = async (req, res) => {
   try {
     const id = req.params.id;
-    const { designation, vitrage, cermone, priceList } = req.body;
+    const { designation, vitrage, cermone, priceList, category } = req.body;
     const image = req.file ? req.file.path : req.body.image;
     const updatedPriceList = priceList !== undefined ? priceList : [];
     const duplicateCombination = updatedPriceList?.some((priceEntry, index) => {
@@ -127,11 +128,18 @@ exports.updateDesignation = async (req, res) => {
         message: "Duplicate width and height combination found in priceList",
       });
     }
-
+    console.log("Category:", category);
     const updatedesign = await designationModel.findByIdAndUpdate(
       id,
-      { designation, vitrage, cermone, priceList: updatedPriceList, image },
-      { new: true }
+      {
+        designation,
+        vitrage,
+        cermone,
+        priceList: updatedPriceList,
+        image,
+        category,
+      },
+      { new: true, runValidators: true }
     );
 
     if (!updatedesign) {
@@ -246,13 +254,15 @@ exports.getMinAndMaxDimensions = async (req, res) => {
     const { priceList } = product;
 
     if (!priceList || priceList.length === 0) {
-      return res.status(200).json({
-        message: "Price list is empty for this product",
-        minWidth: 0,
-        maxWidth: 0,
-        minHeight: 0,
-        maxHeight: 0,
-      });
+      return res
+        .status(200)
+        .json({
+          message: "Price list is empty for this product",
+          minWidth: 0,
+          maxWidth: 0,
+          minHeight: 0,
+          maxHeight: 0,
+        });
     }
 
     let minWidth = priceList[0].width;
@@ -309,7 +319,23 @@ exports.saveQuotes = async (req, res) => {
 
 exports.getAllQuotesSorted = async (req, res) => {
   try {
-    const quotes = await quoteSchema.find().sort({ createdAt: -1 });
+    const { startDate, endDate } = req.query;
+
+    // Build the query object
+    let query = {};
+    if (startDate && endDate) {
+      query.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    } else if (startDate) {
+      query.createdAt = { $gte: new Date(startDate) };
+    } else if (endDate) {
+      query.createdAt = { $lte: new Date(endDate) };
+    }
+
+    // Find and sort the quotes
+    const quotes = await quoteSchema.find(query).sort({ createdAt: -1 });
 
     res.status(200).json({
       message: "Quotes retrieved and sorted successfully",

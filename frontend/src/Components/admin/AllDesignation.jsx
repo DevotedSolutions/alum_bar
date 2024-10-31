@@ -31,6 +31,15 @@ const AllDesignation = () => {
   const handleAddModalOpen = () => {
     setIsAddModalOpen(true);
   };
+  const groupedProducts = allProducts.reduce((acc, item) => {
+    const category = item.category || "Others";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {});
+
   useEffect(() => {
     const getProducts = async () => {
       try {
@@ -68,6 +77,8 @@ const AllDesignation = () => {
   const handleAddModalClose = () => {
     setIsAddModalOpen(false);
   };
+  const { Others, ...mainCategories } = groupedProducts;
+
   return (
     <>
       <UpdateDesignation
@@ -91,62 +102,124 @@ const AllDesignation = () => {
         </Button>
         <Box
           sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
             margin: isMobile ? "" : "10px 0px",
-            padding: "8px 0px",
           }}
         >
-          {allProducts?.map((item, index) => (
-            <Card
-              sx={{
-                width: "299px",
-                margin: "10px",
-                backgroundColor: "transparent",
-                boxShadow: "none",
-              }}
-              key={index}
-              onClick={() => {
-                handleCardClick(item);
-              }}
-            >
-              <CardActionArea>
-                <CardMedia
-                  component="img"
-                  height="250"
-                  image={
-                    item?.image
-                      ? `https://app.noutfermeture.com/api/${item?.image}`
-                      : "/assets/images/default-img.png"
-                  }
-                  //image={default_img}
-                  alt="product image"
-                  sx={{ objectFit: "contain" }}
-                />
-                <CardContent sx={{ p: 0 }}>
-                  <div style={{ width: "100%" }}>
-                    <Button
-                      variant="contained"
-                      sx={{
-                        width: "100%",
-                        fontSize: "10px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {/* {item?.designation && item?.designation.length > 30
-                      ? `${item.designation.substring(
-                          0,
-                          item.designation.length / 2
-                        )}...`
-                      : item?.designation} */}
-                      {item?.designation}
-                    </Button>
-                  </div>
-                </CardContent>
-              </CardActionArea>
-            </Card>
+          {Object.keys(mainCategories).map((category, catIndex) => (
+            <div key={catIndex} style={{ marginBottom: "20px" }}>
+              {/* Display category title */}
+              <h2>{category}</h2>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  margin: isMobile ? "" : "10px 0px",
+                  padding: "8px 0px",
+                }}
+              >
+                {groupedProducts[category].map((item, index) => (
+                  <Card
+                    sx={{
+                      width: "299px",
+                      margin: "10px",
+                      backgroundColor: "transparent",
+                      boxShadow: "none",
+                    }}
+                    key={index}
+                    onClick={() => {
+                      handleCardClick(item);
+                    }}
+                  >
+                    <CardActionArea>
+                      <CardMedia
+                        component="img"
+                        height="250"
+                        image={
+                          item?.image
+                            ? `https://app.noutfermeture.com/api/${item?.image}`
+                            : "/assets/images/default-img.png"
+                        }
+                        alt="product image"
+                        sx={{ objectFit: "contain" }}
+                      />
+                      <CardContent sx={{ p: 0 }}>
+                        <div style={{ width: "100%" }}>
+                          <Button
+                            variant="contained"
+                            sx={{
+                              width: "100%",
+                              fontSize: "10px",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {item?.designation}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                ))}
+              </div>
+            </div>
           ))}
+          {Others && (
+            <div style={{ marginBottom: "20px" }}>
+              <h2>Others</h2>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  margin: isMobile ? "" : "10px 0px",
+                  padding: "8px 0px",
+                }}
+              >
+                {Others.map((item, index) => (
+                  <Card
+                    sx={{
+                      width: "299px",
+                      margin: "10px",
+                      backgroundColor: "transparent",
+                      boxShadow: "none",
+                    }}
+                    key={index}
+                    onClick={() => {
+                      handleCardClick(item);
+                    }}
+                  >
+                    <CardActionArea>
+                      <CardMedia
+                        component="img"
+                        height="250"
+                        image={
+                          item?.image
+                            ? `https://app.noutfermeture.com/api/${item?.image}`
+                            : "/assets/images/default-img.png"
+                        }
+                        alt="product image"
+                        sx={{ objectFit: "contain" }}
+                      />
+                      <CardContent sx={{ p: 0 }}>
+                        <div style={{ width: "100%" }}>
+                          <Button
+                            variant="contained"
+                            sx={{
+                              width: "100%",
+                              fontSize: "10px",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {item?.designation}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </Box>
       </Box>
     </>

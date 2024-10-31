@@ -17,11 +17,10 @@ import { NavLink, useNavigate } from "react-router-dom";
 import LoginLayout from "../LoginLayout/LoginLayout";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 
-
-function LogIn({ handleLogin,admin}) {
-  const [loading,setLoading]=useState(false)
+function LogIn({ handleLogin, admin }) {
+  const [loading, setLoading] = useState(false);
   let navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -45,46 +44,41 @@ function LogIn({ handleLogin,admin}) {
   };
 
   const handleSubmit = async (event) => {
-
     event.preventDefault();
-    setLoading(true)
+    setLoading(true);
 
-    if (data.email === "admin@quotation.com" && data.password === "admin123") {
-      toast.success("Login Successful as admin");
-      localStorage.setItem("isAdmin", 'adminLogin');
-      localStorage.setItem("UserId", "admin");
-      admin(true)
-      handleLogin();
-      navigate('/')
-       return
-    }
+    // if (data.email === "admin@quotation.com" && data.password === "admin123") {
+    //   toast.success("Login Successful as admin");
+    //   localStorage.setItem("isAdmin", 'adminLogin');
+    //   localStorage.setItem("UserId", "admin");
+    //   admin(true)
+    //   handleLogin();
+    //   navigate('/')
+    //    return
+    // }
     try {
-      const resp = await userLogin(data, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("tokenDevoted")}`,
-        },
-      });
+      const resp = await userLogin(data);
 
       if (resp) {
         if (resp.status === 200) {
-          console.log(resp.data.token);
-          localStorage.setItem("tokenDevoted", resp.data.token);
-          localStorage.setItem("UserId", resp.data.user._id)
+          localStorage.setItem("tokenDesby", resp.data.token);
+          localStorage.setItem("UserId", resp.data.userId);
+          localStorage.setItem("UserRole", resp.data.role);
           toast.success(resp.data.message);
           handleLogin();
-         
+
           navigate("/");
         } else {
           toast.error(resp.data.message);
-          setLoading(false)
+          setLoading(false);
         }
       } else {
         toast.error(resp.data.message);
-        setLoading(false)
+        setLoading(false);
       }
     } catch (error) {
       toast.error("Check your network connection.");
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -94,7 +88,11 @@ function LogIn({ handleLogin,admin}) {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        sx={{ width: "100%", height: {xs:"70vh",sm:"85vh"},padding:"10px" }}
+        sx={{
+          width: "100%",
+          height: { xs: "70vh", sm: "85vh" },
+          padding: "10px",
+        }}
       >
         <ToastContainer />
         <Box
@@ -117,7 +115,7 @@ function LogIn({ handleLogin,admin}) {
             <Box my={3}>
               <FormControl fullWidth>
                 <TextField
-                required
+                  required
                   value={data.email}
                   fullWidth
                   label="Enter your email"
@@ -131,7 +129,7 @@ function LogIn({ handleLogin,admin}) {
             <Box my={4}>
               <FormControl fullWidth>
                 <TextField
-                required
+                  required
                   value={data.password}
                   fullWidth
                   label="Enter your password"
@@ -180,17 +178,16 @@ function LogIn({ handleLogin,admin}) {
                 variant="contained"
                 color="primary"
                 sx={{ width: "100%", padding: "10px 30px" }}
-              >  
-              {
-                loading?<CircularProgress style={{'color': 'white'}} size="1.5rem"/>:"Log In"
-              }
-              
-         
+              >
+                {loading ? (
+                  <CircularProgress style={{ color: "white" }} size="1.5rem" />
+                ) : (
+                  "Log In"
+                )}
               </Button>
             </Box>
           </form>
           <Box sx={{ display: "flex", justifyContent: "center", gap: "6px" }}>
-          
             <Typography>Don't have an account?</Typography>
             <NavLink to="/signup">Register</NavLink>
           </Box>
