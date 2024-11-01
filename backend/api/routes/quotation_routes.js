@@ -10,21 +10,13 @@ router.get(
   middlware.authMiddleware,
   quotationcontrl.getProducts
 );
-router.get(
-  "/get-all-gamme",
-  middlware.authMiddleware,
-  quotationcontrl.getGamme
-);
+router.get("/get-all-gamme", quotationcontrl.getGamme);
 router.post(
   "/add-designation",
   quotationupload.single("image"),
   quotationcontrl.addDesignation
 );
-router.get(
-  "/get-designation",
-  middlware.authMiddleware,
-  quotationcontrl.getDesignation
-);
+router.get("/get-designation", quotationcontrl.getDesignation);
 router.put(
   "/update-designation/:id",
   quotationupload.single("image"),
@@ -35,17 +27,9 @@ router.delete(
   middlware.authMiddleware,
   quotationcontrl.deleteDesignation
 );
-router.get("/price", middlware.authMiddleware, quotationcontrl.checkPrice);
-router.get(
-  "/min-max-dimensions/:id",
-  middlware.authMiddleware,
-  quotationcontrl.getMinAndMaxDimensions
-);
-router.post(
-  "/save-quotes",
-  middlware.authMiddleware,
-  quotationcontrl.saveQuotes
-);
+router.get("/price", quotationcontrl.checkPrice);
+router.get("/min-max-dimensions/:id", quotationcontrl.getMinAndMaxDimensions);
+router.post("/save-quotes", quotationcontrl.saveQuotes);
 router.get(
   "/all-quotes",
   middlware.authMiddleware,

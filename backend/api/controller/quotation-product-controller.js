@@ -254,15 +254,13 @@ exports.getMinAndMaxDimensions = async (req, res) => {
     const { priceList } = product;
 
     if (!priceList || priceList.length === 0) {
-      return res
-        .status(200)
-        .json({
-          message: "Price list is empty for this product",
-          minWidth: 0,
-          maxWidth: 0,
-          minHeight: 0,
-          maxHeight: 0,
-        });
+      return res.status(200).json({
+        message: "Price list is empty for this product",
+        minWidth: 0,
+        maxWidth: 0,
+        minHeight: 0,
+        maxHeight: 0,
+      });
     }
 
     let minWidth = priceList[0].width;
@@ -321,6 +319,8 @@ exports.getAllQuotesSorted = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
+    const user = req.user;
+
     // Build the query object
     let query = {};
     if (startDate && endDate) {
@@ -332,6 +332,9 @@ exports.getAllQuotesSorted = async (req, res) => {
       query.createdAt = { $gte: new Date(startDate) };
     } else if (endDate) {
       query.createdAt = { $lte: new Date(endDate) };
+    }
+    if (user.role === "user") {
+      query.createdBy = user.userId;
     }
 
     // Find and sort the quotes

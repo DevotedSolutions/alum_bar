@@ -18,7 +18,11 @@ const schema = new mongoose.Schema({
   quantity: { type: Number, required: true, min: 1 },
   rep: { type: String },
   typeOuverture: { type: String, default: "" },
+  clientEmail: { type: String, default: "" },
+  clientPhone: { type: String, default: "" },
+  comments: { type: String, default: "" },
   vitrage: { type: String },
+  createdBy: { type: String },
   createdAt: {
     type: Date,
     default: Date.now,
