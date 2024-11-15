@@ -17,6 +17,7 @@ router.post(
   quotationcontrl.addDesignation
 );
 router.get("/get-designation", quotationcontrl.getDesignation);
+
 router.put(
   "/update-designation/:id",
   quotationupload.single("image"),
@@ -30,6 +31,7 @@ router.delete(
 router.get("/price", quotationcontrl.checkPrice);
 router.get("/min-max-dimensions/:id", quotationcontrl.getMinAndMaxDimensions);
 router.post("/save-quotes", quotationcontrl.saveQuotes);
+router.put("/update-quote/:id", quotationcontrl.updateOrder);
 router.get(
   "/all-quotes",
   middlware.authMiddleware,
@@ -40,6 +42,12 @@ router.delete(
   middlware.authMiddleware,
   quotationcontrl.deleteOrder
 );
+router.delete(
+  "/delete-quotation/:id",
+  middlware.authMiddleware,
+  quotationcontrl.deleteQuotation
+);
+
 router.post(
   "/add-quotation",
   pdfUpload.single("pdf"),

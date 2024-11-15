@@ -15,3 +15,19 @@ export const deleteDesignation = async ({ id }) => {
     console.log(error);
   }
 };
+
+export const deleteQuotation = async (id) => {
+  try {
+    const token = localStorage.getItem("tokenDesby");
+    const response = await axios.delete(`/delete-quotation/${id}`, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};

@@ -23,6 +23,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import moment from "moment";
 import { getAllQuotations } from "../services/designation/getAllDesignation";
+import { deleteQuotation } from "../services/designation/deleteDesignation";
+import { DeleteOutlineTwoTone } from "@mui/icons-material";
 
 const styles = {
   root: {
@@ -87,7 +89,12 @@ const QuotationExport = () => {
                   <TableCell>
                     {moment(sheet.uploadedAt).format("YYYY-MM-DD HH:mm")}
                   </TableCell>
-                  <TableCell>
+                  <TableCell
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
                     <a
                       href={`https://app.noutfermeture.com/api/${sheet?.filePath}`}
                       target="_blank"
@@ -108,6 +115,21 @@ const QuotationExport = () => {
                         Download
                       </Button>
                     </a>
+                    <IconButton
+                      onClick={async () => {
+                        console.log(sheet);
+                        const response = await deleteQuotation(sheet?._id);
+                        toast?.success(response?.data?.message);
+
+                        setUpdate(!update);
+                      }}
+                    >
+                      <DeleteOutlineTwoTone
+                        style={{
+                          color: "#FF0000",
+                        }}
+                      />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}

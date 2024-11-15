@@ -368,6 +368,43 @@ exports.deleteOrder = async (req, res) => {
   }
 };
 
+exports.updateOrder = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const quote = req.body;
+    const updateOrder = await quoteSchema.findByIdAndUpdate(
+      id,
+      {
+        ...quote,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updateOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json({ message: "Order updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.deleteQuotation = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedOrder = await Client.findByIdAndDelete(id);
+
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Quotation not found" });
+    }
+
+    res.status(200).json({ message: "quotation deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 exports.saveQuotation = async (req, res) => {
   const { clientName, email, phone } = req.body;
 
