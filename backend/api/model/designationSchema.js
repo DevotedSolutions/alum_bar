@@ -13,6 +13,9 @@ const priceSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
+  price_local: {
+    type: Number,
+  },
 });
 
 const designationSchema = mongoose.Schema({

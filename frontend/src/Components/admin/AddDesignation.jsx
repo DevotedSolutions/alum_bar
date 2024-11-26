@@ -92,6 +92,16 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
     });
   };
 
+  const handlePriceInputLocalChange = (index, e) => {
+    const { name, value } = e.target;
+    const newPriceList = [...formData.priceList];
+    newPriceList[index][name] = value;
+    setFormData({
+      ...formData,
+      priceList: newPriceList,
+    });
+  };
+
   const handleDeletePriceEntry = (index) => {
     const newPriceList = [...formData.priceList];
     newPriceList.splice(index, 1);
@@ -137,6 +147,10 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
       formDataAppend.append(`priceList[${index}][width]`, priceEntry.width);
       formDataAppend.append(`priceList[${index}][height]`, priceEntry.height);
       formDataAppend.append(`priceList[${index}][price]`, priceEntry.price);
+      formDataAppend.append(
+        `priceList[${index}][price_local]`,
+        priceEntry.price_local ?? 0
+      );
     });
 
     try {
@@ -304,7 +318,7 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
                             />
                           </FormControl>
                         </Grid>
-                        <Grid item xs={12} sm={3}>
+                        <Grid item xs={12} sm={2.5}>
                           <FormControl fullWidth>
                             <TextField
                               fullWidth
@@ -316,7 +330,23 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
                             />
                           </FormControl>
                         </Grid>
-                        <Grid item xs={12} sm={3}>
+
+                        <Grid item xs={12} sm={2.5}>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              type="number"
+                              label="Local Price"
+                              name="price_local"
+                              value={priceEntry.price_local}
+                              onChange={(e) =>
+                                handlePriceInputLocalChange(index, e)
+                              }
+                            />
+                          </FormControl>
+                        </Grid>
+
+                        <Grid item xs={12} sm={1}>
                           <IconButton
                             onClick={() => handleDeletePriceEntry(index)}
                           >

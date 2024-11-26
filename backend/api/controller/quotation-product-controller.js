@@ -201,7 +201,7 @@ exports.deleteDesignation = async (req, res) => {
 
 exports.checkPrice = async (req, res) => {
   try {
-    const { id, width, height } = req.query;
+    const { id, width, height, local } = req.query;
 
     // Validate ID, width, and height
     if (!id || isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
@@ -233,7 +233,10 @@ exports.checkPrice = async (req, res) => {
 
     res.status(200).json({
       message: "Price found for given dimensions",
-      price: matchedPrice.price,
+      price:
+        Boolean(local) && local !== "null"
+          ? matchedPrice?.price_local
+          : matchedPrice.price,
     });
   } catch (error) {
     console.error("Error:", error);
