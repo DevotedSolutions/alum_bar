@@ -33,7 +33,7 @@ const UserManagement = () => {
   const [form, setForm] = useState({
     username: "",
     email: "",
-    role: "User",
+    role: "user",
     password: "",
   });
   const [update, setUpdate] = useState(false);
@@ -180,8 +180,8 @@ const UserManagement = () => {
               onChange={handleChange}
               style={{ marginTop: 16 }}
             >
-              <MenuItem value="Admin">Admin</MenuItem>
-              <MenuItem value="User">User</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="user">User</MenuItem>
             </Select>
             <TextField
               margin="dense"

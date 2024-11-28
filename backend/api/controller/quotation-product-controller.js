@@ -234,8 +234,12 @@ exports.checkPrice = async (req, res) => {
     res.status(200).json({
       message: "Price found for given dimensions",
       price:
-        Boolean(local) && local !== "null"
+        local === "mru"
           ? matchedPrice?.price_local
+          : local === "may"
+          ? matchedPrice?.price_may
+          : local === "reu"
+          ? matchedPrice?.price_reu
           : matchedPrice.price,
     });
   } catch (error) {

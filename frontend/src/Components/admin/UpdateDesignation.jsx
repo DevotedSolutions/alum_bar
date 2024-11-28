@@ -50,6 +50,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
         ? `https://app.noutfermeture.com/api/${selectedProduct?.image}`
         : `/assets/images/default-img.png`
     );
+
     setFormData({
       image: selectedProduct?.image ? selectedProduct?.image : "",
       designation: selectedProduct ? selectedProduct?.designation : "",
@@ -82,16 +83,6 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
         image: selectedImage,
       });
     }
-  };
-
-  const handlePriceInputLocalChange = (index, e) => {
-    const { name, value } = e.target;
-    const newPriceList = [...formData.priceList];
-    newPriceList[index][name] = value;
-    setFormData({
-      ...formData,
-      priceList: newPriceList,
-    });
   };
 
   const handleUpdateProduct = async (e) => {
@@ -143,6 +134,14 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       formDataAppend.append(
         `priceList[${index}][price_local]`,
         priceEntry.price_local ?? 0
+      );
+      formDataAppend.append(
+        `priceList[${index}][price_may]`,
+        priceEntry.price_may ?? 0
+      );
+      formDataAppend.append(
+        `priceList[${index}][price_reu]`,
+        priceEntry.price_reu ?? 0
       );
     });
 
@@ -264,6 +263,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
           boxShadow: 24,
           p: 4,
           width: { xs: "90%", md: "auto" },
+          minWidth: { xs: "90%", md: "90%", lg: "1000px" },
           display: "flex",
           flexDirection: "row",
           borderRadius: "6px",
@@ -371,7 +371,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                           key={index}
                           sx={{ alignItems: "center", pb: 2 }}
                         >
-                          <Grid item xs={12} sm={3}>
+                          <Grid item xs={12} sm={2}>
                             <FormControl fullWidth>
                               <TextField
                                 size="medium"
@@ -386,7 +386,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                               />
                             </FormControl>
                           </Grid>
-                          <Grid item xs={12} sm={3}>
+                          <Grid item xs={12} sm={2}>
                             <FormControl fullWidth>
                               <TextField
                                 fullWidth
@@ -400,7 +400,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                               />
                             </FormControl>
                           </Grid>
-                          <Grid item xs={12} sm={2.5}>
+                          <Grid item xs={12} sm={1.75}>
                             <FormControl fullWidth>
                               <TextField
                                 fullWidth
@@ -415,16 +415,46 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                             </FormControl>
                           </Grid>
 
-                          <Grid item xs={12} sm={2.5}>
+                          <Grid item xs={12} sm={1.75}>
                             <FormControl fullWidth>
                               <TextField
                                 fullWidth
                                 type="number"
-                                label="Local Price"
+                                label="Price MRU"
                                 name="price_local"
-                                value={priceEntry.price_local}
+                                value={priceEntry.price_local ?? 0}
                                 onChange={(e) =>
-                                  handlePriceInputLocalChange(index, e)
+                                  handlePriceInputChange(index, e)
+                                }
+                              />
+                            </FormControl>
+                          </Grid>
+
+                          <Grid item xs={12} sm={1.75}>
+                            <FormControl fullWidth>
+                              <TextField
+                                fullWidth
+                                type="number"
+                                label="Price MAY"
+                                name="price_may"
+                                value={priceEntry.price_may ?? 0}
+                                onChange={(e) =>
+                                  handlePriceInputChange(index, e)
+                                }
+                              />
+                            </FormControl>
+                          </Grid>
+
+                          <Grid item xs={12} sm={1.75}>
+                            <FormControl fullWidth>
+                              <TextField
+                                fullWidth
+                                type="number"
+                                label="Price REU"
+                                name="price_reu"
+                                value={priceEntry.price_reu ?? 0}
+                                onChange={(e) =>
+                                  handlePriceInputChange(index, e)
                                 }
                               />
                             </FormControl>

@@ -92,16 +92,6 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
     });
   };
 
-  const handlePriceInputLocalChange = (index, e) => {
-    const { name, value } = e.target;
-    const newPriceList = [...formData.priceList];
-    newPriceList[index][name] = value;
-    setFormData({
-      ...formData,
-      priceList: newPriceList,
-    });
-  };
-
   const handleDeletePriceEntry = (index) => {
     const newPriceList = [...formData.priceList];
     newPriceList.splice(index, 1);
@@ -151,6 +141,14 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
         `priceList[${index}][price_local]`,
         priceEntry.price_local ?? 0
       );
+      formDataAppend.append(
+        `priceList[${index}][price_may]`,
+        priceEntry.price_may ?? 0
+      );
+      formDataAppend.append(
+        `priceList[${index}][price_reu]`,
+        priceEntry.price_reu ?? 0
+      );
     });
 
     try {
@@ -189,6 +187,8 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
           borderRadius: "6px",
           maxHeight: "90vh",
           overflowY: "auto",
+          width: { xs: "90%", md: "auto" },
+          minWidth: { xs: "90%", md: "90%", lg: "1000px" },
         }}
       >
         <Grid container>
@@ -293,7 +293,7 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
                         key={index}
                         sx={{ alignItems: "center", pb: 1 }}
                       >
-                        <Grid item xs={12} sm={3}>
+                        <Grid item xs={12} sm={2}>
                           <FormControl fullWidth>
                             <TextField
                               type="number"
@@ -306,7 +306,7 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
                             />
                           </FormControl>
                         </Grid>
-                        <Grid item xs={12} sm={3}>
+                        <Grid item xs={12} sm={2}>
                           <FormControl fullWidth>
                             <TextField
                               fullWidth
@@ -318,7 +318,7 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
                             />
                           </FormControl>
                         </Grid>
-                        <Grid item xs={12} sm={2.5}>
+                        <Grid item xs={12} sm={1.75}>
                           <FormControl fullWidth>
                             <TextField
                               fullWidth
@@ -331,17 +331,41 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
                           </FormControl>
                         </Grid>
 
-                        <Grid item xs={12} sm={2.5}>
+                        <Grid item xs={12} sm={1.75}>
                           <FormControl fullWidth>
                             <TextField
                               fullWidth
                               type="number"
-                              label="Local Price"
+                              label="MRU Price"
                               name="price_local"
                               value={priceEntry.price_local}
-                              onChange={(e) =>
-                                handlePriceInputLocalChange(index, e)
-                              }
+                              onChange={(e) => handlePriceInputChange(index, e)}
+                            />
+                          </FormControl>
+                        </Grid>
+
+                        <Grid item xs={12} sm={1.75}>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              type="number"
+                              label="Price MAY"
+                              name="price_may"
+                              value={priceEntry.price_may}
+                              onChange={(e) => handlePriceInputChange(index, e)}
+                            />
+                          </FormControl>
+                        </Grid>
+
+                        <Grid item xs={12} sm={1.75}>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              type="number"
+                              label="Price REU"
+                              name="price_reu"
+                              value={priceEntry.price_reu}
+                              onChange={(e) => handlePriceInputChange(index, e)}
                             />
                           </FormControl>
                         </Grid>
