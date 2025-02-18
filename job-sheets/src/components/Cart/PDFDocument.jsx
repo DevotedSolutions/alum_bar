@@ -734,7 +734,7 @@ const PdfDocument = ({ cartItems, clientDetails, quotation }) => {
                       alignItems: "center",
                     }}
                   >
-                    <Text>TOTAL T.T.C Livree Mayotte</Text>
+                    <Text>TOTAL T.T.C Livree</Text>
                   </View>
                   <View style={{ ...styles.tablecell, width: "100%" }}>
                     <Text>{totalAmount} €</Text>

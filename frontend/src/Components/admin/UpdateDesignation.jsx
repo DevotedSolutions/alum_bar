@@ -180,7 +180,14 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   const handleAddPriceEntry = () => {
     const newPriceList = [
       ...formData.priceList,
-      { width: "", height: "", price: "" },
+      {
+        width: "",
+        height: "",
+        price: "",
+        price_local: 0,
+        price_may: 0,
+        price_reu: 0,
+      },
     ];
     setFormData({
       ...formData,
@@ -208,7 +215,16 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   };
 
   function exportPrices() {
-    const csv = Papa.unparse(formData?.priceList);
+    const reorderedPriceList = formData.priceList.map((priceEntry) => ({
+      width: priceEntry.width,
+      height: priceEntry.height,
+      price_local: priceEntry.price_local,
+      price_may: priceEntry.price_may,
+      price_reu: priceEntry.price_reu,
+      price: priceEntry.price,
+    }));
+
+    const csv = Papa.unparse(reorderedPriceList);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -224,12 +240,27 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     Papa.parse(file, {
       header: true,
       complete: async (results) => {
-        const parsedPrices = results.data.map((row) => ({
-          width: parseFloat(row.width),
-          height: parseFloat(row.height),
-          price: parseFloat(row.price),
-          _id: row._id, // Optional if you need it
-        }));
+        console.log("Parsed CSV:", results.data);
+        const parsedPrices = results.data
+          .filter(
+            (row) =>
+              !isNaN(parseFloat(row.width)) && !isNaN(parseFloat(row.height))
+          )
+          .map((row) => ({
+            width: parseFloat(row.width),
+            height: parseFloat(row.height),
+            price_local: isNaN(parseFloat(row.price_local))
+              ? 0
+              : parseFloat(row.price_local),
+            price_may: isNaN(parseFloat(row.price_may))
+              ? 0
+              : parseFloat(row.price_may),
+            price_reu: isNaN(parseFloat(row.price_reu))
+              ? 0
+              : parseFloat(row.price_reu),
+            price: isNaN(parseFloat(row.price)) ? 0 : parseFloat(row.price),
+            _id: row._id, // Optional if you need it
+          }));
 
         try {
           setFormData({
@@ -400,20 +431,6 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                               />
                             </FormControl>
                           </Grid>
-                          <Grid item xs={12} sm={1.75}>
-                            <FormControl fullWidth>
-                              <TextField
-                                fullWidth
-                                type="number"
-                                label="Price"
-                                name="price"
-                                value={priceEntry.price}
-                                onChange={(e) =>
-                                  handlePriceInputChange(index, e)
-                                }
-                              />
-                            </FormControl>
-                          </Grid>
 
                           <Grid item xs={12} sm={1.75}>
                             <FormControl fullWidth>
@@ -453,6 +470,21 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                                 label="Price REU"
                                 name="price_reu"
                                 value={priceEntry.price_reu ?? 0}
+                                onChange={(e) =>
+                                  handlePriceInputChange(index, e)
+                                }
+                              />
+                            </FormControl>
+                          </Grid>
+
+                          <Grid item xs={12} sm={1.75}>
+                            <FormControl fullWidth>
+                              <TextField
+                                fullWidth
+                                type="number"
+                                label="Price"
+                                name="price"
+                                value={priceEntry.price}
                                 onChange={(e) =>
                                   handlePriceInputChange(index, e)
                                 }
