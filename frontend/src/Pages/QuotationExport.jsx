@@ -10,6 +10,7 @@ import {
   Button,
   IconButton,
   Grid,
+  TextField,
 } from "@mui/material";
 import {
   Assignment,
@@ -40,6 +41,7 @@ const styles = {
 
 const QuotationExport = () => {
   const [quotations, setquotations] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [update, setUpdate] = useState(false);
   const navigate = useNavigate();
 
@@ -70,6 +72,16 @@ const QuotationExport = () => {
     >
       <Grid container width={"100%"} justifyContent={"center"}>
         <TableContainer component={Paper} style={styles.table}>
+          <TextField
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+            }}
+            placeholder="Search..."
+            sx={{
+              margin: "15px",
+            }}
+          />
           <Table style={styles.table} aria-label="Job Sheets">
             <TableHead>
               <TableRow>
@@ -81,58 +93,71 @@ const QuotationExport = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {quotations.map((sheet) => (
-                <TableRow key={sheet.id}>
-                  <TableCell>{sheet.clientName}</TableCell>
-                  <TableCell>{sheet.phone}</TableCell>
-                  <TableCell>{sheet.email}</TableCell>
-                  <TableCell>
-                    {moment(sheet.uploadedAt).format("YYYY-MM-DD HH:mm")}
-                  </TableCell>
-                  <TableCell
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <a
-                      href={`https://app.noutfermeture.com/api/${sheet?.filePath}`}
-                      target="_blank"
+              {quotations
+                ?.filter(
+                  (item) =>
+                    item?.clientName
+                      ?.toUpperCase()
+                      ?.includes(searchQuery?.toUpperCase()) ||
+                    item?.email
+                      ?.toUpperCase()
+                      ?.includes(searchQuery?.toUpperCase()) ||
+                    item?.phone
+                      ?.toUpperCase()
+                      ?.includes(searchQuery?.toUpperCase())
+                )
+                .map((sheet) => (
+                  <TableRow key={sheet.id}>
+                    <TableCell>{sheet.clientName}</TableCell>
+                    <TableCell>{sheet.phone}</TableCell>
+                    <TableCell>{sheet.email}</TableCell>
+                    <TableCell>
+                      {moment(sheet.uploadedAt).format("YYYY-MM-DD HH:mm")}
+                    </TableCell>
+                    <TableCell
                       style={{
-                        textDecoration: "none",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
-                      <Button
-                        edge="end"
-                        variant="contained"
-                        size="small"
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          textTransform: "capitalize",
+                      <a
+                        href={`https://app.noutfermeture.com/api/${sheet?.filePath}`}
+                        target="_blank"
+                        style={{
+                          textDecoration: "none",
                         }}
                       >
-                        Download
-                      </Button>
-                    </a>
-                    <IconButton
-                      onClick={async () => {
-                        console.log(sheet);
-                        const response = await deleteQuotation(sheet?._id);
-                        toast?.success(response?.data?.message);
+                        <Button
+                          edge="end"
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          Download
+                        </Button>
+                      </a>
+                      <IconButton
+                        onClick={async () => {
+                          console.log(sheet);
+                          const response = await deleteQuotation(sheet?._id);
+                          toast?.success(response?.data?.message);
 
-                        setUpdate(!update);
-                      }}
-                    >
-                      <DeleteOutlineTwoTone
-                        style={{
-                          color: "#FF0000",
+                          setUpdate(!update);
                         }}
-                      />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      >
+                        <DeleteOutlineTwoTone
+                          style={{
+                            color: "#FF0000",
+                          }}
+                        />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
