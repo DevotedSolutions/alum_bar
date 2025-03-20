@@ -15,6 +15,7 @@ db();
 const rout = require("./api/routes/routes");
 const designationModel = require("./api/model/designationSchema");
 app.use("/uploads", express.static("uploads"));
+app.use("/files", express.static("files"));
 app.use("/quotationuploads", express.static("quotationuploads"));
 app.use("/api", rout, productsroute, quotationroute, jobsheetroute);
 

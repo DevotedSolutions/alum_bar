@@ -22,7 +22,9 @@ const schema = new mongoose.Schema({
   clientPhone: { type: String, default: "" },
   comments: { type: String, default: "" },
   vitrage: { type: String },
+  status: { type: String },
   createdBy: { type: String },
+  user: { type: String },
   createdAt: {
     type: Date,
     default: Date.now,

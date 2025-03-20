@@ -30,7 +30,11 @@ router.delete(
 );
 router.get("/price", quotationcontrl.checkPrice);
 router.get("/min-max-dimensions/:id", quotationcontrl.getMinAndMaxDimensions);
-router.post("/save-quotes", quotationcontrl.saveQuotes);
+router.post(
+  "/save-quotes",
+  middlware.authMiddleware,
+  quotationcontrl.saveQuotes
+);
 router.put("/update-quote/:id", quotationcontrl.updateOrder);
 router.get(
   "/all-quotes",

@@ -40,7 +40,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Please fill all input fields" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ $or: [{ username: email }, { email }] });
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
@@ -58,6 +58,7 @@ exports.login = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful",
+      username: user.username,
       token,
       role: user.role,
       userId: user._id,
