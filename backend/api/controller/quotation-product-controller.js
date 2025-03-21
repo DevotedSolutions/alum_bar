@@ -341,7 +341,7 @@ exports.getAllQuotesSorted = async (req, res) => {
       query.createdAt = { $lte: new Date(endDate) };
     }
     if (user.role === "user") {
-      query.createdBy = user.userId;
+      query.createdBy = user.username;
     }
 
     // Find and sort the quotes

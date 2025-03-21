@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { userId: user._id, role: user.role, username: user.username },
       JWT_SECRET, // Use an environment variable for security
       { expiresIn: "24h" }
     );
