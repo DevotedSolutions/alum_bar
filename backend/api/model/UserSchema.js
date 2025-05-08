@@ -17,6 +17,10 @@ const UserSchema = mongoose.Schema({
     type: String,
     require: true,
   },
+  country: {
+    type: String,
+    default: "MRU",
+  },
   token: {
     type: String,
   },

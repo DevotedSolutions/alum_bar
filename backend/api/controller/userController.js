@@ -5,7 +5,7 @@ const User = require("../model/UserSchema");
 const JWT_SECRET = "abdul&desby";
 
 exports.signup = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password, role, country } = req.body;
 
   try {
     if (!username || !email || !password || !role) {
@@ -21,7 +21,13 @@ exports.signup = async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const user = new User({ username, email, password: hashedPassword, role });
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword,
+      role,
+      country,
+    });
     const result = await user.save();
 
     res
@@ -51,7 +57,11 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role, username: user.username },
+      {
+        userId: user._id,
+        role: user.role,
+        username: user.username,
+      },
       JWT_SECRET, // Use an environment variable for security
       { expiresIn: "24h" }
     );
@@ -62,6 +72,7 @@ exports.login = async (req, res) => {
       token,
       role: user.role,
       userId: user._id,
+      country: user.country,
     });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
@@ -96,7 +107,8 @@ exports.resetPassword = async (req, res) => {
 // Controller function to get list of users
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find({}, "username email role"); // Fetch only specific fields
+    const users = await User.find({}, "username email role country"); // Fetch only specific fields
+
     res.status(200).json({ users });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
@@ -105,7 +117,7 @@ exports.getUsers = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   const { userId } = req.params;
-  const { username, email, role, password } = req.body;
+  const { username, email, role, password, country } = req.body;
 
   try {
     // Build the update object with only fields that were provided
@@ -113,6 +125,7 @@ exports.updateUser = async (req, res) => {
     if (username) updateData.username = username;
     if (email) updateData.email = email;
     if (role) updateData.role = role;
+    if (country) updateData.country = country;
 
     // Hash the password if it’s provided
     if (password) {
