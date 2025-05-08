@@ -10,3 +10,7 @@
     display: inline-block;
   }
 } */
+
+.rbc-calendar .rbc-time-view .rbc-time-header.rbc-overflowing {
+  margin-right: unset !important;
+}

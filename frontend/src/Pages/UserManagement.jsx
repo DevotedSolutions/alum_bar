@@ -18,6 +18,7 @@ import {
   IconButton,
   Container,
   Grid,
+  Typography,
 } from "@mui/material";
 import { Add, Edit, Delete } from "@mui/icons-material";
 import { deleteUser, getUsers, updateUser } from "../services/User";
@@ -126,6 +127,7 @@ const UserManagement = () => {
                 <TableCell>Username</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Role</TableCell>
+                <TableCell>Country</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -135,6 +137,10 @@ const UserManagement = () => {
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    {user.country}
+                    {user.role === "admin" ? "*" : ""}
+                  </TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleOpenDialog(user)}>
                       <Edit />
@@ -182,6 +188,18 @@ const UserManagement = () => {
             >
               <MenuItem value="admin">Admin</MenuItem>
               <MenuItem value="user">User</MenuItem>
+            </Select>
+
+            <Select
+              margin="dense"
+              name="country"
+              fullWidth
+              value={form.country}
+              onChange={handleChange}
+              style={{ marginTop: 16 }}
+            >
+              <MenuItem value="MRU">MRU</MenuItem>
+              <MenuItem value="MAY">MAY</MenuItem>
             </Select>
             <TextField
               margin="dense"

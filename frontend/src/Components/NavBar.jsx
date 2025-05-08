@@ -22,6 +22,9 @@ import UserIcon from "@mui/icons-material/Person2TwoTone";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import CalculateIcon from "@mui/icons-material/Calculate";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import ApprovalIcon from "@mui/icons-material/Approval";
+
 import FunctionsIcon from "@mui/icons-material/Functions";
 const drawerWidth = 280;
 
@@ -85,6 +88,25 @@ export default function DrawerAppBar(props) {
         setMobileOpen(false);
       },
     },
+
+    {
+      text: "Calendar",
+      icon: <CalendarTodayIcon />,
+      onClick: () => {
+        navigate("/calendar");
+        setMobileOpen(false);
+      },
+    },
+
+    localStorage.getItem("UserCountry") === "MRU" && {
+      text: "Leaves",
+      icon: <ApprovalIcon />,
+      onClick: () => {
+        navigate("/leaves");
+        setMobileOpen(false);
+      },
+    },
+
     isAdmin && {
       text: "User Management",
       icon: <UserIcon />,

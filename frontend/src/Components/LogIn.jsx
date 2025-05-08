@@ -64,6 +64,8 @@ function LogIn({ handleLogin, admin }) {
           localStorage.setItem("tokenDesby", resp.data.token);
           localStorage.setItem("UserId", resp.data.userId);
           localStorage.setItem("UserRole", resp.data.role);
+          localStorage.setItem("UserName", resp.data.username);
+          localStorage.setItem("UserCountry", resp.data.country);
           toast.success(resp.data.message);
           handleLogin();
 

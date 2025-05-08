@@ -24,6 +24,8 @@ import JobSheetDetails from "./Pages/JobSheetDetail";
 import JobSheetList from "./Pages/JobSheetList";
 import QuotationExport from "./Pages/QuotationExport";
 import UserManagement from "./Pages/UserManagement";
+import MurCalendar from "./Pages/MURCalendar";
+import LeavesManagement from "./Pages/Leaves";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -58,6 +60,8 @@ function App() {
             <Route path="/allproduct" element={<AllProducts />} />
             <Route path="/open-scanner" element={<OpenScanner />} />
             <Route path="/lastweek" element={<LastWeekSales />} />
+            <Route path="/calendar" element={<MurCalendar />} />
+            <Route path="/leaves" element={<LeavesManagement />} />
 
             {isAdminLogin && (
               <Route path="/designation" element={<AllDesignation />} />
