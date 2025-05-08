@@ -348,6 +348,7 @@ const CustomCalendar = () => {
         onOpen={handleOpenDialog}
         update={update}
         country={country}
+        key={country} // Force re-render when country changes
       />
     </div>
   );

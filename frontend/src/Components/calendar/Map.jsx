@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
   useMapEvents,
+  useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
@@ -12,7 +13,16 @@ import { Icon } from "leaflet";
 import { getMarkersByCountry } from "../../services/Events";
 import { toast } from "react-toastify";
 
-const defaultPosition = [-20.348404, 57.552152]; // Coordinates for Mauritius
+const defaultPositionMRU = [-20.348404, 57.552152]; // Coordinates for Mauritius
+const defaultPositionMay = [-12.8275, 45.166244];
+
+const RecenterAutomatically = ({ lat, lng }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([lat, lng]);
+  }, [lat, lng]);
+  return null;
+};
 
 const MapComponent = ({ onOpen, update, country }) => {
   const [markers, setMarkers] = useState([]);
@@ -30,6 +40,8 @@ const MapComponent = ({ onOpen, update, country }) => {
 
     fetchMarkers();
   }, [!update, country]);
+
+  const mapRef = useRef();
 
   const addMarker = async (lat, lng) => {
     try {
@@ -58,6 +70,9 @@ const MapComponent = ({ onOpen, update, country }) => {
     return null;
   };
 
+  const defaultPosition =
+    country === "MAY" ? defaultPositionMay : defaultPositionMRU;
+
   return (
     <MapContainer
       center={defaultPosition}
@@ -70,6 +85,10 @@ const MapComponent = ({ onOpen, update, country }) => {
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <MapClickHandler />
+      <RecenterAutomatically
+        lat={defaultPosition[0]}
+        lng={defaultPosition[1]}
+      />
       {markers?.map((marker, index) => (
         <Marker
           key={index}
