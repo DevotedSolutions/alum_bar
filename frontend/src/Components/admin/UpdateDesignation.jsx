@@ -33,6 +33,38 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       : `/assets/images/default-img.png`
   );
 
+  const [priceFactor, setPriceFactor] = useState({
+    euro: 45,
+    may: 0,
+    reu: 0,
+    others: 0,
+  });
+
+  const applyPercentage = () => {
+    if (formData.priceList?.length > 0) {
+      const updatedPriceList = formData.priceList.map((priceEntry) => {
+        const price_local = Number(priceEntry.price_local);
+        const euroPrice = price_local / Number(priceFactor.euro);
+
+        return {
+          ...priceEntry,
+          price: Math.round(euroPrice * (1 + Number(priceFactor.others) / 100)),
+          price_may: Math.round(
+            euroPrice * (1 + Number(priceFactor.may) / 100)
+          ),
+          price_reu: Math.round(
+            euroPrice * (1 + Number(priceFactor.reu) / 100)
+          ),
+        };
+      });
+
+      setFormData({
+        ...formData,
+        priceList: updatedPriceList,
+      });
+    }
+  };
+
   const categories = [
     "Jalousie",
     "Fenetre Coulissante",
@@ -391,6 +423,97 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                       </FormControl>
                     </Box>
                   </Grid>
+
+                  <Box sx={{ p: 2 }}>
+                    <Grid
+                      container
+                      spacing={2}
+                      sx={{ alignItems: "center", pb: 2, width: "100%" }}
+                    >
+                      <Grid
+                        item
+                        xs={12}
+                        sm={4}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <TextField
+                          size="medium"
+                          type="number"
+                          fullWidth
+                          label="Euro Price"
+                          value={priceFactor.euro}
+                          onChange={(e) =>
+                            setPriceFactor({
+                              ...priceFactor,
+                              euro: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={2}>
+                        <TextField
+                          size="medium"
+                          type="number"
+                          fullWidth
+                          label="MAY %"
+                          value={priceFactor.may}
+                          onChange={(e) =>
+                            setPriceFactor({
+                              ...priceFactor,
+                              may: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={2}>
+                        <TextField
+                          size="medium"
+                          type="number"
+                          fullWidth
+                          label="REU %"
+                          value={priceFactor.reu}
+                          onChange={(e) =>
+                            setPriceFactor({
+                              ...priceFactor,
+                              reu: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={2}>
+                        <TextField
+                          size="medium"
+                          type="number"
+                          fullWidth
+                          label="Others %"
+                          value={priceFactor.others}
+                          onChange={(e) =>
+                            setPriceFactor({
+                              ...priceFactor,
+                              others: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={2}>
+                        <Button
+                          color="primary"
+                          onClick={applyPercentage}
+                          variant="contained"
+                          disabled={formData.priceList.length === 0}
+                        >
+                          Apply
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Box>
 
                   {/* Price List Section */}
                   <Box sx={{ p: 2 }}>
