@@ -56,6 +56,20 @@ export const deleteEvent = async (eventId) => {
   }
 };
 
+export const deleteLeave = async (eventId) => {
+  try {
+    const token = localStorage.getItem("tokenDesby");
+    const response = await axios.delete(`/deleteLeave/${eventId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (err) {
+    return err.response;
+  }
+};
+
 export const updateEvent = async (body) => {
   try {
     const token = localStorage.getItem("tokenDesby");
@@ -107,6 +121,20 @@ export const editLeave = async (body) => {
       },
     });
     return response;
+  } catch (err) {
+    return err.response;
+  }
+};
+
+export const getRemainingLeaves = async (body) => {
+  try {
+    const token = localStorage.getItem("tokenDesby");
+    const response = await axios.post(`/getRemainingLeaves`, body, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
   } catch (err) {
     return err.response;
   }

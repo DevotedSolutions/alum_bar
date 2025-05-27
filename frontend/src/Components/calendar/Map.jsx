@@ -77,7 +77,6 @@ const MapComponent = ({ onOpen, update, country }) => {
     <MapContainer
       center={defaultPosition}
       zoom={11}
-      scrollWheelZoom={false}
       style={{
         height: "100vh",
         width: "100%",

@@ -48,10 +48,11 @@ export default function DrawerAppBar(props) {
     setMobileOpen(!mobileOpen);
   };
 
-  const isUser = localStorage.getItem("tokenDesby");
   const isAdmin = localStorage.getItem("UserRole") === "admin";
+  const isInventoryUser = localStorage.getItem("UserRole") === "user";
+  const isStaff = localStorage.getItem("UserRole") === "staff";
 
-  const itemsList = [
+  const itemsListAdmin = [
     {
       text: "Dashboard",
       icon: <InboxIcon />,
@@ -98,7 +99,7 @@ export default function DrawerAppBar(props) {
       },
     },
 
-    localStorage.getItem("UserCountry") === "MRU" && {
+    {
       text: "Leaves",
       icon: <ApprovalIcon />,
       onClick: () => {
@@ -107,7 +108,7 @@ export default function DrawerAppBar(props) {
       },
     },
 
-    isAdmin && {
+    {
       text: "User Management",
       icon: <UserIcon />,
       onClick: () => {
@@ -116,7 +117,7 @@ export default function DrawerAppBar(props) {
         setMobileOpen(false);
       },
     },
-    isAdmin && {
+    {
       text: "Quotation App",
       icon: <CalculateIcon />,
       onClick: () => {
@@ -125,7 +126,7 @@ export default function DrawerAppBar(props) {
         setMobileOpen(false);
       },
     },
-    isAdmin && {
+    {
       text: "Quotation Export",
       icon: <AttachmentIcon />,
       onClick: () => {
@@ -134,7 +135,7 @@ export default function DrawerAppBar(props) {
         setMobileOpen(false);
       },
     },
-    isAdmin && {
+    {
       text: "Job Sheets",
       icon: <FunctionsIcon />,
       onClick: () => {
@@ -153,6 +154,75 @@ export default function DrawerAppBar(props) {
       },
     },
   ].filter(Boolean);
+
+  const itemsListUser = [
+    {
+      text: "Inventory",
+      icon: <Inventory2TwoToneIcon />,
+      onClick: () => {
+        navigate("/inventory");
+
+        setMobileOpen(false);
+      },
+    },
+
+    {
+      text: "Scanner",
+      icon: <QrCodeScannerIcon />,
+      onClick: () => {
+        navigate("/open-scanner");
+
+        setMobileOpen(false);
+      },
+    },
+
+    {
+      text: "Log out",
+      icon: <LogoutIcon />,
+      onClick: () => {
+        handleLogout();
+
+        setMobileOpen(false);
+      },
+    },
+  ].filter(Boolean);
+
+  const itemsListStaff = [
+    {
+      text: "Calendar",
+      icon: <CalendarTodayIcon />,
+      onClick: () => {
+        navigate("/calendar");
+        setMobileOpen(false);
+      },
+    },
+
+    {
+      text: "Leaves",
+      icon: <ApprovalIcon />,
+      onClick: () => {
+        navigate("/leaves");
+        setMobileOpen(false);
+      },
+    },
+    {
+      text: "Log out",
+      icon: <LogoutIcon />,
+      onClick: () => {
+        handleLogout();
+
+        setMobileOpen(false);
+      },
+    },
+  ].filter(Boolean);
+
+  const itemsList = isAdmin
+    ? itemsListAdmin
+    : isInventoryUser
+    ? itemsListUser
+    : isStaff
+    ? itemsListStaff
+    : [];
 
   const drawer = (
     <div>
@@ -237,18 +307,6 @@ export default function DrawerAppBar(props) {
         ))}
       </List>
       <Divider />
-      {/* <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List> */}
     </div>
   );
 

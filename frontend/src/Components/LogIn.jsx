@@ -19,7 +19,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import CircularProgress from "@mui/material/CircularProgress";
 
-function LogIn({ handleLogin, admin }) {
+function LogIn({ handleLogin }) {
   const [loading, setLoading] = useState(false);
   let navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
@@ -69,7 +69,14 @@ function LogIn({ handleLogin, admin }) {
           toast.success(resp.data.message);
           handleLogin();
 
-          navigate("/");
+          navigate(
+            resp.data.role === "admin"
+              ? "/"
+              : resp.data.role === "user"
+              ? "/inventory"
+              : "/calendar"
+          );
+          window.location.reload();
         } else {
           toast.error(resp.data.message);
           setLoading(false);

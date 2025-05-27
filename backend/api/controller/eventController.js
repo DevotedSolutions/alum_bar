@@ -2,8 +2,9 @@ const Event = require("../model/eventSchema");
 const Leave = require("../model/leaveSchema");
 
 const allowedLeaves = {
-  sick: 22,
-  local: 15,
+  sick: 15,
+  local: 22,
+  localE: 5,
 };
 
 exports.getEventsByCountry = async (req, res) => {
@@ -49,8 +50,17 @@ exports.getMarkersByCountry = async (req, res) => {
 };
 
 exports.addEventByCountry = async (req, res) => {
-  const { title, start, end, type, description, location, address, country } =
-    req.body;
+  const {
+    title,
+    start,
+    end,
+    type,
+    description,
+    location,
+    address,
+    country,
+    otherType,
+  } = req.body;
 
   try {
     const newEvent = new Event({
@@ -58,6 +68,7 @@ exports.addEventByCountry = async (req, res) => {
       start,
       end,
       type,
+      otherType,
       description,
       location,
       address,
@@ -75,8 +86,17 @@ exports.addEventByCountry = async (req, res) => {
 };
 
 exports.editEvent = async (req, res) => {
-  const { _id, title, start, end, type, description, location, address } =
-    req.body;
+  const {
+    _id,
+    title,
+    start,
+    end,
+    type,
+    description,
+    location,
+    address,
+    otherType,
+  } = req.body;
 
   try {
     const updateData = {
@@ -84,6 +104,7 @@ exports.editEvent = async (req, res) => {
       start,
       end,
       type,
+      otherType,
       description,
       location,
       address,
@@ -123,6 +144,24 @@ exports.deleteEvent = async (req, res) => {
       res
         .status(200)
         .json({ message: "Event deleted successfully", event: deletedEvent });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.deleteLeave = async (req, res) => {
+  const { _id } = req.params;
+
+  try {
+    const deletedLeave = await Leave.findByIdAndDelete(_id);
+
+    if (!deletedLeave) {
+      return res.status(404).json({ message: "Leave not found" });
+    } else {
+      res
+        .status(200)
+        .json({ message: "Leave deleted successfully", leave: deletedLeave });
     }
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
@@ -192,13 +231,23 @@ exports.addLeave = async (req, res) => {
 
     const leaveSummary = await calculateLeaves(userId);
 
-    if (leaveType === "sick" && leaveSummary.sick.available <= days) {
+    if (leaveType === "sick-leave" && leaveSummary.sick.available <= days) {
       res.status(200).json({
         message: `You only have ${leaveSummary.sick.available} available sick leaves. Kindly, contact your manager.`,
       });
-    } else if (leaveType === "local" && leaveSummary.local.available <= days) {
+    } else if (
+      leaveType === "local-leave" &&
+      leaveSummary.local.available <= days
+    ) {
       res.status(200).json({
         message: `You only have ${leaveSummary.local.available} available local leaves. Kindly, contact your manager.`,
+      });
+    } else if (
+      leaveType === "emergency-local-leave" &&
+      leaveSummary.localE.available <= days
+    ) {
+      res.status(200).json({
+        message: `You only have ${leaveSummary.localE.available} available emergency local leaves. Kindly, contact your manager.`,
       });
     } else {
       const savedLeave = await newLeave.save();
@@ -247,6 +296,28 @@ exports.editLeave = async (req, res) => {
   }
 };
 
+exports.getRemainingLeaves = async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const leaveSummary = await calculateLeaves(userId);
+
+    if (!leaveSummary) {
+      return res.status(500).json({ message: "Error calculating leaves" });
+    }
+
+    res.status(200).json({
+      message: "Remaining leaves retrieved successfully",
+      remainingLeaves: {
+        ...leaveSummary,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 calculateLeaves = async (userId, days) => {
   try {
     const currentYear = new Date().getFullYear();
@@ -261,24 +332,39 @@ calculateLeaves = async (userId, days) => {
     const leaveSummary = {
       sick: { used: 0, available: allowedLeaves?.sick },
       local: { used: 0, available: allowedLeaves?.local },
+      localE: { used: 0, available: allowedLeaves?.localE },
+      absent: { used: 0, available: 0 },
     };
 
     leaves.forEach((leave) => {
-      if (leave.leaveType === "sick") {
-        leaveSummary.sick.used +=
+      if (leave.leaveType === "sick-leave") {
+        leaveSummary.sick.used += Math.ceil(
           (new Date(leave.endDate) - new Date(leave.startDate)) /
-            (1000 * 60 * 60 * 24) +
-          1;
-      } else if (leave.leaveType === "local") {
-        leaveSummary.local.used +=
+            (1000 * 60 * 60 * 24)
+        );
+      } else if (leave.leaveType === "local-leave") {
+        leaveSummary.local.used += Math.ceil(
           (new Date(leave.endDate) - new Date(leave.startDate)) /
-            (1000 * 60 * 60 * 24) +
-          1;
+            (1000 * 60 * 60 * 24)
+        );
+      } else if (leave.leaveType === "emergency-local-leave") {
+        leaveSummary.localE.used += Math.ceil(
+          (new Date(leave.endDate) - new Date(leave.startDate)) /
+            (1000 * 60 * 60 * 24)
+        );
+      } else if (leave.leaveType === "absent") {
+        leaveSummary.absent.used += Math.ceil(
+          (new Date(leave.endDate) - new Date(leave.startDate)) /
+            (1000 * 60 * 60 * 24)
+        );
       }
     });
 
     leaveSummary.sick.available -= leaveSummary.sick.used;
-    leaveSummary.local.available -= leaveSummary.local.used;
+    leaveSummary.local.available -=
+      leaveSummary.local.used + leaveSummary.localE.used;
+    leaveSummary.localE.available -= leaveSummary.localE.used;
+    leaveSummary.absent.available = 0;
 
     return leaveSummary;
   } catch (error) {

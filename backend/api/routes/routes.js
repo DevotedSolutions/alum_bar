@@ -34,10 +34,21 @@ router.delete(
   middlware.authMiddleware,
   eventContrl.deleteEvent
 );
+
+router.delete(
+  "/deleteLeave/:_id",
+  middlware.authMiddleware,
+  eventContrl.deleteLeave
+);
 router.post("/updateEvent", middlware.authMiddleware, eventContrl.editEvent);
 
 router.post("/getLeaves", middlware.authMiddleware, eventContrl.getLeaves);
 router.post("/addLeave", middlware.authMiddleware, eventContrl.addLeave);
 router.post("/editLeave", middlware.authMiddleware, eventContrl.editLeave);
+router.post(
+  "/getRemainingLeaves",
+  middlware.authMiddleware,
+  eventContrl.getRemainingLeaves
+);
 
 module.exports = router;

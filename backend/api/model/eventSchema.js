@@ -18,6 +18,9 @@ const EventSchema = mongoose.Schema({
     type: String,
     require: true,
   },
+  otherType: {
+    type: String,
+  },
   description: {
     type: String,
   },

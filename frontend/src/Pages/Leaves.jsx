@@ -21,15 +21,17 @@ import {
   Typography,
   Chip,
 } from "@mui/material";
-import { Add, Edit, Delete } from "@mui/icons-material";
+import { Add, Edit, Delete, DeleteOutlined } from "@mui/icons-material";
 import { deleteUser, getUsers, updateUser } from "../services/User";
-import { userSignUp } from "../services/SignUp";
+import { CSVLink } from "react-csv";
 import { toast } from "react-toastify";
 import {
   addEventByCountry,
   addLeave,
+  deleteLeave,
   editLeave,
   getLeaves,
+  getRemainingLeaves,
 } from "../services/Events";
 
 const UserManagement = () => {
@@ -47,6 +49,7 @@ const UserManagement = () => {
     reason: "",
     leaveType: "",
   });
+  const [remainingLeaves, setRemainingLeaves] = useState([]);
   const [update, setUpdate] = useState(false);
   const isAdmin = window.localStorage.getItem("UserRole") === "admin";
 
@@ -74,10 +77,24 @@ const UserManagement = () => {
       }
     }
 
+    async function fetchRemainingLeaves() {
+      const filters = {
+        userId: window.localStorage.getItem("UserId"),
+      };
+      const result = await getRemainingLeaves(filters);
+
+      if (result?.remainingLeaves) {
+        setRemainingLeaves(result?.remainingLeaves);
+      } else {
+        console.error("Error fetching leaves:");
+      }
+    }
+
     if (isAdmin) {
       fetchUsers();
     }
     fetchLeaves();
+    fetchRemainingLeaves();
   }, [update]);
 
   const handleOpenDialog = (leave = null) => {
@@ -136,6 +153,7 @@ const UserManagement = () => {
       } else {
         toast?.error(result?.message);
       }
+
       setUpdate(!update);
     }
     handleCloseDialog();
@@ -152,7 +170,7 @@ const UserManagement = () => {
         const addEvent = await addEventByCountry({
           title: `${leave?.userName}'s Leave`,
           description: leave?.reason || "",
-          type: "leave",
+          type: leave?.leaveType,
           start: new Date(leave.startDate).toISOString(),
           end: new Date(leave.endDate).toISOString(),
           country: window.localStorage.getItem("UserCountry"),
@@ -184,10 +202,29 @@ const UserManagement = () => {
           variant="contained"
           startIcon={<Add />}
           onClick={() => handleOpenDialog()}
-          style={{ marginBottom: "20px" }}
+          style={{ marginBottom: "20px", display: isAdmin ? "block" : "none" }}
         >
           Apply Leave
         </Button>
+      </Grid>
+
+      <Grid container spacing={2} style={{ marginBottom: "20px" }}>
+        {Object.entries(remainingLeaves).map(([leaveType, data]) => (
+          <Grid item xs={12} sm={6} md={3} key={leaveType}>
+            <Paper style={{ padding: "16px", textAlign: "center" }}>
+              <Typography variant="h6" gutterBottom>
+                {leaveType === "localE"
+                  ? "Emergency Local"
+                  : leaveType.charAt(0).toUpperCase() + leaveType.slice(1)}{" "}
+                Leave
+              </Typography>
+              <Typography variant="body1">Used: {data.used}</Typography>
+              <Typography variant="body1">
+                Available: {data.available}
+              </Typography>
+            </Paper>
+          </Grid>
+        ))}
       </Grid>
 
       <Container
@@ -241,6 +278,18 @@ const UserManagement = () => {
                       display: isAdmin ? "block" : "none",
                     }}
                   >
+                    {isAdmin && (
+                      <IconButton
+                        onClick={async () => {
+                          await deleteLeave(leave._id);
+                          setUpdate(!update);
+                          toast?.success("Leave request deleted successfully.");
+                        }}
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    )}
+
                     <Button
                       onClick={() =>
                         handleLeaveStatus({
@@ -274,6 +323,26 @@ const UserManagement = () => {
             </TableBody>
           </Table>
         </TableContainer>
+
+        {isAdmin && (
+          <Button
+            sx={{
+              borderRadius: "8px",
+              padding: "7px 20px",
+              textTransform: "capitalize",
+              mt: "26px",
+            }}
+            variant="contained"
+          >
+            <CSVLink
+              data={leaves}
+              filename="leaves.csv"
+              style={{ color: "white", textDecoration: "none" }}
+            >
+              Export as CSV
+            </CSVLink>
+          </Button>
+        )}
 
         <Dialog open={openDialog} onClose={handleCloseDialog}>
           <DialogTitle>
@@ -335,8 +404,12 @@ const UserManagement = () => {
               onChange={handleChange}
               style={{ marginTop: 16 }}
             >
-              <MenuItem value="sick">Sick</MenuItem>
-              <MenuItem value="local">Local</MenuItem>
+              <MenuItem value="sick-leave">Sick Leave</MenuItem>
+              <MenuItem value="local-leave">Local Leave</MenuItem>
+              <MenuItem value="emergency-local-leave">
+                Emergency Sick Leave
+              </MenuItem>
+              <MenuItem value="absent">Absent</MenuItem>
             </Select>
           </DialogContent>
           <DialogActions>

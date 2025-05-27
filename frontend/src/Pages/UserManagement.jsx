@@ -186,8 +186,9 @@ const UserManagement = () => {
               onChange={handleChange}
               style={{ marginTop: 16 }}
             >
-              <MenuItem value="admin">Admin</MenuItem>
-              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="admin">Group Admin</MenuItem>
+              <MenuItem value="user">Group Inventory</MenuItem>
+              <MenuItem value="staff">Group Staff</MenuItem>
             </Select>
 
             <Select

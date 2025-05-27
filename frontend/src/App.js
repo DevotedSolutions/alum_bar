@@ -32,20 +32,39 @@ function App() {
     Boolean(localStorage.getItem("tokenDesby"))
   );
 
-  const [isAdminLogin, setIsAdminLogin] = useState(
+  const [isAdmin, setIsAdmin] = useState(
     localStorage.getItem("UserRole") === "admin"
+  );
+  const [isInventoryUser, setIsInventoryUser] = useState(
+    localStorage.getItem("UserRole") === "user"
+  );
+
+  const [isStaff, setIsStaff] = useState(
+    localStorage.getItem("UserRole") === "staff"
   );
 
   useEffect(() => {
     checkTokenExpiration();
   }, []);
 
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsLoggedIn(Boolean(localStorage.getItem("tokenDesby")));
+      setIsAdmin(localStorage.getItem("UserRole") === "admin");
+      setIsInventoryUser(localStorage.getItem("UserRole") === "user");
+      setIsStaff(localStorage.getItem("UserRole") === "staff");
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
   const handleLogin = () => {
     setIsLoggedIn(true);
-
-    if (isAdminLogin) {
-      setIsAdminLogin(true);
-    }
+    // window.location.reload();
   };
 
   return (
@@ -54,46 +73,59 @@ function App() {
       <Routes>
         {isLoggedIn ? (
           <Route element={<LayOut />}>
-            <Route index path="/" element={<DashBoard />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/inventory" element={<InventoryPage />} />
-            <Route path="/allproduct" element={<AllProducts />} />
-            <Route path="/open-scanner" element={<OpenScanner />} />
-            <Route path="/lastweek" element={<LastWeekSales />} />
-            <Route path="/calendar" element={<MurCalendar />} />
-            <Route path="/leaves" element={<LeavesManagement />} />
-
-            {isAdminLogin && (
-              <Route path="/designation" element={<AllDesignation />} />
-            )}
-            {isAdminLogin && (
-              <Route path="/quotation-export" element={<QuotationExport />} />
-            )}
-            {isAdminLogin && (
-              <Route path="/users" element={<UserManagement />} />
-            )}
-            {isAdminLogin && <Route path="/jobsheets" element={<JobSheet />} />}
-            {isAdminLogin && (
-              <Route path="/jobsheets/:id" element={<JobSheetList />} />
-            )}
-            {isAdminLogin && (
-              <Route
-                path="/jobsheets/:id/:sheetID"
-                element={<JobSheetDetails />}
-              />
+            {isAdmin && (
+              <>
+                <Route path="/" element={<DashBoard />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/allproduct" element={<AllProducts />} />
+                <Route path="/open-scanner" element={<OpenScanner />} />
+                <Route path="/lastweek" element={<LastWeekSales />} />
+                <Route path="/calendar" element={<MurCalendar />} />
+                <Route path="/leaves" element={<LeavesManagement />} />
+                <Route path="/designation" element={<AllDesignation />} />
+                <Route path="/quotation-export" element={<QuotationExport />} />
+                <Route path="/users" element={<UserManagement />} />
+                <Route path="/jobsheets" element={<JobSheet />} />
+                <Route path="/jobsheets/:id" element={<JobSheetList />} />
+                <Route
+                  path="/jobsheets/:id/:sheetID"
+                  element={<JobSheetDetails />}
+                />
+              </>
             )}
 
-            <Route path="/*" element={<Navigate to="/" />} />
+            {isInventoryUser && (
+              <>
+                <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/open-scanner" element={<OpenScanner />} />
+              </>
+            )}
+
+            {isStaff && (
+              <>
+                <Route path="/calendar" element={<MurCalendar />} />
+                <Route path="/leaves" element={<LeavesManagement />} />
+              </>
+            )}
+
+            <Route
+              path="/*"
+              element={
+                <Navigate
+                  to={
+                    isAdmin ? "/" : isInventoryUser ? "/inventory" : "/calendar"
+                  }
+                />
+              }
+            />
           </Route>
         ) : (
           <Route path="/*" element={<Navigate to="/login" />} />
         )}
 
         <Route path="/signup" element={<Signup handleLogin={handleLogin} />} />
-        <Route
-          path="/login"
-          element={<LogIn handleLogin={handleLogin} admin={setIsAdminLogin} />}
-        />
+        <Route path="/login" element={<LogIn handleLogin={handleLogin} />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:id" element={<ResetPassword />} />
       </Routes>

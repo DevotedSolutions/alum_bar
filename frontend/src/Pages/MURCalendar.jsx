@@ -17,6 +17,7 @@ import {
   deleteEvent,
   getEventsByCountry,
   updateEvent,
+  addLeave,
 } from "../services/Events";
 import { toast } from "react-toastify";
 
@@ -37,7 +38,13 @@ const CustomCalendar = () => {
         const fetchedEvents = await getEventsByCountry(country ?? "");
         console.log(fetchedEvents);
         toast.success(fetchedEvents?.message);
-        setEvents(fetchedEvents?.events);
+        setEvents(
+          fetchedEvents?.events?.map((event) => ({
+            ...event,
+            start: new Date(event.start),
+            end: new Date(event.end),
+          }))
+        );
       } catch (error) {
         console.error("Error fetching events:", error);
       }
@@ -69,13 +76,43 @@ const CustomCalendar = () => {
       //   )
       // );
     } else {
-      const response = await addEventByCountry({
-        ...currentEvent,
-        country,
-      });
+      if (
+        currentEvent?.type?.includes("leave") ||
+        currentEvent?.type === "absent"
+      ) {
+        const result = await addLeave({
+          userName: window.localStorage.getItem("UserName"),
+          userId: window.localStorage.getItem("UserId"),
+          startDate: currentEvent.start,
+          endDate: currentEvent.end,
+          reason: currentEvent?.description,
+          leaveType: currentEvent?.type,
+        });
+        if (result?.leave) {
+          toast?.success(result?.message);
+          const response = await addEventByCountry({
+            ...currentEvent,
+            type:
+              currentEvent?.type === "other"
+                ? currentEvent?.otherType
+                : currentEvent?.type,
+            country,
+          });
 
-      toast.success(response?.message);
-      setUpdate(!update);
+          toast.success(response?.message);
+          setUpdate(!update);
+        } else {
+          toast?.error(result?.message);
+        }
+      } else {
+        const response = await addEventByCountry({
+          ...currentEvent,
+          country,
+        });
+
+        toast.success(response?.message);
+        setUpdate(!update);
+      }
 
       // Adding a new event
       // setEvents([
@@ -101,6 +138,7 @@ const CustomCalendar = () => {
       title: event?.title || "",
       description: event?.description || "",
       type: event?.type || "",
+      otherType: event?.otherType || "",
       address: event?.address || "",
       start: event?.start || "",
       end: event?.end || "",
@@ -116,16 +154,22 @@ const CustomCalendar = () => {
 
   const getEventStyle = (type) => {
     switch (type) {
-      case "leave":
-        return { backgroundColor: "#f44336" }; // Red for leave
-      case "container arrival":
-        return { backgroundColor: "#2196f3" }; // Blue for arrival
-      case "container departure":
-        return { backgroundColor: "#ff9800" }; // Orange for departure
-      case "site work":
-        return { backgroundColor: "#4caf50" }; // Green for site work
+      case "local-leave":
+        return { backgroundColor: "#2E6F40" };
+      case "emergency-local-leave":
+        return { backgroundColor: "#f805f8" };
+      case "sick-leave":
+        return { backgroundColor: "#BA8E23" };
+      case "absent":
+        return { backgroundColor: "#ff0000" };
+      case "container-arrival":
+        return { backgroundColor: "#0096FF" };
+      case "container-departure":
+        return { backgroundColor: "#00008B" };
+      case "site-work":
+        return { backgroundColor: "#0000FF" };
       default:
-        return { backgroundColor: "#9e9e9e" }; // Gray for others
+        return { backgroundColor: "#9e9e9e" };
     }
   };
 
@@ -188,7 +232,18 @@ const CustomCalendar = () => {
         eventPropGetter={(event) => ({
           style: getEventStyle(event.type),
         })}
-        onSelectEvent={(event) => handleOpenDialog(event)}
+        onSelectEvent={(event) => {
+          handleOpenDialog(event);
+        }}
+        onSelectSlot={(slotInfo) => {
+          if (moment(slotInfo.start).isSameOrAfter(moment(), "day")) {
+            handleOpenDialog({
+              start: slotInfo.start,
+              end: slotInfo.end,
+            });
+          }
+        }}
+        selectable
       />
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>
@@ -198,7 +253,7 @@ const CustomCalendar = () => {
           <TextField
             label="Title"
             fullWidth
-            disabled={!isAdmin}
+            disabled={!isAdmin && currentEvent?._id}
             margin="dense"
             value={currentEvent?.title || ""}
             onChange={(e) =>
@@ -208,7 +263,7 @@ const CustomCalendar = () => {
           <TextField
             label="Description"
             fullWidth
-            disabled={!isAdmin}
+            disabled={!isAdmin && currentEvent?._id}
             multiline
             InputLabelProps={{ shrink: true }}
             margin="dense"
@@ -221,37 +276,52 @@ const CustomCalendar = () => {
             label="Event Type"
             select
             fullWidth
-            disabled={!isAdmin}
+            disabled={!isAdmin && currentEvent?._id}
             margin="dense"
             value={currentEvent?.type || ""}
             onChange={(e) =>
               setCurrentEvent({ ...currentEvent, type: e.target.value })
             }
           >
-            {/* <MenuItem value="leave">Leave</MenuItem> */}
-            <MenuItem value="container arrival">Container Arrival</MenuItem>
-            <MenuItem value="container departure">Container Departure</MenuItem>
-            <MenuItem value="site work">Site Work</MenuItem>
+            {isAdmin && (
+              <MenuItem value="container-arrival">Container Arrival</MenuItem>
+            )}
+
+            {isAdmin && (
+              <MenuItem value="container-departure">
+                Container Departure
+              </MenuItem>
+            )}
+
+            {isAdmin && <MenuItem value="site-work">Site Work</MenuItem>}
+
+            {currentEvent?.start &&
+              moment(currentEvent.start).diff(moment(), "days") >= 5 && (
+                <MenuItem value="local-leave">Local Leave</MenuItem>
+              )}
+            <MenuItem value="emergency-local-leave">
+              Emergency Local Leave
+            </MenuItem>
+            <MenuItem value="sick-leave">Sick Leave</MenuItem>
+            <MenuItem value="absent">Absent</MenuItem>
+
+            {isAdmin && <MenuItem value="other">Other</MenuItem>}
           </TextField>
+
+          {currentEvent?.type === "other" && (
+            <TextField
+              label="Specify Other Type"
+              fullWidth
+              margin="dense"
+              value={currentEvent?.otherType || ""}
+              onChange={(e) =>
+                setCurrentEvent({ ...currentEvent, otherType: e.target.value })
+              }
+            />
+          )}
 
           {currentEvent?.location && currentEvent?.location?.length > 0 && (
             <>
-              <TextField
-                label="Latitude"
-                fullWidth
-                disabled={!isAdmin}
-                margin="dense"
-                value={currentEvent?.location[0] || ""}
-              />
-
-              <TextField
-                label="Longitude"
-                fullWidth
-                disabled={!isAdmin}
-                margin="dense"
-                value={currentEvent?.location[1] || ""}
-              />
-
               <TextField
                 label="Address"
                 fullWidth
@@ -269,7 +339,7 @@ const CustomCalendar = () => {
             label="Start Date"
             type="datetime-local"
             fullWidth
-            disabled={!isAdmin}
+            disabled={!isAdmin && currentEvent?._id}
             margin="dense"
             InputLabelProps={{ shrink: true }}
             value={
@@ -283,12 +353,15 @@ const CustomCalendar = () => {
                 start: new Date(e.target.value),
               })
             }
+            inputProps={{
+              min: moment().format("YYYY-MM-DDTHH:mm"),
+            }}
           />
           <TextField
             label="End Date"
             type="datetime-local"
             fullWidth
-            disabled={!isAdmin}
+            disabled={!isAdmin && currentEvent?._id}
             margin="dense"
             InputLabelProps={{ shrink: true }}
             value={
@@ -302,6 +375,11 @@ const CustomCalendar = () => {
                 end: new Date(e.target.value),
               })
             }
+            inputProps={{
+              min: currentEvent?.start
+                ? moment(currentEvent.start).format("YYYY-MM-DDTHH:mm")
+                : moment().format("YYYY-MM-DDTHH:mm"),
+            }}
           />
         </DialogContent>
         <DialogActions>
@@ -330,7 +408,7 @@ const CustomCalendar = () => {
             color="primary"
             variant="contained"
             sx={{
-              display: isAdmin ? "block" : "none",
+              display: isAdmin ? "block" : currentEvent?._id ? "none" : "block",
             }}
             disabled={
               currentEvent?.title?.length === 0 ||
@@ -348,7 +426,7 @@ const CustomCalendar = () => {
         onOpen={handleOpenDialog}
         update={update}
         country={country}
-        key={country} // Force re-render when country changes
+        key={country}
       />
     </div>
   );
