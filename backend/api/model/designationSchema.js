@@ -1,5 +1,28 @@
 const mongoose = require("mongoose");
 
+const priceFactorSchema = mongoose.Schema({
+  euro: {
+    type: Number,
+    required: true,
+    default: 45,
+  },
+  may: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  reu: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  others: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+});
+
 const priceSchema = mongoose.Schema({
   width: {
     type: Number,
@@ -39,6 +62,7 @@ const designationSchema = mongoose.Schema({
     type: String,
   },
   priceList: [priceSchema],
+  priceFactor: priceFactorSchema,
   image: {
     type: String,
   },

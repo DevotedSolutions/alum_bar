@@ -49,7 +49,8 @@ exports.getGamme = async (req, res) => {
 
 exports.addDesignation = async (req, res) => {
   try {
-    const { designation, vitrage, cermone, priceList, category } = req.body;
+    const { designation, vitrage, cermone, priceList, priceFactor, category } =
+      req.body;
 
     const image = req.file ? req.file.path : null;
     const updatedPriceList = priceList !== undefined ? priceList : [];
@@ -75,6 +76,7 @@ exports.addDesignation = async (req, res) => {
       vitrage,
       cermone,
       priceList: updatedPriceList,
+      priceFactor,
       image: image,
       category,
     });
@@ -109,7 +111,8 @@ exports.addDesignation = async (req, res) => {
 exports.updateDesignation = async (req, res) => {
   try {
     const id = req.params.id;
-    const { designation, vitrage, cermone, priceList, category } = req.body;
+    const { designation, vitrage, cermone, priceList, priceFactor, category } =
+      req.body;
     const image = req.file ? req.file.path : req.body.image;
     const updatedPriceList = priceList !== undefined ? priceList : [];
     const duplicateCombination = updatedPriceList?.some((priceEntry, index) => {
@@ -129,6 +132,7 @@ exports.updateDesignation = async (req, res) => {
       });
     }
     console.log("Category:", category);
+    console.log(priceFactor, "price factor");
     const updatedesign = await designationModel.findByIdAndUpdate(
       id,
       {
@@ -136,6 +140,7 @@ exports.updateDesignation = async (req, res) => {
         vitrage,
         cermone,
         priceList: updatedPriceList,
+        priceFactor,
         image,
         category,
       },
@@ -201,7 +206,7 @@ exports.deleteDesignation = async (req, res) => {
 
 exports.checkPrice = async (req, res) => {
   try {
-    const { id, width, height, local } = req.query;
+    const { id, width, height, country } = req.query;
 
     // Validate ID, width, and height
     if (!id || isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
@@ -234,11 +239,11 @@ exports.checkPrice = async (req, res) => {
     res.status(200).json({
       message: "Price found for given dimensions",
       price:
-        local === "mru"
+        country === "mru"
           ? matchedPrice?.price_local
-          : local === "may"
+          : country === "may"
           ? matchedPrice?.price_may
-          : local === "reu"
+          : country === "reu"
           ? matchedPrice?.price_reu
           : matchedPrice.price,
     });

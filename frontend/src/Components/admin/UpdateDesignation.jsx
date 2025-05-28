@@ -40,6 +40,21 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     others: 0,
   });
 
+  useEffect(() => {
+    if (selectedProduct?.priceFactor) {
+      setPriceFactor({
+        ...selectedProduct?.priceFactor,
+      });
+    } else {
+      setPriceFactor({
+        euro: 45,
+        may: 0,
+        reu: 0,
+        others: 0,
+      });
+    }
+  }, [selectedProduct?._id]);
+
   const applyPercentage = () => {
     if (formData.priceList?.length > 0) {
       const updatedPriceList = formData.priceList.map((priceEntry) => {
@@ -158,6 +173,11 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     } else {
       formDataAppend.append("image", formData.image);
     }
+
+    formDataAppend.append("priceFactor[euro]", priceFactor.euro);
+    formDataAppend.append("priceFactor[may]", priceFactor.may);
+    formDataAppend.append("priceFactor[reu]", priceFactor.reu);
+    formDataAppend.append("priceFactor[others]", priceFactor.others);
 
     formData.priceList.forEach((priceEntry, index) => {
       formDataAppend.append(`priceList[${index}][width]`, priceEntry.width);
