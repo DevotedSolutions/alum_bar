@@ -24,6 +24,7 @@ import AttachmentIcon from "@mui/icons-material/Attachment";
 import CalculateIcon from "@mui/icons-material/Calculate";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ApprovalIcon from "@mui/icons-material/Approval";
+import logo from "./dasby.jpeg";
 
 import FunctionsIcon from "@mui/icons-material/Functions";
 const drawerWidth = 280;
@@ -54,10 +55,18 @@ export default function DrawerAppBar(props) {
 
   const itemsListAdmin = [
     {
+      text: "Calendar",
+      icon: <CalendarTodayIcon />,
+      onClick: () => {
+        navigate("/calendar");
+        setMobileOpen(false);
+      },
+    },
+    {
       text: "Dashboard",
       icon: <InboxIcon />,
       onClick: () => {
-        navigate("/");
+        navigate("/dashboard");
 
         setMobileOpen(false);
       },
@@ -86,15 +95,6 @@ export default function DrawerAppBar(props) {
       onClick: () => {
         navigate("/open-scanner");
 
-        setMobileOpen(false);
-      },
-    },
-
-    {
-      text: "Calendar",
-      icon: <CalendarTodayIcon />,
-      onClick: () => {
-        navigate("/calendar");
         setMobileOpen(false);
       },
     },
@@ -245,7 +245,7 @@ export default function DrawerAppBar(props) {
         >
           {" "}
           <img
-            src="/assets/images/dasby.jpeg"
+            src={logo}
             alt="img"
             width="100%"
             height="100%"

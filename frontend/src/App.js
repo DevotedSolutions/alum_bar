@@ -26,11 +26,21 @@ import QuotationExport from "./Pages/QuotationExport";
 import UserManagement from "./Pages/UserManagement";
 import MurCalendar from "./Pages/MURCalendar";
 import LeavesManagement from "./Pages/Leaves";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     Boolean(localStorage.getItem("tokenDesby"))
   );
+
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: "#08999D",
+      },
+    },
+  });
 
   const [isAdmin, setIsAdmin] = useState(
     localStorage.getItem("UserRole") === "admin"
@@ -68,14 +78,14 @@ function App() {
   };
 
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <ToastContainer />
       <Routes>
         {isLoggedIn ? (
           <Route element={<LayOut />}>
             {isAdmin && (
               <>
-                <Route path="/" element={<DashBoard />} />
+                <Route path="/dashboard" element={<DashBoard />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/allproduct" element={<AllProducts />} />
@@ -114,7 +124,11 @@ function App() {
               element={
                 <Navigate
                   to={
-                    isAdmin ? "/" : isInventoryUser ? "/inventory" : "/calendar"
+                    isAdmin
+                      ? "/calendar"
+                      : isInventoryUser
+                      ? "/inventory"
+                      : "/calendar"
                   }
                 />
               }
@@ -129,7 +143,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:id" element={<ResetPassword />} />
       </Routes>
-    </>
+    </ThemeProvider>
   );
 }
 

@@ -16,7 +16,12 @@ import Modal from "@mui/material/Modal";
 import { addProducts } from "../../services/products/addProducts";
 
 import { UpdateProducts } from "../../services/products/UpdateProduct";
-import { cermoneData, vitrageData } from "../../Utility/data";
+import {
+  cermoneData,
+  vitrageData,
+  categoryData,
+  colorData,
+} from "../../Utility/data";
 
 const style = {
   position: "absolute",
@@ -85,6 +90,8 @@ const AllProducts = () => {
     formData.append("price", AddData.price);
     formData.append("productCermone", AddData.productCermone);
     formData.append("productVitrage", AddData.productVitrage);
+    formData.append("productColor", AddData.productColor);
+    formData.append("productCategory", AddData.productCategory);
     formData.append("image", image);
 
     try {
@@ -193,6 +200,8 @@ const AllProducts = () => {
       productCermone: data.productCermone,
       productVitrage: data.productVitrage,
       price: data.price,
+      productCategory: data.productCategory,
+      productColor: data.productColor,
     });
     if (data.image) {
       setShowModalImg({
@@ -212,10 +221,13 @@ const AllProducts = () => {
   const handleModalSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
+    console.log(modalFormdata, "modalFormdata");
     formData.append("productName", modalFormdata.productName);
     formData.append("productDescription", modalFormdata.productDescription);
     formData.append("quantity", modalFormdata.quantity);
     formData.append("productcode", modalFormdata.productcode);
+    formData.append("productColor", modalFormdata.productColor);
+    formData.append("productCategory", modalFormdata.productCategory);
     formData.append("price", modalFormdata.price);
     formData.append("productCermone", modalFormdata.productCermone);
     formData.append("productVitrage", modalFormdata.productVitrage);
@@ -384,6 +396,49 @@ const AllProducts = () => {
                           </FormControl>
                         </Box>
                       </Grid>
+
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              label="Product Category"
+                              name="productCategory"
+                              select
+                              onChange={handleChange}
+                              value={AddData.productCategory}
+                            >
+                              {categoryData.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                  {option}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </FormControl>
+                        </Box>
+                      </Grid>
+
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <FormControl fullWidth>
+                            <TextField
+                              fullWidth
+                              label="Product Color"
+                              name="productColor"
+                              select
+                              onChange={handleChange}
+                              value={AddData.productColor}
+                            >
+                              {colorData.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                  {option}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </FormControl>
+                        </Box>
+                      </Grid>
+
                       <Grid item xs={12} sm={6}>
                         <Box>
                           <FormControl fullWidth>
@@ -558,6 +613,49 @@ const AllProducts = () => {
                         </FormControl>
                       </Box>
                     </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <Box>
+                        <FormControl fullWidth>
+                          <TextField
+                            fullWidth
+                            label="Product Category"
+                            name="productCategory"
+                            select
+                            onChange={handleModalChange}
+                            value={modalFormdata.productCategory}
+                          >
+                            {categoryData.map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        </FormControl>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <Box>
+                        <FormControl fullWidth>
+                          <TextField
+                            fullWidth
+                            label="Product Color"
+                            name="productColor"
+                            select
+                            onChange={handleModalChange}
+                            value={modalFormdata.productColor}
+                          >
+                            {colorData.map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        </FormControl>
+                      </Box>
+                    </Grid>
+
                     <Grid item xs={12} sm={6}>
                       <Box>
                         <FormControl fullWidth>
@@ -655,7 +753,15 @@ const AllProducts = () => {
 
                   padding: "20px",
                   borderRadius: "12px",
-                  background: "#FFFFFF",
+                  //background: "#FFFFFF",
+                  bgcolor:
+                    item?.productColor === "BLANC"
+                      ? "#ffffff"
+                      : item?.productColor === "NOIR"
+                      ? "#969696"
+                      : item?.productColor === "AS"
+                      ? "#E6E6E6"
+                      : "#B2C59B",
                   boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
                 }}
               >

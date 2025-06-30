@@ -356,7 +356,7 @@ const InventoryPage = () => {
                     <TableCell>Product Name</TableCell>
                     <TableCell>Product Description</TableCell>
                     <TableCell>Product Code</TableCell>
-                    <TableCell>Price</TableCell>
+                    {/* <TableCell>Price</TableCell> */}
                     <TableCell>Quantity</TableCell>
                     <TableCell>Action</TableCell>
                   </TableRow>
@@ -376,10 +376,25 @@ const InventoryPage = () => {
                           productcode.includes(searchDataLowerCase)
                         );
                       })
+                      .sort((a, b) =>
+                        a?.productCategory?.localeCompare(b?.productCategory)
+                      )
                       .map((item, index) => {
                         console.log(item.price);
                         return (
-                          <TableRow key={index}>
+                          <TableRow
+                            key={index}
+                            sx={{
+                              bgcolor:
+                                item?.productColor === "BLANC"
+                                  ? "#ffffff"
+                                  : item?.productColor === "NOIR"
+                                  ? "#969696"
+                                  : item?.productColor === "AS"
+                                  ? "#E6E6E6"
+                                  : "#B2C59B",
+                            }}
+                          >
                             <TableCell>
                               <Box sx={{ width: "100px" }}>
                                 <img
@@ -393,7 +408,7 @@ const InventoryPage = () => {
                             <TableCell>{item.productName}</TableCell>
                             <TableCell>{item.productDescription}</TableCell>
                             <TableCell>{item.productcode}</TableCell>
-                            <TableCell>{item.price}</TableCell>
+                            {/* <TableCell>{item.price}</TableCell> */}
 
                             <TableCell>{item.quantity}</TableCell>
                             <TableCell>

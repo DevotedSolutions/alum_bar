@@ -10,6 +10,8 @@ exports.AddProduct = async (req, res) => {
     quantity,
     productcode,
     price,
+    productColor,
+    productCategory,
     productCermone,
     productVitrage,
   } = req.body;
@@ -39,6 +41,8 @@ exports.AddProduct = async (req, res) => {
       price,
       productCermone,
       productVitrage,
+      productColor,
+      productCategory,
     });
 
     const result = await product_data.save();
@@ -130,6 +134,8 @@ exports.updateProduct = async (req, res) => {
     quantity,
     productcode,
     price,
+    productColor,
+    productCategory,
     productCermone,
     productVitrage,
   } = req.body;
@@ -155,6 +161,8 @@ exports.updateProduct = async (req, res) => {
         productcode,
         price,
         image,
+        productColor,
+        productCategory,
         productCermone,
         productVitrage,
       },
