@@ -34,7 +34,7 @@ const UserManagement = () => {
   const [form, setForm] = useState({
     username: "",
     email: "",
-    role: "user",
+    role: ["user"],
     password: "",
   });
   const [update, setUpdate] = useState(false);
@@ -56,8 +56,12 @@ const UserManagement = () => {
     setSelectedUser(user);
     setForm(
       user
-        ? { ...user, password: "" }
-        : { username: "", email: "", role: "User", password: "" }
+        ? {
+            ...user,
+            password: "",
+            role: Array.isArray(user.role) ? user.role : [user.role],
+          }
+        : { username: "", email: "", role: ["user"], password: "" }
     );
     setOpenDialog(true);
   };
@@ -65,7 +69,7 @@ const UserManagement = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedUser(null);
-    setForm({ username: "", email: "", role: "User", password: "" });
+    setForm({ username: "", email: "", role: ["user"], password: "" });
   };
 
   const handleSaveUser = async () => {
@@ -136,7 +140,12 @@ const UserManagement = () => {
                 <TableRow key={user._id}>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    {Array.isArray(user.role)
+                      ? user.role.join(", ")
+                      : user.role}
+                  </TableCell>
+
                   <TableCell>
                     {user.country}
                     {user.role === "admin" ? "*" : ""}
@@ -182,7 +191,8 @@ const UserManagement = () => {
               margin="dense"
               name="role"
               fullWidth
-              value={form.role}
+              multiple
+              value={Array.isArray(form.role) ? form.role : [form.role]}
               onChange={handleChange}
               style={{ marginTop: 16 }}
             >

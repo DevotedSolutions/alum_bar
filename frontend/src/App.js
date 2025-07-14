@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import LogIn from "./Components/LogIn";
@@ -34,6 +34,8 @@ function App() {
     Boolean(localStorage.getItem("tokenDesby"))
   );
 
+  const navigate = useNavigate();
+
   const theme = createTheme({
     palette: {
       primary: {
@@ -43,26 +45,42 @@ function App() {
   });
 
   const [isAdmin, setIsAdmin] = useState(
-    localStorage.getItem("UserRole") === "admin"
+    localStorage.getItem("UserRole") === "admin" ||
+      localStorage.getItem("UserRole")?.includes("admin")
   );
+
   const [isInventoryUser, setIsInventoryUser] = useState(
-    localStorage.getItem("UserRole") === "user"
+    localStorage.getItem("UserRole") === "user" ||
+      localStorage.getItem("UserRole")?.includes("user")
   );
 
   const [isStaff, setIsStaff] = useState(
-    localStorage.getItem("UserRole") === "staff"
+    localStorage.getItem("UserRole") === "staff" ||
+      localStorage.getItem("UserRole")?.includes("staff")
   );
 
   useEffect(() => {
-    checkTokenExpiration();
+    const isExpired = checkTokenExpiration();
+    if (isExpired === "expired") {
+      navigate("/login");
+    }
   }, []);
 
   useEffect(() => {
     const handleStorageChange = () => {
       setIsLoggedIn(Boolean(localStorage.getItem("tokenDesby")));
-      setIsAdmin(localStorage.getItem("UserRole") === "admin");
-      setIsInventoryUser(localStorage.getItem("UserRole") === "user");
-      setIsStaff(localStorage.getItem("UserRole") === "staff");
+      setIsAdmin(
+        localStorage.getItem("UserRole") === "admin" ||
+          localStorage.getItem("UserRole")?.includes("admin")
+      );
+      setIsInventoryUser(
+        localStorage.getItem("UserRole") === "user" ||
+          localStorage.getItem("UserRole")?.includes("user")
+      );
+      setIsStaff(
+        localStorage.getItem("UserRole") === "staff" ||
+          localStorage.getItem("UserRole")?.includes("staff")
+      );
     };
 
     window.addEventListener("storage", handleStorageChange);

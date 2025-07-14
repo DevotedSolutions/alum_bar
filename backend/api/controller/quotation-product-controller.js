@@ -418,12 +418,13 @@ exports.deleteQuotation = async (req, res) => {
 };
 
 exports.saveQuotation = async (req, res) => {
-  const { clientName, email, phone } = req.body;
+  const { clientName, email, phone, devisNumber } = req.body;
 
   const file = req.file ? req.file.path : null;
   try {
     const newClient = new Client({
       clientName,
+      devisNumber,
       email,
       phone,
       filePath: file,

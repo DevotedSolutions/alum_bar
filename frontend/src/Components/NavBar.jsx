@@ -49,9 +49,15 @@ export default function DrawerAppBar(props) {
     setMobileOpen(!mobileOpen);
   };
 
-  const isAdmin = localStorage.getItem("UserRole") === "admin";
-  const isInventoryUser = localStorage.getItem("UserRole") === "user";
-  const isStaff = localStorage.getItem("UserRole") === "staff";
+  const isAdmin =
+    localStorage.getItem("UserRole") === "admin" ||
+    localStorage.getItem("UserRole")?.includes("admin");
+  const isInventoryUser =
+    localStorage.getItem("UserRole") === "user" ||
+    localStorage.getItem("UserRole")?.includes("user");
+  const isStaff =
+    localStorage.getItem("UserRole") === "staff" ||
+    localStorage.getItem("UserRole")?.includes("staff");
 
   const itemsListAdmin = [
     {

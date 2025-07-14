@@ -112,8 +112,8 @@ const ProductCart = ({ cartItems, setCartItems }) => {
             }}
           >
             {cartItems.length === 1
-              ? `${cartItems.length} item Added to Cart`
-              : `${cartItems.length} items Added to Cart`}
+              ? `${cartItems.length} article(s) ajoutés au panier`
+              : `${cartItems.length} items ajoutés au panier`}
           </Typography>
           <IconButton onClick={clearCart}>
             <img src={clearcart} width="30px" />

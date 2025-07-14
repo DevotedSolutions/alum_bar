@@ -86,6 +86,7 @@ const QuotationExport = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Client Name</TableCell>
+                <TableCell>Devis Number</TableCell>
                 <TableCell>Phone</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Created At</TableCell>
@@ -104,11 +105,15 @@ const QuotationExport = () => {
                       ?.includes(searchQuery?.toUpperCase()) ||
                     item?.phone
                       ?.toUpperCase()
+                      ?.includes(searchQuery?.toUpperCase()) ||
+                    item?.devisNumber
+                      ?.toUpperCase()
                       ?.includes(searchQuery?.toUpperCase())
                 )
                 .map((sheet) => (
                   <TableRow key={sheet.id}>
                     <TableCell>{sheet.clientName}</TableCell>
+                    <TableCell>{sheet.devisNumber}</TableCell>
                     <TableCell>{sheet.phone}</TableCell>
                     <TableCell>{sheet.email}</TableCell>
                     <TableCell>

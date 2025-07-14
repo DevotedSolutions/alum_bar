@@ -1,4 +1,5 @@
 export const cermoneData = [
+  "Nil",
   "Serrure 1 pt",
   "Telecommande",
   "Boitier a Clef",
@@ -14,6 +15,7 @@ export const categoryData = ["PROFILES", "ACCESSORIES", "MISCELLANEOUS"];
 export const colorData = ["BLANC", "NOIR", "AS", "OTHER"];
 
 export const vitrageData = [
+  "Nil",
   "6 mm Claire",
   "8 mm Claire",
   "6 mm Tintee",

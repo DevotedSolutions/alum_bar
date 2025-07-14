@@ -761,7 +761,7 @@ const AllProducts = () => {
                       ? "#969696"
                       : item?.productColor === "AS"
                       ? "#E6E6E6"
-                      : "#B2C59B",
+                      : "#e3fcfa",
                   boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
                 }}
               >

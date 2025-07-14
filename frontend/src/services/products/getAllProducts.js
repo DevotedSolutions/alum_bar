@@ -11,7 +11,7 @@ export function checkTokenExpiration() {
       if (decodedToken.exp * 1000 < Date.now()) {
         localStorage.removeItem("tokenDesby");
         localStorage.removeItem("UserId");
-        console.log("Token has expired. Please log in again.");
+        return "expired";
       }
     } catch (error) {
       console.error("Error decoding token:", error);

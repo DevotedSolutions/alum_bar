@@ -86,7 +86,7 @@ const AllProducts = () => {
       return;
     }
     if (price === 0) {
-      toast.error("Dimensions are not valid for this product");
+      toast.error("Les dimensions ne sont pas valides pour ce produit");
       return;
     }
 

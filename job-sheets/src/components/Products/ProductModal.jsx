@@ -203,7 +203,7 @@ const ProductModal = ({
           setPrice(response?.data?.price);
         }
       } else {
-        toast.error("Dimensions are not valid for this product");
+        toast.error("Les dimensions ne sont pas valides pour ce produit");
         setPrice(0);
       }
     } else {

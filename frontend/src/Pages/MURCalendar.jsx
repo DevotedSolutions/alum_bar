@@ -180,6 +180,12 @@ const CustomCalendar = () => {
         padding: "0px 16px",
       }}
     >
+      <MapComponent
+        onOpen={handleOpenDialog}
+        update={update}
+        country={country}
+        key={country}
+      />
       <Button
         variant="contained"
         color="primary"
@@ -244,6 +250,7 @@ const CustomCalendar = () => {
           }
         }}
         selectable
+        longPressThreshold={10}
       />
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>
@@ -421,13 +428,6 @@ const CustomCalendar = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <MapComponent
-        onOpen={handleOpenDialog}
-        update={update}
-        country={country}
-        key={country}
-      />
     </div>
   );
 };
