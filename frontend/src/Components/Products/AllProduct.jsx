@@ -133,6 +133,9 @@ const AllProducts = () => {
     let resp = await getAllProducts();
     if (resp) {
       if (resp.status === 200) {
+        resp.data.getdata.sort((a, b) =>
+          a?.productCategory?.localeCompare(b?.productCategory)
+        );
         setData(resp.data.getdata);
         setLoading(false);
 
@@ -740,20 +743,37 @@ const AllProducts = () => {
           rowGap: "20px", // Adjust for smaller screens
         }}
       >
-        {loading ? (
-          <p>Loading...</p>
-        ) : Data ? (
-          Data.map((item, index) => {
-            return (
+        {Data &&
+          Data.reduce((acc, item, index, array) => {
+            const prevCategory =
+              index > 0 ? array[index - 1].productCategory : null;
+            const isNewCategory = item.productCategory !== prevCategory;
+
+            if (isNewCategory) {
+              acc.push(
+                <Box
+                  key={`category-${item.productCategory}`}
+                  sx={{
+                    width: "100%",
+                    textAlign: "center",
+                    margin: "20px 0",
+                    fontWeight: "bold",
+                    fontSize: "18px",
+                  }}
+                >
+                  {item.productCategory}
+                </Box>
+              );
+            }
+
+            acc.push(
               <Box
                 key={index}
                 sx={{
                   width: "230px",
                   overflow: "hidden",
-
                   padding: "20px",
                   borderRadius: "12px",
-                  //background: "#FFFFFF",
                   bgcolor:
                     item?.productColor === "BLANC"
                       ? "#ffffff"
@@ -776,9 +796,7 @@ const AllProducts = () => {
                       }}
                     >
                       <img
-                        // src={`http://localhost:1000/${item.image}`}
                         src={`https://app.noutfermeture.com/api/${item.image}`}
-                        // src={`./assets/${item.image}`}
                         style={{
                           borderRadius: "8px",
                           width: "100%",
@@ -843,28 +861,6 @@ const AllProducts = () => {
                           {item.productDescription}
                         </Typography>
                       </Box>
-                      {/* <Box>
-                        <Typography
-                          textAlign="left"
-                          sx={{
-                            color: "black",
-                            fontWeight: "500",
-                            lineHeight: "143%",
-                          }}
-                        >
-                          Price
-                        </Typography>
-                        <Typography
-                          sx={{
-                            color: "#545454",
-                            fontSize: "12px",
-                            fontWeight: "400",
-                            lineHeight: "143%",
-                          }}
-                        >
-                          ${item.price}
-                        </Typography>
-                      </Box> */}
                       <Box>
                         <Typography
                           textAlign="left"
@@ -878,6 +874,21 @@ const AllProducts = () => {
                           {item.productcode}
                         </Typography>
                       </Box>
+
+                      <Box display="flex" gap="10px" alignItems="center">
+                        <Typography
+                          textAlign="left"
+                          sx={{
+                            color: "black",
+                            fontWeight: "300",
+                            lineHeight: "200%",
+                            fontSize: "14px",
+                          }}
+                        >
+                          {item.productCategory}
+                        </Typography>
+                      </Box>
+
                       <Box display="flex" gap="10px" alignItems="center">
                         <Typography
                           textAlign="left"
@@ -915,10 +926,9 @@ const AllProducts = () => {
                 </Grid>
               </Box>
             );
-          })
-        ) : (
-          <div>Not found</div>
-        )}
+
+            return acc;
+          }, [])}
       </Box>
     </Box>
   );

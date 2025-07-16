@@ -11,6 +11,7 @@ import {
   IconButton,
   Grid,
   TextField,
+  Checkbox,
 } from "@mui/material";
 import {
   Assignment,
@@ -42,6 +43,38 @@ const styles = {
 const QuotationExport = () => {
   const [quotations, setquotations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleDownloadSelected = () => {
+    selectedRows.forEach((rowId) => {
+      const sheet = quotations.find((q) => q._id === rowId);
+      if (sheet) {
+        const link = document.createElement("a");
+        link.href = `https://app.noutfermeture.com/api/${sheet?.filePath}`;
+        link.target = "_blank";
+        link.download = sheet?.filePath.split("/").pop();
+        link.click();
+      }
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    selectedRows.forEach(async (rowId) => {
+      const sheet = quotations.find((q) => q._id === rowId);
+      if (sheet) {
+        const response = await deleteQuotation(sheet?._id);
+        setUpdate(!update);
+      }
+    });
+  };
+
+  const [selectedRows, setSelectedRows] = useState([]);
+
+  const handleCheckboxChange = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+
   const [update, setUpdate] = useState(false);
   const navigate = useNavigate();
 
@@ -111,7 +144,7 @@ const QuotationExport = () => {
                       ?.includes(searchQuery?.toUpperCase())
                 )
                 .map((sheet) => (
-                  <TableRow key={sheet.id}>
+                  <TableRow key={sheet._id}>
                     <TableCell>{sheet.clientName}</TableCell>
                     <TableCell>{sheet.devisNumber}</TableCell>
                     <TableCell>{sheet.phone}</TableCell>
@@ -145,6 +178,11 @@ const QuotationExport = () => {
                           Download
                         </Button>
                       </a>
+                      <Checkbox
+                        checked={selectedRows.includes(sheet._id)}
+                        onChange={() => handleCheckboxChange(sheet._id)}
+                        inputProps={{ "aria-label": "Select row" }}
+                      />
                       <IconButton
                         onClick={async () => {
                           console.log(sheet);
@@ -166,6 +204,26 @@ const QuotationExport = () => {
             </TableBody>
           </Table>
         </TableContainer>
+
+        <Button
+          onClick={handleDownloadSelected}
+          variant="contained"
+          color="primary"
+          disabled={selectedRows.length === 0}
+          style={{ marginTop: "20px" }}
+        >
+          Download Selected
+        </Button>
+
+        <Button
+          onClick={handleDeleteSelected}
+          variant="contained"
+          color="warning"
+          disabled={selectedRows.length === 0}
+          style={{ marginTop: "20px", marginLeft: "20px" }}
+        >
+          Delete Selected
+        </Button>
       </Grid>
     </div>
   );

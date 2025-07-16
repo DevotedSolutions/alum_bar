@@ -22,7 +22,11 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     designation: selectedProduct ? selectedProduct?.designation : "",
     vitrage: selectedProduct ? selectedProduct?.vitrage : "",
     cermone: selectedProduct ? selectedProduct?.cermone : "",
-    priceList: selectedProduct ? selectedProduct?.priceList : [],
+    priceList: selectedProduct
+      ? [...selectedProduct?.priceList].sort((a, b) =>
+          a.width === b.width ? a.height - b.height : a.width - b.width
+        )
+      : [],
     category: selectedProduct ? selectedProduct?.category : "",
   });
   const [modalImage, setModalImage] = useState(null);
@@ -75,7 +79,9 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
 
       setFormData({
         ...formData,
-        priceList: updatedPriceList,
+        priceList: updatedPriceList.sort((a, b) =>
+          a.width === b.width ? a.height - b.height : a.width - b.width
+        ),
       });
     }
   };
@@ -103,7 +109,11 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       designation: selectedProduct ? selectedProduct?.designation : "",
       vitrage: selectedProduct ? selectedProduct?.vitrage : "",
       cermone: selectedProduct ? selectedProduct?.cermone : "",
-      priceList: selectedProduct ? selectedProduct?.priceList : [],
+      priceList: selectedProduct
+        ? [...selectedProduct?.priceList].sort((a, b) =>
+            a.width === b.width ? a.height - b.height : a.width - b.width
+          )
+        : [],
       category: selectedProduct ? selectedProduct?.category : "",
     });
     setModalImage(null);
@@ -557,6 +567,21 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                                 onChange={(e) =>
                                   handlePriceInputChange(index, e)
                                 }
+                                sx={{
+                                  "& input[type=number]": {
+                                    "-moz-appearance": "textfield",
+                                  },
+                                  "& input[type=number]::-webkit-outer-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                  "& input[type=number]::-webkit-inner-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                }}
                               />
                             </FormControl>
                           </Grid>
@@ -571,6 +596,21 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                                 onChange={(e) =>
                                   handlePriceInputChange(index, e)
                                 }
+                                sx={{
+                                  "& input[type=number]": {
+                                    "-moz-appearance": "textfield",
+                                  },
+                                  "& input[type=number]::-webkit-outer-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                  "& input[type=number]::-webkit-inner-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                }}
                               />
                             </FormControl>
                           </Grid>
@@ -586,6 +626,21 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                                 onChange={(e) =>
                                   handlePriceInputChange(index, e)
                                 }
+                                sx={{
+                                  "& input[type=number]": {
+                                    "-moz-appearance": "textfield",
+                                  },
+                                  "& input[type=number]::-webkit-outer-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                  "& input[type=number]::-webkit-inner-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                }}
                               />
                             </FormControl>
                           </Grid>
@@ -601,6 +656,21 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                                 onChange={(e) =>
                                   handlePriceInputChange(index, e)
                                 }
+                                sx={{
+                                  "& input[type=number]": {
+                                    "-moz-appearance": "textfield",
+                                  },
+                                  "& input[type=number]::-webkit-outer-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                  "& input[type=number]::-webkit-inner-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                }}
                               />
                             </FormControl>
                           </Grid>
@@ -616,6 +686,21 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                                 onChange={(e) =>
                                   handlePriceInputChange(index, e)
                                 }
+                                sx={{
+                                  "& input[type=number]": {
+                                    "-moz-appearance": "textfield",
+                                  },
+                                  "& input[type=number]::-webkit-outer-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                  "& input[type=number]::-webkit-inner-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                }}
                               />
                             </FormControl>
                           </Grid>
@@ -631,6 +716,21 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                                 onChange={(e) =>
                                   handlePriceInputChange(index, e)
                                 }
+                                sx={{
+                                  "& input[type=number]": {
+                                    "-moz-appearance": "textfield",
+                                  },
+                                  "& input[type=number]::-webkit-outer-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                  "& input[type=number]::-webkit-inner-spin-button":
+                                    {
+                                      "-webkit-appearance": "none",
+                                      margin: 0,
+                                    },
+                                }}
                               />
                             </FormControl>
                           </Grid>

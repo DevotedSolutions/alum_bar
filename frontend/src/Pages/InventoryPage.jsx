@@ -158,6 +158,9 @@ const InventoryPage = () => {
       const resp = await getAllProducts();
       setLoading(false);
       if (resp.status === 200) {
+        resp.data.getdata.sort((a, b) =>
+          a?.productCategory?.localeCompare(b?.productCategory)
+        );
         setData(resp.data.getdata);
         // setTotalPages(resp.data.totalPages);
       } else {
@@ -376,11 +379,78 @@ const InventoryPage = () => {
                           productcode.includes(searchDataLowerCase)
                         );
                       })
-                      .sort((a, b) =>
-                        a?.productCategory?.localeCompare(b?.productCategory)
-                      )
+
                       .map((item, index) => {
                         console.log(item.price);
+                        if (
+                          index === 0 ||
+                          item.productCategory !==
+                            data[index - 1].productCategory
+                        ) {
+                          return (
+                            <React.Fragment key={index}>
+                              <TableRow>
+                                <TableCell
+                                  colSpan={6}
+                                  style={{
+                                    fontWeight: "bold",
+                                    backgroundColor: "#f0f0f0",
+                                  }}
+                                >
+                                  {item.productCategory}
+                                </TableCell>
+                              </TableRow>
+                              <TableRow
+                                sx={{
+                                  bgcolor:
+                                    item?.productColor === "BLANC"
+                                      ? "#ffffff"
+                                      : item?.productColor === "NOIR"
+                                      ? "#969696"
+                                      : item?.productColor === "AS"
+                                      ? "#E6E6E6"
+                                      : "#e3fcfa",
+                                }}
+                              >
+                                <TableCell>
+                                  <Box sx={{ width: "100px" }}>
+                                    <img
+                                      src={`https://app.noutfermeture.com/api/${item.image}`}
+                                      style={{ width: "100%", height: "70px" }}
+                                      alt="Product"
+                                    />
+                                  </Box>
+                                </TableCell>
+                                <TableCell>{item.productName}</TableCell>
+                                <TableCell>{item.productDescription}</TableCell>
+                                <TableCell>{item.productcode}</TableCell>
+                                <TableCell>{item.quantity}</TableCell>
+                                <TableCell>
+                                  <Box sx={{ display: "flex", gap: "6px" }}>
+                                    <Button
+                                      variant="contained"
+                                      sx={{ textTransform: "capitalize" }}
+                                      onClick={() => {
+                                        handleOpen(item._id);
+                                      }}
+                                    >
+                                      Add more Quantity
+                                    </Button>
+                                    <Button
+                                      variant="contained"
+                                      sx={{ textTransform: "capitalize" }}
+                                      onClick={() => {
+                                        handleOpenSellModal(item._id);
+                                      }}
+                                    >
+                                      Generate Sell QR code
+                                    </Button>
+                                  </Box>
+                                </TableCell>
+                              </TableRow>
+                            </React.Fragment>
+                          );
+                        }
                         return (
                           <TableRow
                             key={index}

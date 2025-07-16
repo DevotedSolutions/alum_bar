@@ -344,14 +344,14 @@ const CustomCalendar = () => {
 
           <TextField
             label="Start Date"
-            type="datetime-local"
+            type="date"
             fullWidth
             disabled={!isAdmin && currentEvent?._id}
             margin="dense"
             InputLabelProps={{ shrink: true }}
             value={
               currentEvent?.start
-                ? moment(currentEvent.start).format("YYYY-MM-DDTHH:mm")
+                ? moment(currentEvent.start).format("YYYY-MM-DD")
                 : ""
             }
             onChange={(e) =>
@@ -361,19 +361,19 @@ const CustomCalendar = () => {
               })
             }
             inputProps={{
-              min: moment().format("YYYY-MM-DDTHH:mm"),
+              min: moment().format("YYYY-MM-DD"),
             }}
           />
           <TextField
             label="End Date"
-            type="datetime-local"
+            type="date"
             fullWidth
             disabled={!isAdmin && currentEvent?._id}
             margin="dense"
             InputLabelProps={{ shrink: true }}
             value={
               currentEvent?.end
-                ? moment(currentEvent.end).format("YYYY-MM-DDTHH:mm")
+                ? moment(currentEvent.end).format("YYYY-MM-DD")
                 : ""
             }
             onChange={(e) =>
@@ -384,8 +384,8 @@ const CustomCalendar = () => {
             }
             inputProps={{
               min: currentEvent?.start
-                ? moment(currentEvent.start).format("YYYY-MM-DDTHH:mm")
-                : moment().format("YYYY-MM-DDTHH:mm"),
+                ? moment(currentEvent.start).format("YYYY-MM-DD")
+                : moment().format("YYYY-MM-DD"),
             }}
           />
         </DialogContent>
