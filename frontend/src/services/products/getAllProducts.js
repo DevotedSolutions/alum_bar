@@ -80,3 +80,20 @@ export const sellProduct = async (id, quantity) => {
     return err.response;
   }
 };
+
+export function sortProducts(data) {
+  return data.sort((a, b) => {
+    const aCategory = a?.productCategory || "";
+    const bCategory = b?.productCategory || "";
+
+    const aIsProfile = aCategory.toLowerCase() === "profiles";
+    const bIsProfile = bCategory.toLowerCase() === "profiles";
+
+    if (aIsProfile && !bIsProfile) return -1;
+    if (!aIsProfile && bIsProfile) return 1;
+
+    if (!aIsProfile && !bIsProfile) {
+      return aCategory.localeCompare(bCategory);
+    }
+  });
+}

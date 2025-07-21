@@ -224,6 +224,8 @@ export default function DrawerAppBar(props) {
 
   const itemsList = isAdmin
     ? itemsListAdmin
+    : isInventoryUser && isStaff
+    ? [...new Set([...itemsListStaff, ...itemsListUser])]
     : isInventoryUser
     ? itemsListUser
     : isStaff

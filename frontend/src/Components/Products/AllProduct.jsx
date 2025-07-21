@@ -14,6 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 import TextField from "@mui/material/TextField";
 import Modal from "@mui/material/Modal";
 import { addProducts } from "../../services/products/addProducts";
+import { sortProducts } from "../../services/products/getAllProducts";
 
 import { UpdateProducts } from "../../services/products/UpdateProduct";
 import {
@@ -133,10 +134,8 @@ const AllProducts = () => {
     let resp = await getAllProducts();
     if (resp) {
       if (resp.status === 200) {
-        resp.data.getdata.sort((a, b) =>
-          a?.productCategory?.localeCompare(b?.productCategory)
-        );
-        setData(resp.data.getdata);
+        const sortedProduct = sortProducts(resp.data.getdata);
+        setData(sortedProduct);
         setLoading(false);
 
         // toast.success(resp.data.message);

@@ -15,6 +15,7 @@ import {
 import {
   getAllProducts,
   getOneProduct,
+  sortProducts,
 } from "../services/products/getAllProducts";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -158,11 +159,9 @@ const InventoryPage = () => {
       const resp = await getAllProducts();
       setLoading(false);
       if (resp.status === 200) {
-        resp.data.getdata.sort((a, b) =>
-          a?.productCategory?.localeCompare(b?.productCategory)
-        );
-        setData(resp.data.getdata);
-        // setTotalPages(resp.data.totalPages);
+        const sortedProduct = sortProducts(resp.data.getdata);
+
+        setData(sortedProduct);
       } else {
         toast.error(resp.data.message);
       }
