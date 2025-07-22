@@ -173,6 +173,21 @@ const CustomCalendar = () => {
     }
   };
 
+  const getIsLeave = (type) => {
+    switch (type) {
+      case "local-leave":
+        return true;
+      case "emergency-local-leave":
+        return true;
+      case "sick-leave":
+        return true;
+      case "absent":
+        return true;
+      default:
+        return false;
+    }
+  };
+
   return (
     <div
       style={{
@@ -243,12 +258,32 @@ const CustomCalendar = () => {
         }}
         onSelectSlot={(slotInfo) => {
           if (moment(slotInfo.start).isSameOrAfter(moment(), "day")) {
-            handleOpenDialog({
-              start: slotInfo.start,
-              end: slotInfo.end,
-            });
+            const selectedDate = moment(slotInfo.start);
+            const hasEventsOnDay = events?.some(
+              (event) =>
+                selectedDate.isSameOrAfter(
+                  moment(event.start).startOf("day")
+                ) &&
+                selectedDate.isSameOrBefore(moment(event.end).startOf("day")) &&
+                !getIsLeave(event.type)
+            );
+
+            if (!hasEventsOnDay) {
+              handleOpenDialog({
+                start: slotInfo.start,
+                end: slotInfo.end,
+              });
+            }
           }
         }}
+        // onSelectSlot={(slotInfo) => {
+        //   if (moment(slotInfo.start).isSameOrAfter(moment(), "day")) {
+        //     handleOpenDialog({
+        //       start: slotInfo.start,
+        //       end: slotInfo.end,
+        //     });
+        //   }
+        // }}
         selectable
         longPressThreshold={10}
       />
