@@ -67,13 +67,15 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
 
         return {
           ...priceEntry,
-          price: Math.round(euroPrice * (1 + Number(priceFactor.others) / 100)),
-          price_may: Math.round(
-            euroPrice * (1 + Number(priceFactor.may) / 100)
-          ),
-          price_reu: Math.round(
-            euroPrice * (1 + Number(priceFactor.reu) / 100)
-          ),
+          price: priceEntry?.isSelected
+            ? Math.round(euroPrice * (1 + Number(priceFactor.others) / 100))
+            : priceEntry.price,
+          price_may: priceEntry?.isSelected
+            ? Math.round(euroPrice * (1 + Number(priceFactor.may) / 100))
+            : priceEntry.price_may,
+          price_reu: priceEntry?.isSelected
+            ? Math.round(euroPrice * (1 + Number(priceFactor.reu) / 100))
+            : priceEntry.price_reu,
         };
       });
 
@@ -542,6 +544,49 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                           Apply
                         </Button>
                       </Grid>
+                      <Grid item xs={12} sm={2}>
+                        <Button
+                          color="primary"
+                          onClick={() => {
+                            const newPriceList = formData.priceList.map(
+                              (entry) => ({
+                                ...entry,
+                                isSelected: true,
+                              })
+                            );
+                            setFormData({
+                              ...formData,
+                              priceList: newPriceList,
+                            });
+                          }}
+                          variant="contained"
+                          disabled={formData.priceList.length === 0}
+                        >
+                          Select All
+                        </Button>
+                      </Grid>
+
+                      <Grid item xs={12} sm={3}>
+                        <Button
+                          color="primary"
+                          onClick={() => {
+                            const newPriceList = formData.priceList.map(
+                              (entry) => ({
+                                ...entry,
+                                isSelected: false,
+                              })
+                            );
+                            setFormData({
+                              ...formData,
+                              priceList: newPriceList,
+                            });
+                          }}
+                          variant="contained"
+                          disabled={formData.priceList.length === 0}
+                        >
+                          UnSelect All
+                        </Button>
+                      </Grid>
                     </Grid>
                   </Box>
 
@@ -735,7 +780,29 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                             </FormControl>
                           </Grid>
 
-                          <Grid item xs={12} sm={1}>
+                          <Grid
+                            item
+                            xs={12}
+                            sm={1}
+                            sx={{ display: "flex", alignItems: "center" }}
+                          >
+                            <FormControl>
+                              <input
+                                type="checkbox"
+                                checked={
+                                  formData.priceList[index].isSelected || false
+                                }
+                                onChange={(e) => {
+                                  const newPriceList = [...formData.priceList];
+                                  newPriceList[index].isSelected =
+                                    e.target.checked;
+                                  setFormData({
+                                    ...formData,
+                                    priceList: newPriceList,
+                                  });
+                                }}
+                              />
+                            </FormControl>
                             <IconButton
                               onClick={() => handleDeletePriceEntry(index)}
                             >

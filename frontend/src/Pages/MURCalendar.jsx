@@ -3,6 +3,7 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import {
+  Grid,
   Button,
   Dialog,
   DialogActions,
@@ -31,6 +32,7 @@ const CustomCalendar = () => {
   );
 
   const [update, setUpdate] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -56,7 +58,9 @@ const CustomCalendar = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
 
-  const isAdmin = window.localStorage.getItem("UserRole") === "admin";
+  const isAdmin =
+    window.localStorage.getItem("UserRole") === "admin" ||
+    window.localStorage.getItem("UserRole")?.includes("admin");
 
   const handleAddEvent = async () => {
     if (currentEvent?._id) {
@@ -143,6 +147,7 @@ const CustomCalendar = () => {
       start: event?.start || "",
       end: event?.end || "",
       location: event?.location || null,
+      note: event?.note || "",
     });
     setOpenDialog(true);
   };
@@ -195,22 +200,34 @@ const CustomCalendar = () => {
         padding: "0px 16px",
       }}
     >
-      <MapComponent
-        onOpen={handleOpenDialog}
-        update={update}
-        country={country}
-        key={country}
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => handleOpenDialog()}
+      <Grid
         sx={{
-          display: isAdmin ? "block" : "none",
+          display: "flex",
         }}
       >
-        Add Event
-      </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => handleOpenDialog()}
+          sx={{
+            display: isAdmin ? "block" : "none",
+          }}
+        >
+          Add Event
+        </Button>
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setShowMap(!showMap)}
+          sx={{
+            display: isAdmin ? "block" : "none",
+            marginLeft: "10px",
+          }}
+        >
+          {!showMap ? "Show" : "Hide"} Map
+        </Button>
+      </Grid>
 
       {isAdmin && (
         <div
@@ -241,6 +258,17 @@ const CustomCalendar = () => {
           </Button>
         </div>
       )}
+
+      {showMap ? (
+        <MapComponent
+          onOpen={handleOpenDialog}
+          update={update}
+          country={country}
+          key={country}
+          isAdmin={isAdmin}
+        />
+      ) : null}
+
       <Calendar
         localizer={localizer}
         events={events?.map((event) => ({
@@ -258,22 +286,10 @@ const CustomCalendar = () => {
         }}
         onSelectSlot={(slotInfo) => {
           if (moment(slotInfo.start).isSameOrAfter(moment(), "day")) {
-            const selectedDate = moment(slotInfo.start);
-            const hasEventsOnDay = events?.some(
-              (event) =>
-                selectedDate.isSameOrAfter(
-                  moment(event.start).startOf("day")
-                ) &&
-                selectedDate.isSameOrBefore(moment(event.end).startOf("day")) &&
-                !getIsLeave(event.type)
-            );
-
-            if (!hasEventsOnDay) {
-              handleOpenDialog({
-                start: slotInfo.start,
-                end: slotInfo.end,
-              });
-            }
+            handleOpenDialog({
+              start: slotInfo.start,
+              end: slotInfo.end,
+            });
           }
         }}
         // onSelectSlot={(slotInfo) => {
@@ -337,15 +353,27 @@ const CustomCalendar = () => {
 
             {isAdmin && <MenuItem value="site-work">Site Work</MenuItem>}
 
-            {currentEvent?.start &&
+            {!currentEvent?.location &&
+              currentEvent?.start &&
               moment(currentEvent.start).diff(moment(), "days") >= 5 && (
                 <MenuItem value="local-leave">Local Leave</MenuItem>
               )}
-            <MenuItem value="emergency-local-leave">
-              Emergency Local Leave
-            </MenuItem>
-            <MenuItem value="sick-leave">Sick Leave</MenuItem>
-            <MenuItem value="absent">Absent</MenuItem>
+
+            {(!currentEvent?.location ||
+              currentEvent?.location?.length === 0) && (
+              <MenuItem value="emergency-local-leave">
+                Emergency Local Leave
+              </MenuItem>
+            )}
+            {!currentEvent?.location ||
+              (currentEvent?.location?.length === 0 && (
+                <MenuItem value="sick-leave">Sick Leave</MenuItem>
+              ))}
+
+            {(!currentEvent?.location ||
+              currentEvent?.location?.length === 0) && (
+              <MenuItem value="absent">Absent</MenuItem>
+            )}
 
             {isAdmin && <MenuItem value="other">Other</MenuItem>}
           </TextField>
@@ -422,6 +450,18 @@ const CustomCalendar = () => {
                 ? moment(currentEvent.start).format("YYYY-MM-DD")
                 : moment().format("YYYY-MM-DD"),
             }}
+          />
+          <TextField
+            label="Note"
+            fullWidth
+            disabled={!isAdmin && currentEvent?._id}
+            multiline
+            InputLabelProps={{ shrink: true }}
+            margin="dense"
+            value={currentEvent?.note || ""}
+            onChange={(e) =>
+              setCurrentEvent({ ...currentEvent, note: e.target.value })
+            }
           />
         </DialogContent>
         <DialogActions>

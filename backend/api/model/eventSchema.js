@@ -33,6 +33,9 @@ const EventSchema = mongoose.Schema({
   country: {
     type: String,
   },
+  note: {
+    note: String,
+  },
 });
 
 const Eventdata = mongoose.model("events", EventSchema);

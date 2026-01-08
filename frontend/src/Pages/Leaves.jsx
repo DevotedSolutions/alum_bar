@@ -33,9 +33,14 @@ import {
   getLeaves,
   getRemainingLeaves,
 } from "../services/Events";
+import moment from "moment";
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([
+    {
+      username: window.localStorage.getItem("UserName"),
+    },
+  ]);
   const [leaves, setLeaves] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(false);
@@ -51,7 +56,9 @@ const UserManagement = () => {
   });
   const [remainingLeaves, setRemainingLeaves] = useState([]);
   const [update, setUpdate] = useState(false);
-  const isAdmin = window.localStorage.getItem("UserRole") === "admin";
+  const isAdmin =
+    window.localStorage.getItem("UserRole") === "admin" ||
+    window.localStorage.getItem("UserRole")?.includes("admin");
 
   useEffect(() => {
     async function fetchUsers() {
@@ -118,7 +125,7 @@ const UserManagement = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setForm({
-      userame: window.localStorage.getItem("UserName"),
+      userName: window.localStorage.getItem("UserName"),
       userId: window.localStorage.getItem("UserId"),
       startDate: "",
       endDate: "",
@@ -171,8 +178,8 @@ const UserManagement = () => {
           title: `${leave?.userName}'s Leave`,
           description: leave?.reason || "",
           type: leave?.leaveType,
-          start: new Date(leave.startDate).toISOString(),
-          end: new Date(leave.endDate).toISOString(),
+          start: leave.startDate,
+          end: leave.endDate,
           country: window.localStorage.getItem("UserCountry"),
         });
         toast?.success(addEvent?.message);
@@ -202,7 +209,7 @@ const UserManagement = () => {
           variant="contained"
           startIcon={<Add />}
           onClick={() => handleOpenDialog()}
-          style={{ marginBottom: "20px", display: isAdmin ? "block" : "none" }}
+          style={{ marginBottom: "20px" }}
         >
           Apply Leave
         </Button>
@@ -374,7 +381,10 @@ const UserManagement = () => {
               InputLabelProps={{ shrink: true }}
               value={form.startDate}
               onChange={handleChange}
-              inputProps={{ pattern: "\\d{4}-\\d{2}-\\d{2}" }}
+              inputProps={{
+                pattern: "\\d{4}-\\d{2}-\\d{2}",
+                min: new Date().toISOString().split("T")[0],
+              }}
             />
             <TextField
               margin="dense"
@@ -385,7 +395,12 @@ const UserManagement = () => {
               InputLabelProps={{ shrink: true }}
               value={form.endDate}
               onChange={handleChange}
-              inputProps={{ pattern: "\\d{4}-\\d{2}-\\d{2}" }}
+              inputProps={{
+                pattern: "\\d{4}-\\d{2}-\\d{2}",
+                min: form.startDate
+                  ? moment(form.startDate).format("YYYY-MM-DD")
+                  : moment().format("YYYY-MM-DD"),
+              }}
             />
             <TextField
               margin="dense"
@@ -405,7 +420,10 @@ const UserManagement = () => {
               style={{ marginTop: 16 }}
             >
               <MenuItem value="sick-leave">Sick Leave</MenuItem>
-              <MenuItem value="local-leave">Local Leave</MenuItem>
+              {form?.startDate &&
+                moment(form?.startDate).diff(moment(), "days") >= 5 && (
+                  <MenuItem value="local-leave">Local Leave</MenuItem>
+                )}
               <MenuItem value="emergency-local-leave">
                 Emergency Sick Leave
               </MenuItem>

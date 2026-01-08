@@ -3,7 +3,7 @@ import axios from "../BaseUrl";
 export const getAllDesignation = async () => {
   try {
     const token = localStorage.getItem("tokenDesby");
-    const response = await axios.get(`/get-designation`, {
+    const response = await axios.get(`/get-designation?addPriceList=1`, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
@@ -29,5 +29,3 @@ export const getAllQuotations = async () => {
     return err.response;
   }
 };
-
-

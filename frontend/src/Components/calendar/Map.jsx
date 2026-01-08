@@ -25,7 +25,7 @@ const RecenterAutomatically = ({ lat, lng }) => {
   return null;
 };
 
-const MapComponent = ({ onOpen, update, country }) => {
+const MapComponent = ({ isAdmin, onOpen, update, country }) => {
   const [markers, setMarkers] = useState([]);
   const [address, setAddress] = useState("");
   const [options, setOptions] = useState([]);
@@ -99,10 +99,12 @@ const MapComponent = ({ onOpen, update, country }) => {
       const data = await response.json();
       const address = data.display_name || "Unknown Address";
 
-      onOpen({
-        location: [lat, lng],
-        address: address,
-      });
+      if (isAdmin) {
+        onOpen({
+          location: [lat, lng],
+          address: address,
+        });
+      }
     } catch (error) {
       console.error("Error fetching address:", error);
     }
