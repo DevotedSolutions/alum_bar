@@ -3,6 +3,7 @@ const gammeModel = require("../model/gammeSchema");
 const productSchema = require("../model/productSchema");
 const quoteSchema = require("../model/QuoteSchema");
 const Client = require("../model/client");
+
 // get all products
 exports.getProducts = async (req, res) => {
   try {
@@ -417,11 +418,56 @@ exports.deleteQuotation = async (req, res) => {
   }
 };
 
+generateDevisNumber = async (country) => {
+  try {
+    // Map countries to their prefix codes
+    const countryPrefixes = {
+      MRU: "20",
+      May: "10",
+      REU: "30",
+    };
+
+    // Get the prefix for the country
+    const prefix = countryPrefixes[country] ?? "40";
+
+    // Create the pattern to search for (e.g., "DPSW 10-%")
+    const searchPattern = `DPSW ${prefix}-%`;
+
+    // Find the latest devis number for this country
+    const latestClient = await Client.findOne({
+      devisNumber: { $regex: "^DPSW 20-.*" },
+    }).sort({ devisNumber: -1 });
+
+    let newNumber = 1;
+
+    if (latestClient && latestClient.devisNumber) {
+      // Extract the number part from the devis number
+      // e.g., "DPSW 10-0544" -> "0544" -> 544
+      const currentNumber = parseInt(latestClient.devisNumber.split("-")[1]);
+      newNumber = currentNumber + 1;
+    }
+
+    // Format the new number with leading zeros (4 digits)
+    const formattedNumber = String(newNumber).padStart(4, "0");
+
+    // Create the new devis number
+    const newDevisNumber = `DPSW ${prefix}-${formattedNumber}`;
+
+    return newDevisNumber;
+  } catch (error) {
+    console.error("Error generating devis number:", error);
+    return `DPSW-0000`;
+  }
+};
+
 exports.saveQuotation = async (req, res) => {
-  const { clientName, email, phone, devisNumber } = req.body;
+  const { clientName, email, phone, country, devisNumber } = req.body;
 
   const file = req.file ? req.file.path : null;
   try {
+    const devisNumber = await generateDevisNumber(country);
+    console.log(devisNumber, "devis number");
+
     const newClient = new Client({
       clientName,
       devisNumber,
@@ -432,9 +478,45 @@ exports.saveQuotation = async (req, res) => {
 
     await newClient.save(); // Save the client info to MongoDB
 
-    res.send("File uploaded and client info saved successfully");
+    res.json({
+      message: "File uploaded and client info saved successfully",
+      devisNumber,
+    });
   } catch (error) {
     res.status(500).send("Error saving client info to MongoDB");
+  }
+};
+
+exports.saveFile = async (req, res) => {
+  const { devisNumber } = req.body;
+  const file = req.file ? req.file.path : null;
+
+  try {
+    // Check if file was uploaded
+    if (!file) {
+      return res.status(400).send("No file uploaded");
+    }
+
+    // Update the client with the file path
+    const updateClient = await Client.updateOne(
+      {
+        devisNumber: devisNumber,
+      },
+      {
+        $set: {
+          filePath: file,
+        },
+      }
+    );
+
+    if (updateClient[0] === 0) {
+      return res.status(404).send("Client with this devis number not found");
+    }
+
+    res.send("File uploaded and client info saved successfully");
+  } catch (error) {
+    console.error("Error saving file:", error);
+    res.status(500).send("Error saving client info to database");
   }
 };
 

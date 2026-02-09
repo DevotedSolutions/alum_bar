@@ -36,7 +36,7 @@ const styles = {
     marginBottom: "30px",
   },
   table: {
-    width: "850px",
+    minWidth: "850px",
   },
 };
 

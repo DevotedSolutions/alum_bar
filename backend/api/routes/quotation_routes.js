@@ -57,6 +57,9 @@ router.post(
   pdfUpload.single("pdf"),
   quotationcontrl.saveQuotation
 );
+
+router.post("/save-file", pdfUpload.single("pdf"), quotationcontrl.saveFile);
+
 router.get(
   "/get-quotations",
   middlware.authMiddleware,
