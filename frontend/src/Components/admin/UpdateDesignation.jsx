@@ -30,6 +30,12 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     category: selectedProduct ? selectedProduct?.category : "",
   });
   const [modalImage, setModalImage] = useState(null);
+  const [discount, setDiscount] = useState({
+    mru: 0,
+    may: 0,
+    reu: 0,
+    others: 0,
+  });
   const [id, setId] = useState(selectedProduct ? selectedProduct?._id : "");
   const [showImg, setShowImg] = useState(
     selectedProduct?.image
@@ -84,6 +90,47 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
         priceList: updatedPriceList.sort((a, b) =>
           a.width === b.width ? a.height - b.height : a.width - b.width
         ),
+      });
+    }
+  };
+
+  const applyDiscount = () => {
+    if (formData.priceList?.length > 0) {
+      const updatedPriceList = formData.priceList.map((priceEntry) => {
+        return {
+          ...priceEntry,
+          price_local: priceEntry?.isSelected
+            ? Math.round(
+                priceEntry?.price_local * (1 - Number(discount.mru) / 100)
+              )
+            : priceEntry.price_local,
+          price: priceEntry?.isSelected
+            ? Math.round(priceEntry.price * (1 - Number(discount.others) / 100))
+            : priceEntry.price,
+          price_may: priceEntry?.isSelected
+            ? Math.round(
+                priceEntry.price_may * (1 - Number(discount.may) / 100)
+              )
+            : priceEntry.price_may,
+          price_reu: priceEntry?.isSelected
+            ? Math.round(
+                priceEntry.price_reu * (1 - Number(discount.reu) / 100)
+              )
+            : priceEntry.price_reu,
+        };
+      });
+
+      setFormData({
+        ...formData,
+        priceList: updatedPriceList.sort((a, b) =>
+          a.width === b.width ? a.height - b.height : a.width - b.width
+        ),
+      });
+      setDiscount({
+        mru: 0,
+        may: 0,
+        reu: 0,
+        others: 0,
       });
     }
   };
@@ -566,7 +613,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                         </Button>
                       </Grid>
 
-                      <Grid item xs={12} sm={3}>
+                      <Grid item xs={12} sm={2}>
                         <Button
                           color="primary"
                           onClick={() => {
@@ -584,7 +631,81 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                           variant="contained"
                           disabled={formData.priceList.length === 0}
                         >
-                          UnSelect All
+                          UnSelect
+                        </Button>
+                      </Grid>
+
+                      <Grid item xs={12} sm={1.5}>
+                        <TextField
+                          size="medium"
+                          type="number"
+                          fullWidth
+                          value={discount.mru}
+                          label="MRU Discount %"
+                          onChange={(e) =>
+                            setDiscount({
+                              ...discount,
+                              mru: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={1.5}>
+                        <TextField
+                          size="medium"
+                          type="number"
+                          fullWidth
+                          value={discount.may}
+                          label="MAY Discount %"
+                          onChange={(e) =>
+                            setDiscount({
+                              ...discount,
+                              may: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={1.5}>
+                        <TextField
+                          size="medium"
+                          type="number"
+                          fullWidth
+                          value={discount.reu}
+                          label="REU Discount %"
+                          onChange={(e) =>
+                            setDiscount({
+                              ...discount,
+                              reu: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={1.5}>
+                        <TextField
+                          size="medium"
+                          type="number"
+                          fullWidth
+                          value={discount.others}
+                          label="Other Discount %"
+                          onChange={(e) =>
+                            setDiscount({
+                              ...discount,
+                              others: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={2}>
+                        <Button
+                          color="primary"
+                          onClick={applyDiscount}
+                          variant="contained"
+                          disabled={formData.priceList.length === 0}
+                        >
+                          Apply
                         </Button>
                       </Grid>
                     </Grid>
