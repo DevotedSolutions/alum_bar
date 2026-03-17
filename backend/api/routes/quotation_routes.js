@@ -8,54 +8,54 @@ const middlware = require("../middle/authMiddleware");
 router.get(
   "/get-all-products",
   middlware.authMiddleware,
-  quotationcontrl.getProducts
+  quotationcontrl.getProducts,
 );
 router.get("/get-all-gamme", quotationcontrl.getGamme);
 router.post(
   "/add-designation",
   quotationupload.single("image"),
-  quotationcontrl.addDesignation
+  quotationcontrl.addDesignation,
 );
 router.get("/get-designation", quotationcontrl.getDesignation);
 
 router.put(
   "/update-designation/:id",
   quotationupload.single("image"),
-  quotationcontrl.updateDesignation
+  quotationcontrl.updateDesignation,
 );
 router.delete(
   "/delete-designation/:id",
   middlware.authMiddleware,
-  quotationcontrl.deleteDesignation
+  quotationcontrl.deleteDesignation,
 );
 router.get("/price", quotationcontrl.checkPrice);
 router.get("/min-max-dimensions/:id", quotationcontrl.getMinAndMaxDimensions);
 router.post(
   "/save-quotes",
   middlware.authMiddleware,
-  quotationcontrl.saveQuotes
+  quotationcontrl.saveQuotes,
 );
 router.put("/update-quote/:id", quotationcontrl.updateOrder);
 router.get(
   "/all-quotes",
   middlware.authMiddleware,
-  quotationcontrl.getAllQuotesSorted
+  quotationcontrl.getAllQuotesSorted,
 );
 router.delete(
   "/delete-order/:id",
   middlware.authMiddleware,
-  quotationcontrl.deleteOrder
+  quotationcontrl.deleteOrder,
 );
 router.delete(
   "/delete-quotation/:id",
   middlware.authMiddleware,
-  quotationcontrl.deleteQuotation
+  quotationcontrl.deleteQuotation,
 );
 
 router.post(
   "/add-quotation",
   pdfUpload.single("pdf"),
-  quotationcontrl.saveQuotation
+  quotationcontrl.saveQuotation,
 );
 
 router.post("/save-file", pdfUpload.single("pdf"), quotationcontrl.saveFile);
@@ -63,7 +63,27 @@ router.post("/save-file", pdfUpload.single("pdf"), quotationcontrl.saveFile);
 router.get(
   "/get-quotations",
   middlware.authMiddleware,
-  quotationcontrl.getQuotations
+  quotationcontrl.getQuotations,
+);
+
+router.get("/get-combos", quotationcontrl.getCombos);
+
+router.post(
+  "/add-combo",
+  quotationupload.single("image"),
+  quotationcontrl.addCombo,
+);
+
+router.put(
+  "/update-combo/:id",
+  quotationupload.single("image"),
+  quotationcontrl.updateCombo,
+);
+
+router.delete(
+  "/delete-combo/:id",
+  middlware.authMiddleware,
+  quotationcontrl.deleteCombo,
 );
 
 module.exports = router;

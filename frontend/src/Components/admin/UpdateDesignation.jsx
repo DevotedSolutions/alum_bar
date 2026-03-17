@@ -24,7 +24,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     cermone: selectedProduct ? selectedProduct?.cermone : "",
     priceList: selectedProduct
       ? [...selectedProduct?.priceList].sort((a, b) =>
-          a.width === b.width ? a.height - b.height : a.width - b.width
+          a.width === b.width ? a.height - b.height : a.width - b.width,
         )
       : [],
     category: selectedProduct ? selectedProduct?.category : "",
@@ -40,7 +40,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   const [showImg, setShowImg] = useState(
     selectedProduct?.image
       ? `https://app.noutfermeture.com/api/${selectedProduct?.image}`
-      : `/assets/images/default-img.png`
+      : `/assets/images/default-img.png`,
   );
 
   const [priceFactor, setPriceFactor] = useState({
@@ -88,7 +88,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       setFormData({
         ...formData,
         priceList: updatedPriceList.sort((a, b) =>
-          a.width === b.width ? a.height - b.height : a.width - b.width
+          a.width === b.width ? a.height - b.height : a.width - b.width,
         ),
       });
     }
@@ -101,7 +101,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
           ...priceEntry,
           price_local: priceEntry?.isSelected
             ? Math.round(
-                priceEntry?.price_local * (1 - Number(discount.mru) / 100)
+                priceEntry?.price_local * (1 - Number(discount.mru) / 100),
               )
             : priceEntry.price_local,
           price: priceEntry?.isSelected
@@ -109,12 +109,12 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
             : priceEntry.price,
           price_may: priceEntry?.isSelected
             ? Math.round(
-                priceEntry.price_may * (1 - Number(discount.may) / 100)
+                priceEntry.price_may * (1 - Number(discount.may) / 100),
               )
             : priceEntry.price_may,
           price_reu: priceEntry?.isSelected
             ? Math.round(
-                priceEntry.price_reu * (1 - Number(discount.reu) / 100)
+                priceEntry.price_reu * (1 - Number(discount.reu) / 100),
               )
             : priceEntry.price_reu,
         };
@@ -123,7 +123,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       setFormData({
         ...formData,
         priceList: updatedPriceList.sort((a, b) =>
-          a.width === b.width ? a.height - b.height : a.width - b.width
+          a.width === b.width ? a.height - b.height : a.width - b.width,
         ),
       });
       setDiscount({
@@ -150,7 +150,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
     setShowImg(
       selectedProduct?.image
         ? `https://app.noutfermeture.com/api/${selectedProduct?.image}`
-        : `/assets/images/default-img.png`
+        : `/assets/images/default-img.png`,
     );
 
     setFormData({
@@ -160,7 +160,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       cermone: selectedProduct ? selectedProduct?.cermone : "",
       priceList: selectedProduct
         ? [...selectedProduct?.priceList].sort((a, b) =>
-            a.width === b.width ? a.height - b.height : a.width - b.width
+            a.width === b.width ? a.height - b.height : a.width - b.width,
           )
         : [],
       category: selectedProduct ? selectedProduct?.category : "",
@@ -205,7 +205,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
           (p, i) =>
             i !== index &&
             Number(p.width) === width &&
-            Number(p.height) === height
+            Number(p.height) === height,
         ) !== -1 ||
         width === 0 ||
         height === 0 ||
@@ -216,7 +216,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
 
     if (duplicateCombination) {
       toast.error(
-        "Duplicate width and height combination found or empty width/height"
+        "Duplicate width and height combination found or empty width/height",
       );
       return;
     }
@@ -244,15 +244,15 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       formDataAppend.append(`priceList[${index}][price]`, priceEntry.price);
       formDataAppend.append(
         `priceList[${index}][price_local]`,
-        priceEntry.price_local ?? 0
+        priceEntry.price_local ?? 0,
       );
       formDataAppend.append(
         `priceList[${index}][price_may]`,
-        priceEntry.price_may ?? 0
+        priceEntry.price_may ?? 0,
       );
       formDataAppend.append(
         `priceList[${index}][price_reu]`,
-        priceEntry.price_reu ?? 0
+        priceEntry.price_reu ?? 0,
       );
     });
 
@@ -355,7 +355,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
         const parsedPrices = results.data
           .filter(
             (row) =>
-              !isNaN(parseFloat(row.width)) && !isNaN(parseFloat(row.height))
+              !isNaN(parseFloat(row.width)) && !isNaN(parseFloat(row.height)),
           )
           .map((row) => ({
             width: parseFloat(row.width),
@@ -599,7 +599,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                               (entry) => ({
                                 ...entry,
                                 isSelected: true,
-                              })
+                              }),
                             );
                             setFormData({
                               ...formData,
@@ -621,7 +621,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                               (entry) => ({
                                 ...entry,
                                 isSelected: false,
-                              })
+                              }),
                             );
                             setFormData({
                               ...formData,

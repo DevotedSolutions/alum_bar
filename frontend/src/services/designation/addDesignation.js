@@ -15,3 +15,19 @@ export const addDesignation = async ({ formDataAppend }) => {
     console.log(error);
   }
 };
+
+export const addCombo = async (formDataAppend) => {
+  try {
+    const token = localStorage.getItem("tokenDesby");
+    const response = await axios.post(`/add-combo`, formDataAppend, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};

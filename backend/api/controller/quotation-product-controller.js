@@ -1,4 +1,5 @@
 const designationModel = require("../model/designationSchema");
+const combosModel = require("../model/Combo");
 const gammeModel = require("../model/gammeSchema");
 const productSchema = require("../model/productSchema");
 const quoteSchema = require("../model/QuoteSchema");
@@ -61,7 +62,7 @@ exports.addDesignation = async (req, res) => {
           (entry, i) =>
             i !== index &&
             entry.width === priceEntry.width &&
-            entry.height === priceEntry.height
+            entry.height === priceEntry.height,
         ) !== -1
       );
     });
@@ -122,7 +123,7 @@ exports.updateDesignation = async (req, res) => {
           (entry, i) =>
             i !== index &&
             entry.width === priceEntry.width &&
-            entry.height === priceEntry.height
+            entry.height === priceEntry.height,
         ) !== -1
       );
     });
@@ -145,7 +146,7 @@ exports.updateDesignation = async (req, res) => {
         image,
         category,
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updatedesign) {
@@ -228,7 +229,7 @@ exports.checkPrice = async (req, res) => {
     const numWidth = Number(width);
     const numHeight = Number(height);
     const matchedPrice = priceList.find(
-      (item) => item.width === numWidth && item.height === numHeight
+      (item) => item.width === numWidth && item.height === numHeight,
     );
 
     if (!matchedPrice) {
@@ -243,10 +244,10 @@ exports.checkPrice = async (req, res) => {
         country === "mru"
           ? matchedPrice?.price_local
           : country === "may"
-          ? matchedPrice?.price_may
-          : country === "reu"
-          ? matchedPrice?.price_reu
-          : matchedPrice.price,
+            ? matchedPrice?.price_may
+            : country === "reu"
+              ? matchedPrice?.price_reu
+              : matchedPrice.price,
     });
   } catch (error) {
     console.error("Error:", error);
@@ -390,7 +391,7 @@ exports.updateOrder = async (req, res) => {
       {
         ...quote,
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updateOrder) {
@@ -506,7 +507,7 @@ exports.saveFile = async (req, res) => {
         $set: {
           filePath: file,
         },
-      }
+      },
     );
 
     if (updateClient[0] === 0) {
@@ -528,5 +529,94 @@ exports.getQuotations = async (req, res) => {
   } catch (error) {
     console.error("Error fetching clients:", error);
     res.status(500).send("Error fetching client information");
+  }
+};
+
+exports.addCombo = async (req, res) => {
+  try {
+    let { name, list } = req.body;
+
+    // If list comes in as a string (because of FormData), parse it
+    if (typeof list === "string") {
+      try {
+        list = JSON.parse(list);
+      } catch (e) {
+        return res.status(400).json({ message: "Invalid list format" });
+      }
+    }
+
+    const image = req.file ? req.file.path : null;
+
+    const newCombo = await combosModel.create({
+      name, // This is the "name" field Mongoose was complaining about
+      list, // The array of designations
+      image: image,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Combo saved successfully", data: newCombo });
+  } catch (error) {
+    // If Mongoose validation fails, this will now show you exactly why
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getCombos = async (req, res) => {
+  try {
+    const combos = await combosModel.find();
+
+    res.status(200).json({ combos, message: "Combos retrieved successfully" });
+  } catch (error) {
+    console.error("Error fetching combos:", error);
+    res.status(500).send("Error fetching combo information");
+  }
+};
+
+exports.updateCombo = async (req, res) => {
+  try {
+    const { id, name, list } = req.body; // 'id' sent from frontend formData
+
+    let updateData = { name };
+
+    // 1. Handle List Parsing
+    if (list) {
+      updateData.list = typeof list === "string" ? JSON.parse(list) : list;
+    }
+
+    // 2. Handle Image Update (only if new file is uploaded)
+    if (req.file) {
+      updateData.image = req.file.path;
+    }
+
+    const updatedCombo = await combosModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }, // returns the modified document
+    );
+
+    if (!updatedCombo) {
+      return res.status(404).json({ message: "Combo not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Combo updated successfully", data: updatedCombo });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.deleteCombo = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedCombo = await combosModel.findByIdAndDelete(id);
+    if (!deletedCombo) {
+      return res.status(404).json({ message: "Combo not found" });
+    }
+    res.status(200).json({ message: "Combo deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting combo:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

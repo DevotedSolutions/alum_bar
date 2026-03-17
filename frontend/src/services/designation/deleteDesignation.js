@@ -31,3 +31,19 @@ export const deleteQuotation = async (id) => {
     console.log(error);
   }
 };
+
+export const deleteCombo = async (id) => {
+  try {
+    const token = localStorage.getItem("tokenDesby");
+    const response = await axios.delete(`/delete-combo/${id}`, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
