@@ -54,13 +54,14 @@ const AddCombo = ({ isOpen, onClose, isUpdate, availableProducts }) => {
         ...formData,
         selectedProducts: [...formData.selectedProducts, newValue],
       });
+      event.target.value = "";
     }
   };
 
-  const removeItem = (id) => {
+  const removeItem = (index) => {
     setFormData({
       ...formData,
-      selectedProducts: formData.selectedProducts.filter((p) => p.id !== id),
+      selectedProducts: formData.selectedProducts.filter((_, i) => i !== index),
     });
   };
 
@@ -173,9 +174,9 @@ const AddCombo = ({ isOpen, onClose, isUpdate, availableProducts }) => {
                     No products added yet.
                   </Typography>
                 )}
-                {formData.selectedProducts.map((product) => (
+                {formData.selectedProducts.map((product, index) => (
                   <Box
-                    key={product.id}
+                    key={index}
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -187,10 +188,7 @@ const AddCombo = ({ isOpen, onClose, isUpdate, availableProducts }) => {
                     <Typography>
                       {product.name} <small>({product.category})</small>
                     </Typography>
-                    <IconButton
-                      onClick={() => removeItem(product.id)}
-                      color="error"
-                    >
+                    <IconButton onClick={() => removeItem(index)} color="error">
                       <DeleteIcon />
                     </IconButton>
                   </Box>

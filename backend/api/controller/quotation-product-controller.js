@@ -564,7 +564,7 @@ exports.addCombo = async (req, res) => {
 
 exports.getCombos = async (req, res) => {
   try {
-    const combos = await combosModel.find();
+    const combos = await combosModel.find().sort({ name: 1 });
 
     res.status(200).json({ combos, message: "Combos retrieved successfully" });
   } catch (error) {
