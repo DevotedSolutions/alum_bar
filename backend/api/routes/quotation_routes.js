@@ -40,6 +40,13 @@ router.post(
   middlware.authMiddleware,
   quotationcontrl.saveDiscount,
 );
+
+router.get(
+  "/get-discount",
+  middlware.authMiddleware,
+  quotationcontrl.getDiscount,
+);
+
 router.put("/update-quote/:id", quotationcontrl.updateOrder);
 router.get(
   "/all-quotes",

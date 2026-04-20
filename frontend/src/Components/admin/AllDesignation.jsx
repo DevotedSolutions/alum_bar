@@ -14,7 +14,10 @@ import {
   getAllDesignation,
   getCombos,
 } from "../../services/designation/getAllDesignation";
-import { saveDiscount } from "../../services/designation/saveDiscount";
+import {
+  saveDiscount,
+  getDiscount,
+} from "../../services/designation/saveDiscount";
 import { toast } from "react-toastify";
 import UpdateDesignation from "./UpdateDesignation";
 import AddDesignation from "./AddDesignation";
@@ -56,6 +59,29 @@ const AllDesignation = () => {
     acc[category].push(item);
     return acc;
   }, {});
+
+  useEffect(() => {
+    const fetchDiscount = async () => {
+      try {
+        const response = await getDiscount();
+        if (response?.status === 200) {
+          setDiscount({
+            mru: response?.data?.discount?.mru || 0,
+            may: response?.data?.discount?.may || 0,
+            reu: response?.data?.discount?.reu || 0,
+            others: response?.data?.discount?.others || 0,
+          });
+        } else {
+          toast.error("Error in fetching the discount");
+        }
+      } catch (error) {
+        console.error("Error fetching discount:", error);
+        toast.error("Error in fetching the discount");
+      }
+    };
+
+    fetchDiscount();
+  }, []);
 
   useEffect(() => {
     const getProducts = async () => {

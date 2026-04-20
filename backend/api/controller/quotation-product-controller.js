@@ -663,3 +663,13 @@ exports.saveDiscount = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.getDiscount = async (req, res) => {
+  try {
+    const discount = await DiscountSchema.findOne();
+    res.status(200).json({ ...discount });
+  } catch (error) {
+    console.error("Error fetching discount:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
