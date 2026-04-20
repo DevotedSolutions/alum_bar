@@ -35,6 +35,11 @@ router.post(
   middlware.authMiddleware,
   quotationcontrl.saveQuotes,
 );
+router.post(
+  "/save-discount",
+  middlware.authMiddleware,
+  quotationcontrl.saveDiscount,
+);
 router.put("/update-quote/:id", quotationcontrl.updateOrder);
 router.get(
   "/all-quotes",

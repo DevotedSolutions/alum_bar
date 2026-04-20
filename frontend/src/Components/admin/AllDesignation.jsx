@@ -7,11 +7,14 @@ import {
   CardContent,
   Button,
   useMediaQuery,
+  Grid,
+  TextField,
 } from "@mui/material";
 import {
   getAllDesignation,
   getCombos,
 } from "../../services/designation/getAllDesignation";
+import { saveDiscount } from "../../services/designation/saveDiscount";
 import { toast } from "react-toastify";
 import UpdateDesignation from "./UpdateDesignation";
 import AddDesignation from "./AddDesignation";
@@ -30,6 +33,12 @@ const AllDesignation = () => {
   const [selectedCombo, setSelectedCombo] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState();
   const [onUpdate, setOnUpdate] = useState(false);
+  const [discount, setDiscount] = useState({
+    mru: 0,
+    may: 0,
+    reu: 0,
+    others: 0,
+  });
   const isMobile = useMediaQuery("(max-width:800px)");
   const handleCardClick = (product) => {
     setSelectedProduct(product);
@@ -155,6 +164,96 @@ const AllDesignation = () => {
         >
           Add Combo
         </Button>
+
+        <Grid
+          container
+          sx={{
+            marginTop: "10px",
+            marginBottom: "10px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+          spacing={2}
+        >
+          <Grid item xs={6} sm={2.5}>
+            <TextField
+              size="medium"
+              type="number"
+              value={discount.mru}
+              label="MRU Discount %"
+              onChange={(e) =>
+                setDiscount({
+                  ...discount,
+                  mru: e.target.value,
+                })
+              }
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={2.5}>
+            <TextField
+              size="medium"
+              type="number"
+              value={discount.may}
+              label="MAY Discount %"
+              onChange={(e) =>
+                setDiscount({
+                  ...discount,
+                  may: e.target.value,
+                })
+              }
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={2.5}>
+            <TextField
+              size="medium"
+              type="number"
+              value={discount.reu}
+              label="REU Discount %"
+              onChange={(e) =>
+                setDiscount({
+                  ...discount,
+                  reu: e.target.value,
+                })
+              }
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={2.5}>
+            <TextField
+              size="medium"
+              type="number"
+              value={discount.others}
+              label="Other Discount %"
+              onChange={(e) =>
+                setDiscount({
+                  ...discount,
+                  others: e.target.value,
+                })
+              }
+            />
+          </Grid>
+
+          <Grid
+            xs={12}
+            sm={2}
+            variant=""
+            item
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <Button
+              variant="outlined"
+              onClick={async () => {
+                await saveDiscount({
+                  ...discount,
+                });
+              }}
+            >
+              Apply Discount
+            </Button>
+          </Grid>
+        </Grid>
         <Box
           sx={{
             margin: isMobile ? "" : "10px 0px",

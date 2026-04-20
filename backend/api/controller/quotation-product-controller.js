@@ -2,6 +2,7 @@ const designationModel = require("../model/designationSchema");
 const combosModel = require("../model/Combo");
 const gammeModel = require("../model/gammeSchema");
 const productSchema = require("../model/productSchema");
+const DiscountSchema = require("../model/DiscountSchema");
 const quoteSchema = require("../model/QuoteSchema");
 const Client = require("../model/client");
 
@@ -238,16 +239,40 @@ exports.checkPrice = async (req, res) => {
         .json({ message: "Price not found for given dimensions" });
     }
 
+    // Fetch discount data
+    const discount = await DiscountSchema.findOne({});
+
+    let basePrice =
+      country === "mru"
+        ? matchedPrice?.price_local
+        : country === "may"
+          ? matchedPrice?.price_may
+          : country === "reu"
+            ? matchedPrice?.price_reu
+            : matchedPrice.price;
+
+    // Apply discount if available
+    let finalPrice = basePrice;
+    if (discount) {
+      const discountValue =
+        country === "mru"
+          ? discount.mru
+          : country === "may"
+            ? discount.may
+            : country === "reu"
+              ? discount.reu
+              : discount.others;
+
+      if (discountValue > 0) {
+        finalPrice = parseInt(basePrice - (basePrice * discountValue) / 100);
+      }
+    }
+
     res.status(200).json({
       message: "Price found for given dimensions",
-      price:
-        country === "mru"
-          ? matchedPrice?.price_local
-          : country === "may"
-            ? matchedPrice?.price_may
-            : country === "reu"
-              ? matchedPrice?.price_reu
-              : matchedPrice.price,
+      price: finalPrice,
+      basePrice: basePrice,
+      discountApplied: discount ? true : false,
     });
   } catch (error) {
     console.error("Error:", error);
@@ -617,6 +642,24 @@ exports.deleteCombo = async (req, res) => {
     res.status(200).json({ message: "Combo deleted successfully" });
   } catch (error) {
     console.error("Error deleting combo:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.saveDiscount = async (req, res) => {
+  try {
+    const { mru, may, reu, others } = req.body;
+
+    const newDiscount = await DiscountSchema.findOneAndUpdate(
+      {},
+      { mru, may, reu, others },
+      { upsert: true, new: true },
+    );
+    res
+      .status(200)
+      .json({ message: "Discount saved successfully", data: newDiscount });
+  } catch (error) {
+    console.error("Error saving discount:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

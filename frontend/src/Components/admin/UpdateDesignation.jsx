@@ -635,7 +635,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                         </Button>
                       </Grid>
 
-                      <Grid item xs={12} sm={1.5}>
+                      {/* <Grid item xs={12} sm={1.5}>
                         <TextField
                           size="medium"
                           type="number"
@@ -696,8 +696,8 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                               others: e.target.value,
                             })
                           }
-                        />
-                      </Grid>
+                        /> */}
+                      {/* </Grid> */}
                       <Grid item xs={12} sm={2}>
                         <Button
                           color="primary"
