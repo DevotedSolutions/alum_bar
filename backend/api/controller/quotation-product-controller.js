@@ -514,7 +514,7 @@ exports.saveQuotation = async (req, res) => {
 };
 
 exports.saveFile = async (req, res) => {
-  const { devisNumber } = req.body;
+  const { devisNumber } = req.query;
   const file = req.file ? req.file.path : null;
 
   try {
@@ -548,7 +548,7 @@ exports.saveFile = async (req, res) => {
 
 exports.getQuotations = async (req, res) => {
   try {
-    const clients = await Client.find();
+    const clients = await Client.find().sort({ uploadedAt: -1 });
 
     res.status(200).json(clients);
   } catch (error) {
