@@ -68,7 +68,7 @@ const InventoryPage = () => {
   function handleNewQuantity(e) {
     let inputValue = parseInt(e.target.value);
 
-    if (!isNaN(inputValue) && inputValue >= 0) {
+    if (!isNaN(inputValue)) {
       setNewQuantity(inputValue);
       setTotalQuantity(inputValue);
     } else {
@@ -214,7 +214,7 @@ const InventoryPage = () => {
                           <TextField
                             type="number"
                             fullWidth
-                            label="Add Quantity"
+                            label="+ / - Quantity"
                             required
                             value={newQuantity}
                             onChange={handleNewQuantity}
@@ -405,10 +405,10 @@ const InventoryPage = () => {
                                     item?.productColor === "BLANC"
                                       ? "#ffffff"
                                       : item?.productColor === "NOIR"
-                                      ? "#969696"
-                                      : item?.productColor === "AS"
-                                      ? "#E6E6E6"
-                                      : "#e3fcfa",
+                                        ? "#969696"
+                                        : item?.productColor === "AS"
+                                          ? "#E6E6E6"
+                                          : "#e3fcfa",
                                 }}
                               >
                                 <TableCell>
@@ -433,7 +433,7 @@ const InventoryPage = () => {
                                         handleOpen(item._id);
                                       }}
                                     >
-                                      Add more Quantity
+                                      + / - Quantity
                                     </Button>
                                     <Button
                                       variant="contained"
@@ -458,10 +458,10 @@ const InventoryPage = () => {
                                 item?.productColor === "BLANC"
                                   ? "#ffffff"
                                   : item?.productColor === "NOIR"
-                                  ? "#969696"
-                                  : item?.productColor === "AS"
-                                  ? "#E6E6E6"
-                                  : "#e3fcfa",
+                                    ? "#969696"
+                                    : item?.productColor === "AS"
+                                      ? "#E6E6E6"
+                                      : "#e3fcfa",
                             }}
                           >
                             <TableCell>
@@ -489,7 +489,7 @@ const InventoryPage = () => {
                                     handleOpen(item._id);
                                   }}
                                 >
-                                  Add more Quantity
+                                  + / - Quantity
                                 </Button>
                                 <Button
                                   variant="contained"
