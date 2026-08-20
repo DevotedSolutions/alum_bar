@@ -41,6 +41,11 @@ router.delete(
   eventContrl.deleteLeave
 );
 router.post("/updateEvent", middlware.authMiddleware, eventContrl.editEvent);
+router.post(
+  "/completeEvent",
+  middlware.authMiddleware,
+  eventContrl.completeEvent
+);
 
 router.post("/getLeaves", middlware.authMiddleware, eventContrl.getLeaves);
 router.post("/addLeave", middlware.authMiddleware, eventContrl.addLeave);

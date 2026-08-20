@@ -136,6 +136,29 @@ exports.editEvent = async (req, res) => {
   }
 };
 
+exports.completeEvent = async (req, res) => {
+  const { _id } = req.body;
+
+  try {
+    const updatedEvent = await Event.findOneAndUpdate(
+      { _id },
+      { completed: true },
+      { new: true }
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ message: "Event not found" });
+    } else {
+      res.status(200).json({
+        message: "Event marked as completed",
+        event: updatedEvent,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 exports.deleteEvent = async (req, res) => {
   const { _id } = req.params;
 

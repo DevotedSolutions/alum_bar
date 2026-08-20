@@ -84,6 +84,24 @@ export const updateEvent = async (body) => {
   }
 };
 
+export const completeEvent = async (eventId) => {
+  try {
+    const token = localStorage.getItem("tokenDesby");
+    const response = await axios.post(
+      `/completeEvent`,
+      { _id: eventId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    return err.response;
+  }
+};
+
 export const getLeaves = async (body) => {
   try {
     const token = localStorage.getItem("tokenDesby");

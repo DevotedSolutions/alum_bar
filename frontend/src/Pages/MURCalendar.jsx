@@ -19,6 +19,7 @@ import {
   getEventsByCountry,
   updateEvent,
   addLeave,
+  completeEvent,
 } from "../services/Events";
 import { toast } from "react-toastify";
 
@@ -136,6 +137,15 @@ const CustomCalendar = () => {
     handleCloseDialog();
   };
 
+  const handleCompleteEvent = async () => {
+    if (currentEvent?._id) {
+      const response = await completeEvent(currentEvent._id);
+      toast.success(response?.message);
+      setUpdate(!update);
+    }
+    handleCloseDialog();
+  };
+
   const handleOpenDialog = (event = null) => {
     setCurrentEvent({
       _id: event?._id || null,
@@ -148,6 +158,7 @@ const CustomCalendar = () => {
       end: event?.end || "",
       location: event?.location || null,
       note: event?.note || "",
+      completed: event?.completed || false,
     });
     setOpenDialog(true);
   };
@@ -157,7 +168,11 @@ const CustomCalendar = () => {
     setOpenDialog(false);
   };
 
-  const getEventStyle = (type) => {
+  const getEventStyle = (type, completed) => {
+    if (completed) {
+      return { backgroundColor: "#2ECC71" };
+    }
+
     switch (type) {
       case "local-leave":
         return { backgroundColor: "#2E6F40" };
@@ -168,11 +183,17 @@ const CustomCalendar = () => {
       case "absent":
         return { backgroundColor: "#ff0000" };
       case "container-arrival":
-        return { backgroundColor: "#0096FF" };
+        return { backgroundColor: "#FF9800" };
       case "container-departure":
-        return { backgroundColor: "#00008B" };
+        return { backgroundColor: "#FF9800" };
       case "site-work":
         return { backgroundColor: "#0000FF" };
+      case "reparation":
+        return { backgroundColor: "#FFC107" };
+      case "measurement":
+        return { backgroundColor: "#9C27B0" };
+      case "other":
+        return { backgroundColor: "#9e9e9e" };
       default:
         return { backgroundColor: "#9e9e9e" };
     }
@@ -279,7 +300,7 @@ const CustomCalendar = () => {
         endAccessor="end"
         style={{ height: 500, margin: "50px 0", width: "100%" }}
         eventPropGetter={(event) => ({
-          style: getEventStyle(event.type),
+          style: getEventStyle(event.type, event.completed),
         })}
         onSelectEvent={(event) => {
           handleOpenDialog(event);
@@ -352,6 +373,10 @@ const CustomCalendar = () => {
             )}
 
             {isAdmin && <MenuItem value="site-work">Site Work</MenuItem>}
+
+            {isAdmin && <MenuItem value="reparation">Reparation</MenuItem>}
+
+            {isAdmin && <MenuItem value="measurement">Measurement</MenuItem>}
 
             {!currentEvent?.location &&
               currentEvent?.start &&
@@ -472,6 +497,20 @@ const CustomCalendar = () => {
           >
             Cancel
           </Button>
+          {currentEvent?._id && !currentEvent?.completed && (
+            <Button
+              onClick={handleCompleteEvent}
+              variant="contained"
+              sx={{
+                display: isAdmin ? "block" : "none",
+                backgroundColor: "#2ECC71",
+                "&:hover": { backgroundColor: "#27AE60" },
+              }}
+            >
+              Mark Complete
+            </Button>
+          )}
+
           {currentEvent?._id && (
             <Button
               onClick={handleDeleteEvent}
