@@ -159,6 +159,7 @@ const CustomCalendar = () => {
       location: event?.location || null,
       note: event?.note || "",
       completed: event?.completed || false,
+      color: event?.color || "#9e9e9e",
     });
     setOpenDialog(true);
   };
@@ -168,9 +169,13 @@ const CustomCalendar = () => {
     setOpenDialog(false);
   };
 
-  const getEventStyle = (type, completed) => {
+  const getEventStyle = (type, completed, color) => {
     if (completed) {
       return { backgroundColor: "#2ECC71" };
+    }
+
+    if (color) {
+      return { backgroundColor: color };
     }
 
     switch (type) {
@@ -290,6 +295,22 @@ const CustomCalendar = () => {
         />
       ) : null}
 
+      <style>
+        {`
+          .rbc-month-row {
+            min-height: 130px;
+          }
+          .rbc-event {
+            padding: 6px 8px !important;
+            font-size: 14px !important;
+            min-height: 32px !important;
+          }
+          .rbc-event-content {
+            white-space: normal !important;
+            line-height: 1.3;
+          }
+        `}
+      </style>
       <Calendar
         localizer={localizer}
         events={events?.map((event) => ({
@@ -298,9 +319,14 @@ const CustomCalendar = () => {
         }))}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 500, margin: "50px 0", width: "100%" }}
+        style={{ height: 700, margin: "50px 0", width: "100%" }}
         eventPropGetter={(event) => ({
-          style: getEventStyle(event.type, event.completed),
+          style: {
+            ...getEventStyle(event.type, event.completed, event.color),
+            minHeight: 32,
+            padding: "6px 8px",
+            fontSize: "14px",
+          },
         })}
         onSelectEvent={(event) => {
           handleOpenDialog(event);
@@ -487,6 +513,19 @@ const CustomCalendar = () => {
             onChange={(e) =>
               setCurrentEvent({ ...currentEvent, note: e.target.value })
             }
+          />
+          <TextField
+            label="Event Color"
+            type="color"
+            disabled={!isAdmin && currentEvent?._id}
+            margin="dense"
+            InputLabelProps={{ shrink: true }}
+            value={currentEvent?.color || "#9e9e9e"}
+            onChange={(e) =>
+              setCurrentEvent({ ...currentEvent, color: e.target.value })
+            }
+            sx={{ width: 100 }}
+            inputProps={{ style: { height: 40, padding: "4px 8px" } }}
           />
         </DialogContent>
         <DialogActions>
