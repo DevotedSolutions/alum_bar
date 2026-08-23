@@ -21,6 +21,9 @@ const EventSchema = mongoose.Schema({
   otherType: {
     type: String,
   },
+  color: {
+    type: String,
+  },
   description: {
     type: String,
   },

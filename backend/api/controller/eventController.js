@@ -61,6 +61,7 @@ exports.addEventByCountry = async (req, res) => {
     country,
     otherType,
     note,
+    color,
   } = req.body;
 
   try {
@@ -75,6 +76,7 @@ exports.addEventByCountry = async (req, res) => {
       address,
       country,
       note,
+      color,
     });
 
     const savedEvent = await newEvent.save();
@@ -99,6 +101,7 @@ exports.editEvent = async (req, res) => {
     address,
     otherType,
     note,
+    color,
   } = req.body;
 
   try {
@@ -112,6 +115,7 @@ exports.editEvent = async (req, res) => {
       location,
       address,
       note,
+      color,
     };
 
     const eventId = _id;
