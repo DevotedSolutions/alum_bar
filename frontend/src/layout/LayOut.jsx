@@ -1,19 +1,14 @@
 import { Outlet } from "react-router-dom";
-import { Box } from "@mui/material";
 import DrawerAppBar from "../Components/NavBar";
+import { RegionProvider } from "../Components/common/RegionContext";
 
 const LayOut = () => {
   return (
-    <Box
-      sx={{
-        width: "100%",
-        display: "flex",
-        marginTop: "80px",
-      }}
-    >
-      <DrawerAppBar />
-      <Outlet />
-    </Box>
+    <RegionProvider>
+      <DrawerAppBar>
+        <Outlet />
+      </DrawerAppBar>
+    </RegionProvider>
   );
 };
 

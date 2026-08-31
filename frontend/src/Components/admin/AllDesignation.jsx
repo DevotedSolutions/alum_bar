@@ -23,6 +23,44 @@ import UpdateDesignation from "./UpdateDesignation";
 import AddDesignation from "./AddDesignation";
 import AddCombo from "./AddCombos";
 import UpdateCombo from "./UpdateCombo";
+import { COLORS, buttonSx } from "../../theme/tokens";
+
+const categoryHeadingSx = {
+  fontSize: "18px",
+  fontWeight: 700,
+  color: COLORS.textPrimary,
+  paddingBottom: "8px",
+  marginBottom: "4px",
+  borderBottom: `2px solid ${COLORS.headerTeal}`,
+};
+
+const designationCardSx = {
+  width: "299px",
+  margin: "10px",
+  background: "#fff",
+  border: `1px solid ${COLORS.cardBorder}`,
+  borderRadius: "8px",
+  boxShadow: "0 1px 3px rgba(20,26,32,0.05)",
+  transition: "border-color .15s ease, box-shadow .15s ease",
+  "&:hover": {
+    borderColor: COLORS.accentTealBorder,
+    boxShadow: "0 3px 10px rgba(20,26,32,0.09)",
+  },
+};
+
+const designationLabelSx = {
+  width: "100%",
+  fontSize: "12px",
+  fontWeight: 600,
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  borderRadius: 0,
+  background: COLORS.headerTeal,
+  color: "#fff",
+  textTransform: "none",
+  "&:hover": { background: COLORS.headerTealHover },
+};
 
 const AllDesignation = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -179,14 +217,13 @@ const AllDesignation = () => {
           padding: "2px 15px",
         }}
       >
-        <Button variant="contained" onClick={handleAddModalOpen}>
+        <Button sx={buttonSx.primary("44px")} onClick={handleAddModalOpen}>
           Add Designation
         </Button>
 
         <Button
-          variant="contained"
+          sx={{ ...buttonSx.primary("44px"), ml: 2 }}
           onClick={() => setIsComboModalOpen(!isComboModalOpen)}
-          sx={{ ml: 2 }}
         >
           Add Combo
         </Button>
@@ -269,7 +306,7 @@ const AllDesignation = () => {
             sx={{ display: "flex", alignItems: "center" }}
           >
             <Button
-              variant="outlined"
+              sx={buttonSx.outline("44px")}
               onClick={async () => {
                 await saveDiscount({
                   ...discount,
@@ -288,7 +325,7 @@ const AllDesignation = () => {
           {Object.keys(mainCategories).map((category, catIndex) => (
             <div key={catIndex} style={{ marginBottom: "20px" }}>
               {/* Display category title */}
-              <h2>{category}</h2>
+              <Box component="h2" sx={categoryHeadingSx}>{category}</Box>
               <div
                 style={{
                   display: "flex",
@@ -300,12 +337,7 @@ const AllDesignation = () => {
               >
                 {groupedProducts[category].map((item, index) => (
                   <Card
-                    sx={{
-                      width: "299px",
-                      margin: "10px",
-                      backgroundColor: "transparent",
-                      boxShadow: "none",
-                    }}
+                    sx={designationCardSx}
                     key={index}
                     onClick={() => {
                       handleCardClick(item);
@@ -325,14 +357,7 @@ const AllDesignation = () => {
                       />
                       <CardContent sx={{ p: 0 }}>
                         <div style={{ width: "100%" }}>
-                          <Button
-                            variant="contained"
-                            sx={{
-                              width: "100%",
-                              fontSize: "10px",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <Button sx={designationLabelSx}>
                             {item?.designation}
                           </Button>
                         </div>
@@ -345,7 +370,7 @@ const AllDesignation = () => {
           ))}
           {Others && (
             <div style={{ marginBottom: "20px" }}>
-              <h2>Others</h2>
+              <Box component="h2" sx={categoryHeadingSx}>Others</Box>
               <div
                 style={{
                   display: "flex",
@@ -357,12 +382,7 @@ const AllDesignation = () => {
               >
                 {Others.map((item, index) => (
                   <Card
-                    sx={{
-                      width: "299px",
-                      margin: "10px",
-                      backgroundColor: "transparent",
-                      boxShadow: "none",
-                    }}
+                    sx={designationCardSx}
                     key={index}
                     onClick={() => {
                       handleCardClick(item);
@@ -382,14 +402,7 @@ const AllDesignation = () => {
                       />
                       <CardContent sx={{ p: 0 }}>
                         <div style={{ width: "100%" }}>
-                          <Button
-                            variant="contained"
-                            sx={{
-                              width: "100%",
-                              fontSize: "10px",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <Button sx={designationLabelSx}>
                             {item?.designation}
                           </Button>
                         </div>
@@ -403,7 +416,7 @@ const AllDesignation = () => {
 
           {allCombos && allCombos?.length > 0 && (
             <div style={{ marginBottom: "20px" }}>
-              <h2>Combos</h2>
+              <Box component="h2" sx={categoryHeadingSx}>Combos</Box>
               <div
                 style={{
                   display: "flex",
@@ -415,12 +428,7 @@ const AllDesignation = () => {
               >
                 {allCombos.map((item, index) => (
                   <Card
-                    sx={{
-                      width: "299px",
-                      margin: "10px",
-                      backgroundColor: "transparent",
-                      boxShadow: "none",
-                    }}
+                    sx={designationCardSx}
                     key={index}
                     onClick={() => {
                       setSelectedCombo(item);
@@ -440,14 +448,7 @@ const AllDesignation = () => {
                       />
                       <CardContent sx={{ p: 0 }}>
                         <div style={{ width: "100%" }}>
-                          <Button
-                            variant="contained"
-                            sx={{
-                              width: "100%",
-                              fontSize: "10px",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <Button sx={designationLabelSx}>
                             {item?.name}
                           </Button>
                         </div>

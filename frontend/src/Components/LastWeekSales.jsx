@@ -12,9 +12,9 @@ const LastWeekSales = (props) => {
     datasets: [
       {
         label: "Last Week Sales",
-        backgroundColor: "#3B71CA",
-        borderColor: "rgb(255, 99, 132)",
-        
+        backgroundColor: "#0D8B92",
+        borderColor: "#0D8B92",
+        borderRadius: 4,
         data: props.lastWeek,
       },
     
@@ -53,12 +53,7 @@ const LastWeekSales = (props) => {
     },
   };
   return (
-    <div style={{   padding: "6px",
-    boxShadow:
-      "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px",
-    borderRadius: "12px",}}>
-      
-  
+    <div>
       <Bar data={data} options={options} />
     </div>
   );

@@ -130,39 +130,50 @@ const ExportOptions = ({ data }) => {
     return 0;
   });
 
+  const exportBtnSx = {
+    height: "44px",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    background: "#fff",
+    border: "1px solid #D8DCE0",
+    color: "#2C323A",
+    borderRadius: "6px",
+    padding: "0 18px",
+    fontSize: "14px",
+    fontWeight: 500,
+    textTransform: "none",
+    boxShadow: "none",
+    "&:hover": { borderColor: "#0D8B92", color: "#0D8B92", background: "#fff", boxShadow: "none" },
+  };
+
+  const docIcon = (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 3v5h5" />
+      <path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" />
+    </svg>
+  );
+
   return (
-    <div>
-      <Button
-        sx={{
-          borderRadius: "8px",
-          padding: "7px 20px",
-          textTransform: "capitalize",
-          margin: "0px 12px",
-        }}
-        variant="contained"
-      >
+    <div style={{ display: "flex", gap: "12px" }}>
+      <Button sx={exportBtnSx}>
         <PDFDownloadLink
-          style={{ color: "white", textDecoration: "none" }}
+          style={{ color: "inherit", textDecoration: "none", display: "flex", alignItems: "center", gap: "10px" }}
           document={<MyPDF data={myData} />}
           fileName="data.pdf"
         >
+          {docIcon}
           Export as PDF
         </PDFDownloadLink>
       </Button>
 
-      <Button
-        sx={{
-          borderRadius: "8px",
-          padding: "7px 20px",
-          textTransform: "capitalize",
-        }}
-        variant="contained"
-      >
+      <Button sx={exportBtnSx}>
         <CSVLink
           data={myData}
           filename="data.csv"
-          style={{ color: "white", textDecoration: "none" }}
+          style={{ color: "inherit", textDecoration: "none", display: "flex", alignItems: "center", gap: "10px" }}
         >
+          {docIcon}
           Export as CSV
         </CSVLink>
       </Button>

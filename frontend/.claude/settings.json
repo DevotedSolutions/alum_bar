@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node shot_inv.js)",
+      "Bash(node shot_inv2.js)",
+      "Bash(yarn build *)",
+      "Bash(node shot_prod.js)",
+      "Bash(node shot_cal.js)",
+      "Bash(node shot_cal2.js)",
+      "Bash(node shot_scanner.js)",
+      "Bash(node shot_phase2.js)",
+      "Bash(node shot_phase4.js)",
+      "Bash(python3 -c ' *)",
+      "Bash(node shot_login_submit.js)",
+      "Bash(timeout 25 node shot_login_submit.js)",
+      "Read(//Users/mac/Desktop/**)",
+      "Read(//private/var/folders/**)",
+      "Read(//Users/mac/Downloads/**)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}

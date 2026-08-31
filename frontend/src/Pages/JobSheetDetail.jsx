@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Box,
   Button,
   TextField,
   Grid,
@@ -10,7 +11,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
   MenuItem,
 } from "@mui/material";
 import moment from "moment";
@@ -22,9 +22,35 @@ import {
 } from "../services/jobSheets/getAllJobSheets";
 import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeftOutlined, Save } from "@mui/icons-material";
+import { Save } from "@mui/icons-material";
+import { COLORS, buttonSx } from "../theme/tokens";
+import { ChevronLeftIcon } from "../Components/common/navIcons";
 
 const textFieldStyles = { marginBottom: "16px" };
+
+const cardSx = {
+  background: "#fff",
+  border: `1px solid ${COLORS.cardBorder}`,
+  borderRadius: "8px",
+  overflowX: "auto",
+  boxShadow: "0 1px 3px rgba(20,26,32,0.05)",
+};
+
+const resultTh = (label, i, arr) => (
+  <TableCell
+    key={label}
+    sx={{
+      color: "#fff",
+      fontWeight: 700,
+      fontSize: "12px",
+      letterSpacing: "0.07em",
+      textTransform: "uppercase",
+      borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.12)" : "none",
+    }}
+  >
+    {label}
+  </TableCell>
+);
 
 const JobSheetDetails = () => {
   const { id, sheetID } = useParams();
@@ -148,21 +174,17 @@ const JobSheetDetails = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={{ padding: "16px" }}>
+    <Box>
       <Button
-        sx={{
-          display: "flex",
-          alignItems: "center",
-        }}
-        onClick={() => {
-          navigate(-1);
-        }}
+        onClick={() => navigate(-1)}
+        sx={{ display: "flex", alignItems: "center", gap: "8px", textTransform: "none", color: COLORS.textSecondary, marginBottom: "8px" }}
       >
-        <ArrowLeftOutlined /> Back
+        <ChevronLeftIcon size={16} /> Back
       </Button>
-      <Typography variant="h4" gutterBottom>
+      <Box sx={{ fontSize: "20px", fontWeight: 700, color: COLORS.textPrimary, marginBottom: "16px" }}>
         Job Sheet Details
-      </Typography>
+      </Box>
+      <Box sx={{ ...cardSx, padding: "20px", marginBottom: "16px" }}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <TextField
@@ -413,26 +435,21 @@ const JobSheetDetails = () => {
           />
         </Grid>
       </Grid>
-      <Button variant="contained" color="primary" onClick={handleGetSheet}>
+      </Box>
+      <Button sx={buttonSx.primary("44px")} onClick={handleGetSheet}>
         Get Sheet
       </Button>
       {data?.profiles?.length > 0 && (
-        <div style={{ margin: "10px 0" }}>
-          <Typography variant="h6" gutterBottom>
+        <div style={{ margin: "20px 0" }}>
+          <Box sx={{ fontSize: "15px", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: COLORS.textPrimary, marginBottom: "12px" }}>
             Profiles
-          </Typography>
+          </Box>
           <Grid container width={"100%"} justifyContent={"center"}>
-            <TableContainer component={Paper} style={{ width: "850px" }}>
+            <TableContainer component={Paper} sx={{ ...cardSx, width: "850px" }}>
               <Table aria-label="profiles table">
                 <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Code</TableCell>
-                    <TableCell>Color</TableCell>
-                    <TableCell>Param</TableCell>
-                    <TableCell>Quantity</TableCell>
-                    <TableCell>Length</TableCell>
-                    <TableCell></TableCell>
+                  <TableRow sx={{ background: COLORS.tableHeaderBg }}>
+                    {["Name", "Code", "Color", "Param", "Quantity", "Length", ""].map((h, i, arr) => resultTh(h, i, arr))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -454,19 +471,16 @@ const JobSheetDetails = () => {
         </div>
       )}
       {data?.accessories?.length > 0 && (
-        <div style={{ margin: "10px 0" }}>
-          <Typography variant="h6" gutterBottom>
+        <div style={{ margin: "20px 0" }}>
+          <Box sx={{ fontSize: "15px", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: COLORS.textPrimary, marginBottom: "12px" }}>
             Accessories
-          </Typography>
+          </Box>
           <Grid container width={"100%"} justifyContent={"center"}>
-            <TableContainer component={Paper} style={{ width: "850px" }}>
+            <TableContainer component={Paper} sx={{ ...cardSx, width: "850px" }}>
               <Table aria-label="accessories table">
                 <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Code</TableCell>
-                    <TableCell>Color</TableCell>
-                    <TableCell>Quantity</TableCell>
+                  <TableRow sx={{ background: COLORS.tableHeaderBg }}>
+                    {["Name", "Code", "Color", "Quantity"].map((h, i, arr) => resultTh(h, i, arr))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -486,19 +500,16 @@ const JobSheetDetails = () => {
       )}
 
       {data?.glazzingValues?.length > 0 && (
-        <div style={{ margin: "10px 0" }}>
-          <Typography variant="h6" gutterBottom>
+        <div style={{ margin: "20px 0" }}>
+          <Box sx={{ fontSize: "15px", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: COLORS.textPrimary, marginBottom: "12px" }}>
             Glazing
-          </Typography>
+          </Box>
           <Grid container width={"100%"} justifyContent={"center"}>
-            <TableContainer component={Paper} style={{ width: "850px" }}>
+            <TableContainer component={Paper} sx={{ ...cardSx, width: "850px" }}>
               <Table aria-label="glazing table">
                 <TableHead>
-                  <TableRow>
-                    <TableCell>Code</TableCell>
-                    <TableCell>Quantity</TableCell>
-                    <TableCell>Width</TableCell>
-                    <TableCell>Height</TableCell>
+                  <TableRow sx={{ background: COLORS.tableHeaderBg }}>
+                    {["Code", "Quantity", "Width", "Height"].map((h, i, arr) => resultTh(h, i, arr))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -518,9 +529,7 @@ const JobSheetDetails = () => {
       )}
       {data.profiles.length > 0 && (
         <Button
-          variant="contained"
-          color="primary"
-          style={{ margin: "20px 0" }}
+          sx={{ ...buttonSx.primary("44px"), margin: "20px 0" }}
           startIcon={<Save />}
           onClick={async () => {
             const resp = isNewSheet
@@ -543,7 +552,7 @@ const JobSheetDetails = () => {
           Save Sheet
         </Button>
       )}
-    </div>
+    </Box>
   );
 };
 

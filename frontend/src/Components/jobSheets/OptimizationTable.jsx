@@ -13,6 +13,9 @@ import {
   Typography,
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import { COLORS } from "../../theme/tokens";
+
+const headCellSx = { color: "#fff", fontWeight: 700, fontSize: "12px", letterSpacing: "0.07em", textTransform: "uppercase" };
 
 const OptimizedSheetTable = ({ data }) => {
   const [open, setOpen] = React.useState({});
@@ -25,14 +28,14 @@ const OptimizedSheetTable = ({ data }) => {
   };
 
   return (
-    <TableContainer component={Paper} style={{ width: "850px" }}>
+    <TableContainer component={Paper} sx={{ width: "850px", border: `1px solid ${COLORS.cardBorder}`, borderRadius: "8px", boxShadow: "0 1px 3px rgba(20,26,32,0.05)" }}>
       <Table>
         <TableHead>
-          <TableRow>
-            <TableCell />
-            <TableCell>Code</TableCell>
-            <TableCell align="right">Total Length (mm)</TableCell>
-            <TableCell align="right">Remaining(mm)</TableCell>
+          <TableRow sx={{ background: COLORS.tableHeaderBg }}>
+            <TableCell sx={headCellSx} />
+            <TableCell sx={headCellSx}>Code</TableCell>
+            <TableCell sx={headCellSx} align="right">Total Length (mm)</TableCell>
+            <TableCell sx={headCellSx} align="right">Remaining(mm)</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

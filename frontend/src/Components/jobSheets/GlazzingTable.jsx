@@ -12,6 +12,9 @@ import {
   Box,
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import { COLORS } from "../../theme/tokens";
+
+const headCellSx = { color: "#fff", fontWeight: 700, fontSize: "12px", letterSpacing: "0.07em", textTransform: "uppercase" };
 
 const GlazzingTable = ({ data }) => {
   const [open, setOpen] = useState({});
@@ -21,16 +24,16 @@ const GlazzingTable = ({ data }) => {
   };
 
   return (
-    <TableContainer component={Paper} style={{ width: "850px" }}>
+    <TableContainer component={Paper} sx={{ width: "850px", border: `1px solid ${COLORS.cardBorder}`, borderRadius: "8px", boxShadow: "0 1px 3px rgba(20,26,32,0.05)" }}>
       <Table>
         <TableHead>
-          <TableRow>
-            <TableCell />
-            <TableCell>Glazzing</TableCell>
-            <TableCell>Quantity</TableCell>
-            <TableCell>Width</TableCell>
-            <TableCell>Height</TableCell>
-            <TableCell>Repere</TableCell>
+          <TableRow sx={{ background: COLORS.tableHeaderBg }}>
+            <TableCell sx={headCellSx} />
+            <TableCell sx={headCellSx}>Glazzing</TableCell>
+            <TableCell sx={headCellSx}>Quantity</TableCell>
+            <TableCell sx={headCellSx}>Width</TableCell>
+            <TableCell sx={headCellSx}>Height</TableCell>
+            <TableCell sx={headCellSx}>Repere</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

@@ -39,8 +39,14 @@ function App() {
   const theme = createTheme({
     palette: {
       primary: {
-        main: "#08999D",
+        main: "#0D8B92",
       },
+    },
+    typography: {
+      fontFamily: "'Inter', 'source sans pro light', sans-serif",
+    },
+    shape: {
+      borderRadius: 6,
     },
   });
 
@@ -97,7 +103,16 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <ToastContainer />
+      <ToastContainer
+        position="bottom-center"
+        toastStyle={{
+          background: "#22272E",
+          color: "#fff",
+          borderRadius: "8px",
+          fontSize: "13.5px",
+          fontWeight: 600,
+        }}
+      />
       <Routes>
         {isLoggedIn ? (
           <Route element={<LayOut />}>

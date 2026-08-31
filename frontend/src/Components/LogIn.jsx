@@ -1,23 +1,24 @@
 import React, { useState } from "react";
-import {
-  Box,
-  TextField,
-  FormControl,
-  Button,
-  InputAdornment,
-  IconButton,
-  Typography,
-} from "@mui/material";
-
+import { Box, TextField, Button, InputAdornment, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { userLogin } from "../services/login";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { NavLink, useNavigate } from "react-router-dom";
-import LoginLayout from "../LoginLayout/LoginLayout";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import CircularProgress from "@mui/material/CircularProgress";
+import { COLORS, buttonSx } from "../theme/tokens";
+import AuthShell from "./common/AuthShell";
+
+const fieldSx = {
+  marginBottom: "18px",
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "6px",
+    "& fieldset": { borderColor: COLORS.inputBorder },
+    "&:hover fieldset": { borderColor: COLORS.headerTeal },
+    "&.Mui-focused fieldset": { borderColor: COLORS.headerTeal },
+  },
+};
 
 function LogIn({ handleLogin }) {
   const [loading, setLoading] = useState(false);
@@ -47,15 +48,6 @@ function LogIn({ handleLogin }) {
     event.preventDefault();
     setLoading(true);
 
-    // if (data.email === "admin@quotation.com" && data.password === "admin123") {
-    //   toast.success("Login Successful as admin");
-    //   localStorage.setItem("isAdmin", 'adminLogin');
-    //   localStorage.setItem("UserId", "admin");
-    //   admin(true)
-    //   handleLogin();
-    //   navigate('/')
-    //    return
-    // }
     try {
       const resp = await userLogin(data);
 
@@ -92,117 +84,64 @@ function LogIn({ handleLogin }) {
   };
 
   return (
-    <LoginLayout title="Welcome to Login page">
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        sx={{
-          width: "100%",
-          height: { xs: "70vh", sm: "85vh" },
-          padding: "10px",
-        }}
-      >
-        <ToastContainer />
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: "470px",
-            height: "auto",
-            borderRadius: "12px",
-            padding: "20px",
-            background: "#FFFFFF",
-            boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-          }}
-        >
-          <Box>
-            <Typography variant="h4" textAlign={"center"}>
-              Log In
-            </Typography>
-          </Box>
-          <form onSubmit={handleSubmit}>
-            <Box my={3}>
-              <FormControl fullWidth>
-                <TextField
-                  required
-                  value={data.email}
-                  fullWidth
-                  label="Enter your email"
-                  name="email"
-                  onChange={handleChange}
-                  variant="outlined"
-                  style={{ borderRadius: "12px" }}
-                />
-              </FormControl>
-            </Box>
-            <Box my={4}>
-              <FormControl fullWidth>
-                <TextField
-                  required
-                  value={data.password}
-                  fullWidth
-                  label="Enter your password"
-                  name="password"
-                  type={data.showPassword ? "text" : "password"}
-                  onChange={handleChange}
-                  variant="outlined"
-                  style={{ borderRadius: "12px" }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={handleShowPassword} edge="end">
-                          {data.showPassword ? (
-                            <Visibility />
-                          ) : (
-                            <VisibilityOff />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </FormControl>
-              <Box
-                mt={1}
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <Box>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={rememberMe}
-                        onChange={handleRememberMeChange}
-                      />
-                    }
-                    label="Remember Me"
-                  />
-                </Box>
-                <NavLink to="/forgot-password">Forgot Password</NavLink>
-              </Box>
-            </Box>
-
-            <Box my={2} sx={{ display: "flex" }}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                sx={{ width: "100%", padding: "10px 30px" }}
-              >
-                {loading ? (
-                  <CircularProgress style={{ color: "white" }} size="1.5rem" />
-                ) : (
-                  "Log In"
-                )}
-              </Button>
-            </Box>
-          </form>
-          <Box sx={{ display: "flex", justifyContent: "center", gap: "6px" }}>
-            <Typography>Don't have an account?</Typography>
-            <NavLink to="/signup">Register</NavLink>
-          </Box>
-        </Box>
+    <AuthShell tagline="Operations platform for inventory, job sheets, quotations and team scheduling.">
+      <Box sx={{ fontSize: "24px", fontWeight: 800, color: COLORS.textPrimary, marginBottom: "6px" }}>
+        Welcome back
       </Box>
-    </LoginLayout>
+      <Box sx={{ fontSize: "14px", color: COLORS.textMuted, marginBottom: "28px" }}>
+        Sign in to continue to fermeture
+      </Box>
+
+      <form onSubmit={handleSubmit}>
+        <TextField
+          required
+          value={data.email}
+          fullWidth
+          label="Email"
+          name="email"
+          onChange={handleChange}
+          variant="outlined"
+          sx={fieldSx}
+        />
+        <TextField
+          required
+          value={data.password}
+          fullWidth
+          label="Password"
+          name="password"
+          type={data.showPassword ? "text" : "password"}
+          onChange={handleChange}
+          variant="outlined"
+          sx={fieldSx}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={handleShowPassword} edge="end" sx={{ color: COLORS.textFaint }}>
+                  {data.showPassword ? <Visibility /> : <VisibilityOff />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <Box sx={{ display: "flex", alignItems: "center", marginBottom: "22px" }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rememberMe}
+                onChange={handleRememberMeChange}
+                sx={{ color: COLORS.inputBorder, "&.Mui-checked": { color: COLORS.headerTeal } }}
+              />
+            }
+            label={<Box sx={{ fontSize: "13.5px", color: COLORS.textSecondary }}>Remember me</Box>}
+          />
+        </Box>
+
+        <Button type="submit" sx={{ ...buttonSx.primary("46px"), width: "100%", fontSize: "15px" }}>
+          {loading ? <CircularProgress sx={{ color: "#fff" }} size="1.4rem" /> : "Log In"}
+        </Button>
+      </form>
+    </AuthShell>
   );
 }
 

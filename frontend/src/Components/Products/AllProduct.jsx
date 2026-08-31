@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  Typography,
-  FormControl,
-  Box,
-  Grid,
-  MenuItem,
-} from "@mui/material";
+import { Button, Box, Modal } from "@mui/material";
 import { deleteProducts } from "../../services/products/deleteProduct";
 import { getAllProducts } from "../../services/products/getAllProducts";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import TextField from "@mui/material/TextField";
-import Modal from "@mui/material/Modal";
+import { toast } from "react-toastify";
 import { addProducts } from "../../services/products/addProducts";
 import { sortProducts } from "../../services/products/getAllProducts";
 
@@ -23,24 +13,41 @@ import {
   categoryData,
   colorData,
 } from "../../Utility/data";
+import { COLORS, buttonSx, badgeStyle, stockBand } from "../../theme/tokens";
+import { AddIcon } from "../common/navIcons";
+import ConfirmDialog from "../common/ConfirmDialog";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 500,
-  bgcolor: "background.paper",
-  borderRadius: "12px",
-  boxShadow: 24,
-  pt: 2,
-  px: 4,
-  pb: 3,
+const fieldLabelSx = {
+  fontSize: "11.5px",
+  fontWeight: 700,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+  color: COLORS.textMuted,
+  marginBottom: "6px",
 };
 
-const AllProducts = () => {
-  const token = localStorage.getItem("tokenDevoted");
+const fieldInputStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  height: "42px",
+  border: `1px solid ${COLORS.inputBorder}`,
+  borderRadius: "6px",
+  padding: "0 13px",
+  fontSize: "14px",
+  color: COLORS.textPrimary,
+  outline: "none",
+};
 
+const fieldSelectStyle = { ...fieldInputStyle, padding: "0 11px", background: "#fff", cursor: "pointer" };
+
+const Field = ({ label, children }) => (
+  <Box>
+    <Box sx={fieldLabelSx}>{label}</Box>
+    {children}
+  </Box>
+);
+
+const AllProducts = () => {
   const [Data, setData] = useState(null);
   const [image, setImage] = useState(null);
   const [modalImage, setModalImage] = useState(null);
@@ -50,7 +57,14 @@ const AllProducts = () => {
   const [showImg, setShowImg] = useState({});
   const [showModalImg, setShowModalImg] = useState({});
   const [loading, setLoading] = useState(true);
-  // add modal state
+
+  // Products screen search + category filter (frontend-only, over already-fetched data)
+  const [search, setSearch] = useState("");
+  const [catFilter, setCatFilter] = useState("All categories");
+
+  // Delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
   const [AddData, setAddData] = useState({
     productName: "",
     productDescription: "",
@@ -61,7 +75,6 @@ const AllProducts = () => {
     price: "",
   });
 
-  // this state is basically for update modal which store the privious data of inputs
   const [modalFormdata, setModalFormData] = useState({});
   const cermone = cermoneData;
   const vitrage = vitrageData;
@@ -70,9 +83,6 @@ const AllProducts = () => {
     if (e.target.name === "image") {
       const selectedImage = e.target.files[0];
       setImage(selectedImage);
-
-      // Preview the selected image
-
       const imagePreviewURL = URL.createObjectURL(selectedImage);
       setShowImg({ imagePreview: imagePreviewURL });
     } else {
@@ -82,7 +92,6 @@ const AllProducts = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(token, "get token");
     const formData = new FormData();
     formData.append("productName", AddData.productName);
     formData.append("productDescription", AddData.productDescription);
@@ -122,13 +131,8 @@ const AllProducts = () => {
     }
   };
 
-  const handleOpenAdd = () => {
-    setAddModalOpen(true);
-  };
-
-  const handleCloseAdd = () => {
-    setAddModalOpen(false);
-  };
+  const handleOpenAdd = () => setAddModalOpen(true);
+  const handleCloseAdd = () => setAddModalOpen(false);
 
   async function getAllData() {
     let resp = await getAllProducts();
@@ -137,8 +141,6 @@ const AllProducts = () => {
         const sortedProduct = sortProducts(resp.data.getdata);
         setData(sortedProduct);
         setLoading(false);
-
-        // toast.success(resp.data.message);
       } else {
         toast.error(resp.data.message);
       }
@@ -169,14 +171,17 @@ const AllProducts = () => {
     }
   }
 
-  // edit /update modal  functions data
+  const askDelete = (item) => setDeleteTarget(item);
+  const cancelDelete = () => setDeleteTarget(null);
+  const confirmDelete = () => {
+    if (deleteTarget) DeleteProduct(deleteTarget._id);
+    setDeleteTarget(null);
+  };
 
   const handleModalChange = (e) => {
     if (e.target.name === "image") {
       const selectedImage = e.target.files[0];
       setModalImage(e.target.files[0]);
-
-      // Preview the selected image, or use the existing image if no new image is selected
       if (selectedImage) {
         const imgPreviewURL = URL.createObjectURL(selectedImage);
         setShowModalImg({ imagePreview: imgPreviewURL });
@@ -210,20 +215,16 @@ const AllProducts = () => {
         imagePreview: `https://app.noutfermeture.com/api/${data.image}`,
       });
       setModalImage(data.image);
-      console.log(data.image, "imggggggg");
     } else {
       setShowModalImg({});
     }
   };
 
-  const handleCloseUpdate = () => {
-    setOpen(false);
-  };
+  const handleCloseUpdate = () => setOpen(false);
 
   const handleModalSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    console.log(modalFormdata, "modalFormdata");
     formData.append("productName", modalFormdata.productName);
     formData.append("productDescription", modalFormdata.productDescription);
     formData.append("quantity", modalFormdata.quantity);
@@ -239,13 +240,10 @@ const AllProducts = () => {
     } else {
       formData.append("image", modalData.image);
     }
-    console.log(modalData.image, "imgggggggggg");
 
     try {
       const resp = await UpdateProducts(modalData._id, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
       if (resp && resp.status === 200) {
         toast.success(resp.data.message);
@@ -263,672 +261,317 @@ const AllProducts = () => {
     }
   };
 
-  return (
-    <Box sx={{ width: "100%", padding: "0 20px", boxSizing: "border-box" }}>
-      <ToastContainer />
-      <Box>
-        <Typography
-          textAlign="center"
-          variant="h2"
-          sx={{ fontSize: "24px", fontWeight: "700", margin: "20px 0" }}
-        >
-          ALL Products
-        </Typography>
-      </Box>
+  // ---- filtering + grouping for display ----
+  const q = search.trim().toLowerCase();
+  const filtered = (Data || []).filter((p) => {
+    const matchesSearch =
+      !q ||
+      [p.productName, p.productDescription, p.productcode].some((v) =>
+        (v || "").toLowerCase().includes(q)
+      );
+    const matchesCat = catFilter === "All categories" || p.productCategory === catFilter;
+    return matchesSearch && matchesCat;
+  });
 
-      <Box sx={{ padding: "0 8px", boxSizing: "border-box" }}>
-        {" "}
+  const groups = [];
+  const groupIndex = {};
+  filtered.forEach((item) => {
+    const cat = item.productCategory || "Uncategorized";
+    if (!(cat in groupIndex)) {
+      groupIndex[cat] = groups.length;
+      groups.push({ label: cat, items: [] });
+    }
+    groups[groupIndex[cat]].items.push(item);
+  });
+
+  const modalHeader = (title, subtitle, onClose) => (
+    <Box sx={{ background: COLORS.tableHeaderBg, padding: "16px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Box>
+        <Box sx={{ color: "#fff", fontSize: "16px", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+          {title}
+        </Box>
+        {subtitle && (
+          <Box sx={{ color: "#9AA1A9", fontSize: "12.5px", marginTop: "3px" }}>{subtitle}</Box>
+        )}
+      </Box>
+      <Box
+        onClick={onClose}
+        sx={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", color: "#C7CBD1", cursor: "pointer", "&:hover": { background: "rgba(255,255,255,0.1)", color: "#fff" } }}
+      >
+        ✕
+      </Box>
+    </Box>
+  );
+
+  return (
+    <Box>
+      {/* Toolbar */}
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", marginBottom: "16px" }}>
         <Button
           onClick={handleOpenAdd}
-          sx={{
-            padding: "10px 15px",
-            textTransform: "capitalize",
-          }}
-          variant="contained"
-          color="primary"
+          sx={{ ...buttonSx.primary(), display: "flex", alignItems: "center", gap: "10px", fontWeight: 700, letterSpacing: "0.04em" }}
         >
-          Add Product
+          <AddIcon size={17} />
+          ADD PRODUCT
         </Button>
-      </Box>
-
-      <Box sx={{ marginBottom: "10px" }}>
-        {/*for add product MODAL */}
-        <Modal
-          open={addModalOpen}
-          onClose={handleCloseAdd}
-          aria-labelledby="child-modal-title"
-          aria-describedby="child-modal-description"
-        >
-          <Box
-            sx={{
-              ...style,
-              width: "70%",
-              height: "auto",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Grid container>
-              <Grid item xs={12}>
-                <Typography variant="h4">Add Product Data</Typography>
-              </Grid>
-
-              <Grid item xs={12}>
-                <form onSubmit={handleSubmit}>
-                  <Box sx={{ padding: "20px", borderRadius: "12px" }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <Box display={"flex"} flexDirection={"column"}>
-                          {/* Image preview */}
-                          {showImg.imagePreview && (
-                            <img
-                              src={showImg.imagePreview}
-                              alt="Preview"
-                              style={{
-                                width: "100px",
-                                height: "50px",
-                                marginTop: "10px",
-                                border: "0.5px solid gray",
-                                padding: "5px",
-                              }}
-                            />
-                          )}
-                          <br />
-                          <input
-                            type="file"
-                            placeholder="upload image"
-                            onChange={handleChange}
-                            name="image"
-                            required
-                          />
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              label="Product Name"
-                              name="productName"
-                              onChange={handleChange}
-                              value={AddData.productName}
-                            />
-                          </FormControl>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              label="Product Code"
-                              name="productcode"
-                              onChange={handleChange}
-                              value={AddData.productcode}
-                            />
-                          </FormControl>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              type="number"
-                              fullWidth
-                              label="Quantity"
-                              name="quantity"
-                              onChange={handleChange}
-                              value={AddData.quantity}
-                            />
-                          </FormControl>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              type="number"
-                              fullWidth
-                              label="$Price"
-                              name="price"
-                              onChange={handleChange}
-                              value={AddData.price}
-                            />
-                          </FormControl>
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              label="Product Category"
-                              name="productCategory"
-                              select
-                              onChange={handleChange}
-                              value={AddData.productCategory}
-                            >
-                              {categoryData.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                  {option}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          </FormControl>
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              label="Product Color"
-                              name="productColor"
-                              select
-                              onChange={handleChange}
-                              value={AddData.productColor}
-                            >
-                              {colorData.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                  {option}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          </FormControl>
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              label="Product Cermone"
-                              name="productCermone"
-                              select
-                              onChange={handleChange}
-                              value={AddData.productCermone}
-                            >
-                              {cermone.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                  {option}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          </FormControl>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              select
-                              label="Product Vitrage"
-                              name="productVitrage"
-                              onChange={handleChange}
-                              value={AddData.productVitrage}
-                            >
-                              {vitrage.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                  {option}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          </FormControl>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Box>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              multiline
-                              rows={4}
-                              label="Description"
-                              name="productDescription"
-                              onChange={handleChange}
-                              value={AddData.productDescription}
-                            />
-                          </FormControl>
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Box display="flex" gap="6px">
-                          <Button variant="contained" type="submit">
-                            Add Product
-                          </Button>
-                          <Button variant="contained" onClick={handleCloseAdd}>
-                            Cancel
-                          </Button>
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </form>
-              </Grid>
-            </Grid>
+        <Box sx={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: "10px", background: "#fff", border: `1px solid ${COLORS.inputBorder}`, borderRadius: "6px", height: "44px", padding: "0 14px", width: "270px", boxSizing: "border-box" }}>
+            <input
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ border: "none", outline: "none", fontSize: "14px", flex: 1, minWidth: 0, color: COLORS.textPrimary, background: "transparent" }}
+            />
           </Box>
-        </Modal>
+          <select
+            value={catFilter}
+            onChange={(e) => setCatFilter(e.target.value)}
+            style={{ height: "44px", border: `1px solid ${COLORS.inputBorder}`, borderRadius: "6px", background: "#fff", fontSize: "14px", color: COLORS.textPrimary, padding: "0 14px", width: "200px", cursor: "pointer" }}
+          >
+            <option value="All categories">All categories</option>
+            {categoryData.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </Box>
       </Box>
 
-      {/* for update product modal */}
-      <Modal
-        open={open}
-        onClose={handleCloseUpdate}
-        aria-labelledby="child-modal-title"
-        aria-describedby="child-modal-description"
-      >
-        <Box
-          sx={{
-            ...style,
-            width: "70%",
-            height: "auto",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Grid container>
-            <Grid item xs={12}>
-              <Typography variant="h4">Update Product Data</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <form onSubmit={handleModalSubmit}>
-                <Box sx={{ padding: "20px", borderRadius: "12px" }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <Box>
-                        {showModalImg.imagePreview && (
-                          <img
-                            src={showModalImg.imagePreview}
-                            alt="Preview"
-                            style={{
-                              width: "100px",
-                              height: "50px",
-                              marginTop: "10px",
-                            }}
-                          />
-                        )}
-                        <br />
-                        <input
-                          type="file"
-                          onChange={handleModalChange}
-                          name="image"
-                        />
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            label="Product Name"
-                            name="productName"
-                            onChange={handleModalChange}
-                            value={modalFormdata.productName}
-                          />
-                        </FormControl>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            label="Product Code"
-                            name="productcode"
-                            onChange={handleModalChange}
-                            value={modalFormdata.productcode}
-                          />
-                        </FormControl>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            type="number"
-                            label="Quantity"
-                            name="quantity"
-                            onChange={handleModalChange}
-                            value={modalFormdata.quantity}
-                          />
-                        </FormControl>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            type="number"
-                            label="Price"
-                            name="price"
-                            onChange={handleModalChange}
-                            value={modalFormdata.price}
-                          />
-                        </FormControl>
-                      </Box>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            label="Product Category"
-                            name="productCategory"
-                            select
-                            onChange={handleModalChange}
-                            value={modalFormdata.productCategory}
-                          >
-                            {categoryData.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </FormControl>
-                      </Box>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            label="Product Color"
-                            name="productColor"
-                            select
-                            onChange={handleModalChange}
-                            value={modalFormdata.productColor}
-                          >
-                            {colorData.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </FormControl>
-                      </Box>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            label="Product Cermone"
-                            name="productCermone"
-                            select
-                            onChange={handleModalChange}
-                            value={modalFormdata.productCermone}
-                          >
-                            {cermone.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </FormControl>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            select
-                            label="Product Vitrage"
-                            name="productVitrage"
-                            onChange={handleModalChange}
-                            value={modalFormdata.productVitrage}
-                          >
-                            {vitrage.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </FormControl>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            multiline
-                            rows={4}
-                            label="Description"
-                            name="productDescription"
-                            onChange={handleModalChange}
-                            value={modalFormdata.productDescription}
-                          />
-                        </FormControl>
-                      </Box>
-                    </Grid>
-
-                    <Grid item xs={12}>
-                      <Box display="flex" gap="6px">
-                        <Button variant="contained" type="submit">
-                          Update Product
-                        </Button>
-                        <Button variant="contained" onClick={handleCloseUpdate}>
-                          Cancel
-                        </Button>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Box>
-              </form>
-            </Grid>
-          </Grid>
+      {/* Product groups */}
+      {!loading && groups.length === 0 && (
+        <Box sx={{ background: "#fff", border: `1px solid ${COLORS.cardBorder}`, borderRadius: "8px", padding: "52px", textAlign: "center", color: COLORS.textFaint, fontSize: "14px" }}>
+          No product matches this search.
         </Box>
-      </Modal>
-      {/* END update modal  */}
+      )}
 
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          gap: "14px",
-          rowGap: "20px", // Adjust for smaller screens
-        }}
-      >
-        {Data &&
-          Data.reduce((acc, item, index, array) => {
-            const prevCategory =
-              index > 0 ? array[index - 1].productCategory : null;
-            const isNewCategory = item.productCategory !== prevCategory;
-
-            if (isNewCategory) {
-              acc.push(
+      {groups.map((g) => (
+        <Box key={g.label} sx={{ background: "#fff", border: `1px solid ${COLORS.cardBorder}`, borderRadius: "8px", overflow: "hidden", boxShadow: "0 1px 3px rgba(20,26,32,0.05)", marginBottom: "20px" }}>
+          <Box sx={{ background: COLORS.tableHeaderBg, padding: "15px 22px", display: "flex", alignItems: "center", gap: "14px" }}>
+            <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>{g.label}</span>
+            <span style={{ color: "#9AA1A9", fontSize: 12.5 }}>{g.items.length} products</span>
+          </Box>
+          <Box sx={{ padding: "18px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(206px, 1fr))", gap: "16px" }}>
+            {g.items.map((item) => {
+              const band = stockBand(item.quantity);
+              return (
                 <Box
-                  key={`category-${item.productCategory}`}
+                  key={item._id}
                   sx={{
-                    width: "100%",
-                    textAlign: "center",
-                    margin: "20px 0",
-                    fontWeight: "bold",
-                    fontSize: "18px",
+                    border: `1px solid ${COLORS.cardBorder}`,
+                    borderRadius: "8px",
+                    padding: "13px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "9px",
+                    background: "#fff",
+                    "&:hover": { borderColor: COLORS.accentTealBorder, boxShadow: "0 3px 10px rgba(20,26,32,0.07)" },
                   }}
                 >
-                  {item.productCategory}
+                  <Box sx={{ position: "relative", background: "#F7F8F9", borderRadius: "6px", height: "96px", display: "flex", alignItems: "center", justifyContent: "center", padding: "10px" }}>
+                    <img
+                      src={`https://app.noutfermeture.com/api/${item.image}`}
+                      alt={item.productName}
+                      style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", mixBlendMode: "multiply" }}
+                    />
+                    <span style={{ position: "absolute", top: 7, right: 9, color: COLORS.headerTeal, fontSize: 13, fontWeight: 700 }}>
+                      ${item.price}
+                    </span>
+                  </Box>
+                  <Box sx={{ fontSize: "13.5px", fontWeight: 700, color: COLORS.textPrimary, lineHeight: 1.3 }}>
+                    {item.productName}
+                  </Box>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <span style={{ fontSize: 11.5, color: COLORS.textFaint }}>Description</span>
+                    <span style={{ fontSize: 12.5, color: COLORS.textSecondary }}>{item.productDescription}</span>
+                    <span style={{ fontSize: 12.5, color: COLORS.textSecondary }}>{item.productcode}</span>
+                    <span style={{ fontSize: 12.5, color: COLORS.textSecondary, textTransform: "uppercase" }}>{item.productCategory}</span>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{ fontSize: 12.5, color: COLORS.textSecondary }}>Quantity</span>
+                    <span style={badgeStyle(band)}>{item.quantity}</span>
+                  </Box>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "9px", marginTop: "2px" }}>
+                    <Button sx={buttonSx.outline("34px")} onClick={() => handleOpenUpdate(item)}>Edit</Button>
+                    <Button sx={buttonSx.danger()} onClick={() => askDelete(item)}>Delete</Button>
+                  </Box>
                 </Box>
               );
-            }
+            })}
+          </Box>
+        </Box>
+      ))}
 
-            acc.push(
-              <Box
-                key={index}
-                sx={{
-                  width: "230px",
-                  overflow: "hidden",
-                  padding: "20px",
-                  borderRadius: "12px",
-                  bgcolor:
-                    item?.productColor === "BLANC"
-                      ? "#ffffff"
-                      : item?.productColor === "NOIR"
-                      ? "#969696"
-                      : item?.productColor === "AS"
-                      ? "#E6E6E6"
-                      : "#e3fcfa",
-                  boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete product"
+        message={
+          deleteTarget
+            ? `${deleteTarget.productName} (${deleteTarget.productDescription}) will be removed from the catalogue and from inventory.`
+            : ""
+        }
+        confirmLabel="Delete"
+        cancelLabel="Keep it"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+
+      {/* Add product modal */}
+      <Modal open={addModalOpen} onClose={handleCloseAdd}>
+        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "#fff", borderRadius: "8px", width: 840, maxWidth: "94vw", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 26px 60px rgba(0,0,0,0.3)" }}>
+          {modalHeader("Add product", "New entry in the catalogue", handleCloseAdd)}
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ padding: "22px", display: "grid", gridTemplateColumns: "210px minmax(0,1fr)", gap: "24px" }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <Box sx={fieldLabelSx}>Product image</Box>
+                <Box sx={{ width: 210, height: 150, border: `1px solid ${COLORS.cardBorder}`, borderRadius: "6px", background: "#F7F8F9", display: "flex", alignItems: "center", justifyContent: "center", padding: "14px", boxSizing: "border-box" }}>
+                  {showImg.imagePreview ? (
+                    <img src={showImg.imagePreview} alt="Preview" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                  ) : (
+                    <Box sx={{ color: COLORS.textFaint, fontSize: "12.5px", textAlign: "center" }}>No image yet</Box>
+                  )}
+                </Box>
+                <input type="file" name="image" onChange={handleChange} required />
+                <Box sx={{ fontSize: "11.5px", color: COLORS.textFaint, lineHeight: 1.5 }}>
+                  PNG or JPG on a white background, 600px wide or more.
+                </Box>
+              </Box>
+
+              <Box sx={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                  <Field label="Product name">
+                    <input name="productName" value={AddData.productName} onChange={handleChange} style={fieldInputStyle} />
+                  </Field>
+                  <Field label="Product code">
+                    <input name="productcode" value={AddData.productcode} onChange={handleChange} style={fieldInputStyle} />
+                  </Field>
+                  <Field label="Category">
+                    <select name="productCategory" value={AddData.productCategory || ""} onChange={handleChange} style={fieldSelectStyle}>
+                      <option value="" disabled>Select category</option>
+                      {categoryData.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Color">
+                    <select name="productColor" value={AddData.productColor || ""} onChange={handleChange} style={fieldSelectStyle}>
+                      <option value="" disabled>Select color</option>
+                      {colorData.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Cermone">
+                    <select name="productCermone" value={AddData.productCermone || ""} onChange={handleChange} style={fieldSelectStyle}>
+                      <option value="" disabled>Select cermone</option>
+                      {cermone.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Vitrage">
+                    <select name="productVitrage" value={AddData.productVitrage || ""} onChange={handleChange} style={fieldSelectStyle}>
+                      <option value="" disabled>Select vitrage</option>
+                      {vitrage.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Unit price $">
+                    <input type="number" name="price" value={AddData.price} onChange={handleChange} style={fieldInputStyle} />
+                  </Field>
+                  <Field label="Quantity in stock">
+                    <input type="number" name="quantity" value={AddData.quantity} onChange={handleChange} style={fieldInputStyle} />
+                  </Field>
+                  <Box sx={{ gridColumn: "span 2" }}>
+                    <Field label="Description">
+                      <textarea name="productDescription" value={AddData.productDescription} onChange={handleChange} rows={3} style={{ ...fieldInputStyle, height: "auto", padding: "11px 13px", resize: "vertical" }} />
+                    </Field>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px 22px", borderTop: `1px solid ${COLORS.rowBorder}`, background: "#FAFBFC" }}>
+              <Box sx={{ flex: 1 }} />
+              <Button sx={buttonSx.neutral("44px")} onClick={handleCloseAdd}>Cancel</Button>
+              <Button type="submit" sx={{ ...buttonSx.primary(), fontWeight: 700 }}>ADD PRODUCT</Button>
+            </Box>
+          </form>
+        </Box>
+      </Modal>
+
+      {/* Update product modal */}
+      <Modal open={open} onClose={handleCloseUpdate}>
+        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "#fff", borderRadius: "8px", width: 840, maxWidth: "94vw", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 26px 60px rgba(0,0,0,0.3)" }}>
+          {modalHeader("Edit product", modalData.productcode ? `${modalData.productcode} · ${modalData.productCategory || ""}` : "", handleCloseUpdate)}
+          <form onSubmit={handleModalSubmit}>
+            <Box sx={{ padding: "22px", display: "grid", gridTemplateColumns: "210px minmax(0,1fr)", gap: "24px" }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <Box sx={fieldLabelSx}>Product image</Box>
+                <Box sx={{ width: 210, height: 150, border: `1px solid ${COLORS.cardBorder}`, borderRadius: "6px", background: "#F7F8F9", display: "flex", alignItems: "center", justifyContent: "center", padding: "14px", boxSizing: "border-box" }}>
+                  {showModalImg.imagePreview ? (
+                    <img src={showModalImg.imagePreview} alt="Preview" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                  ) : (
+                    <Box sx={{ color: COLORS.textFaint, fontSize: "12.5px", textAlign: "center" }}>No image</Box>
+                  )}
+                </Box>
+                <input type="file" name="image" onChange={handleModalChange} />
+                <Box sx={{ fontSize: "11.5px", color: COLORS.textFaint, lineHeight: 1.5 }}>
+                  PNG or JPG on a white background, 600px wide or more.
+                </Box>
+              </Box>
+
+              <Box sx={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                  <Field label="Product name">
+                    <input name="productName" value={modalFormdata.productName || ""} onChange={handleModalChange} style={fieldInputStyle} />
+                  </Field>
+                  <Field label="Product code">
+                    <input name="productcode" value={modalFormdata.productcode || ""} onChange={handleModalChange} style={fieldInputStyle} />
+                  </Field>
+                  <Field label="Category">
+                    <select name="productCategory" value={modalFormdata.productCategory || ""} onChange={handleModalChange} style={fieldSelectStyle}>
+                      {categoryData.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Color">
+                    <select name="productColor" value={modalFormdata.productColor || ""} onChange={handleModalChange} style={fieldSelectStyle}>
+                      {colorData.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Cermone">
+                    <select name="productCermone" value={modalFormdata.productCermone || ""} onChange={handleModalChange} style={fieldSelectStyle}>
+                      {cermone.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Vitrage">
+                    <select name="productVitrage" value={modalFormdata.productVitrage || ""} onChange={handleModalChange} style={fieldSelectStyle}>
+                      {vitrage.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Price">
+                    <input type="number" name="price" value={modalFormdata.price || ""} onChange={handleModalChange} style={fieldInputStyle} />
+                  </Field>
+                  <Field label="Quantity">
+                    <input type="number" name="quantity" value={modalFormdata.quantity || ""} onChange={handleModalChange} style={fieldInputStyle} />
+                  </Field>
+                  <Box sx={{ gridColumn: "span 2" }}>
+                    <Field label="Description">
+                      <textarea name="productDescription" value={modalFormdata.productDescription || ""} onChange={handleModalChange} rows={3} style={{ ...fieldInputStyle, height: "auto", padding: "11px 13px", resize: "vertical" }} />
+                    </Field>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px 22px", borderTop: `1px solid ${COLORS.rowBorder}`, background: "#FAFBFC" }}>
+              <Button
+                sx={buttonSx.danger("44px")}
+                onClick={() => {
+                  handleCloseUpdate();
+                  askDelete(modalData);
                 }}
               >
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Box
-                      sx={{
-                        maxWidth: "300px",
-                        width: "100%",
-                        height: "130px",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <img
-                        src={`https://app.noutfermeture.com/api/${item.image}`}
-                        style={{
-                          borderRadius: "8px",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                        alt="Product"
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box>
-                      <Box
-                        display={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Typography
-                          textAlign="left"
-                          sx={{
-                            color: "black",
-                            fontWeight: "400",
-                            fontSize: "14px",
-                            lineHeight: "143%",
-                          }}
-                        >
-                          {item.productName}
-                        </Typography>
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: "#141414",
-                            fontSize: "14px",
-                            fontWeight: "900",
-                            lineHeight: "143%",
-                          }}
-                        >
-                          ${item.price}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <Typography
-                          textAlign="left"
-                          sx={{
-                            color: "black",
-                            fontWeight: "500",
-                            lineHeight: "143%",
-                            fontSize: "14px",
-                          }}
-                        >
-                          Description
-                        </Typography>
-                        <Typography
-                          sx={{
-                            color: "#545454",
-                            fontSize: "12px",
-                            fontWeight: "400",
-                            lineHeight: "143%",
-                          }}
-                        >
-                          {item.productDescription}
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography
-                          textAlign="left"
-                          sx={{
-                            color: "black",
-                            fontWeight: "400",
-                            lineHeight: "normal",
-                            fontSize: "14px",
-                          }}
-                        >
-                          {item.productcode}
-                        </Typography>
-                      </Box>
-
-                      <Box display="flex" gap="10px" alignItems="center">
-                        <Typography
-                          textAlign="left"
-                          sx={{
-                            color: "black",
-                            fontWeight: "300",
-                            lineHeight: "200%",
-                            fontSize: "14px",
-                          }}
-                        >
-                          {item.productCategory}
-                        </Typography>
-                      </Box>
-
-                      <Box display="flex" gap="10px" alignItems="center">
-                        <Typography
-                          textAlign="left"
-                          sx={{
-                            color: "black",
-                            fontWeight: "300",
-                            lineHeight: "200%",
-                            fontSize: "14px",
-                          }}
-                        >
-                          Product Quantity
-                        </Typography>
-                        <Typography sx={{ fontSize: "14px" }}>
-                          {item.quantity}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} display="flex" gap="6px">
-                    <Button
-                      sx={{ textTransform: "capitalize" }}
-                      variant="outlined"
-                      onClick={() => handleOpenUpdate(item)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      sx={{ textTransform: "capitalize" }}
-                      variant="contained"
-                      onClick={() => DeleteProduct(item._id)}
-                    >
-                      Delete
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Box>
-            );
-
-            return acc;
-          }, [])}
-      </Box>
+                Delete product
+              </Button>
+              <Box sx={{ flex: 1 }} />
+              <Button sx={buttonSx.neutral("44px")} onClick={handleCloseUpdate}>Cancel</Button>
+              <Button type="submit" sx={{ ...buttonSx.primary(), fontWeight: 700 }}>SAVE CHANGES</Button>
+            </Box>
+          </form>
+        </Box>
+      </Modal>
     </Box>
   );
 };

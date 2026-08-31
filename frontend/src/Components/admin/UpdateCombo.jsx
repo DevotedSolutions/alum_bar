@@ -14,6 +14,8 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { updateCombo } from "../../services/designation/updateDesignation";
 import { deleteCombo } from "../../services/designation/deleteDesignation";
+import { buttonSx } from "../../theme/tokens";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 const UpdateCombo = ({
   isOpen,
@@ -29,6 +31,7 @@ const UpdateCombo = ({
 
   const [showImg, setShowImg] = useState("");
   const [modalImage, setModalImage] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   // Pre-fill data when the modal opens or comboInfo changes
   useEffect(() => {
@@ -103,6 +106,7 @@ const UpdateCombo = ({
   };
 
   return (
+    <>
     <Modal open={isOpen} onClose={onClose}>
       <Box
         sx={{
@@ -200,32 +204,16 @@ const UpdateCombo = ({
             </Grid>
 
             <Grid item xs={12} display="flex" gap={2} mt={2}>
-              <Button
-                variant="contained"
-                type="submit"
-                color="primary"
-                fullWidth
-              >
+              <Button sx={{ ...buttonSx.primary("42px"), flex: 1 }} type="submit">
                 Update Changes
               </Button>
-              <Button variant="outlined" onClick={onClose} fullWidth>
+              <Button sx={{ ...buttonSx.neutral("42px"), flex: 1 }} onClick={onClose}>
                 Cancel
               </Button>
 
               <Button
-                variant="text"
-                color="error"
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Are you sure you want to delete this combo?",
-                    )
-                  ) {
-                    deleteCombo(comboInfo._id);
-                    onClose();
-                    isUpdate(); // Refresh parent list after deletion
-                  }
-                }}
+                sx={buttonSx.danger("42px")}
+                onClick={() => setDeleteConfirmOpen(true)}
               >
                 Delete Combo
               </Button>
@@ -234,6 +222,22 @@ const UpdateCombo = ({
         </form>
       </Box>
     </Modal>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title="Delete combo"
+        message={comboInfo ? `${comboInfo.name} will be permanently removed.` : ""}
+        confirmLabel="Delete"
+        cancelLabel="Keep it"
+        onConfirm={() => {
+          deleteCombo(comboInfo._id);
+          setDeleteConfirmOpen(false);
+          onClose();
+          isUpdate();
+        }}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
+    </>
   );
 };
 

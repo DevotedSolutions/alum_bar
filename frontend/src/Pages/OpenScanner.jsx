@@ -1,62 +1,25 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Button,
-  IconButton,
-  useMediaQuery,
-  Drawer,
-  Grid,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-//import QrReader from "react-qr-scanner";
-import { Modal } from "@mui/material";
-import { Add, Close, Remove, ShoppingCart } from "@mui/icons-material";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Box, Button, IconButton, Drawer } from "@mui/material";
+import { ShoppingCart } from "@mui/icons-material";
+import { toast } from "react-toastify";
 import {
   getOneProduct,
   sellProduct,
 } from "../services/products/getAllProducts";
 import Html5QrcodePlugin from "../Components/HTML5QRCode";
 import "../Utility/scanner.css";
-
-const containerStyle = {
-  display: "flex",
-  justifyContent: "space-around",
-  width: "100%",
-  margin: "16px",
-};
+import { COLORS, buttonSx } from "../theme/tokens";
 
 const OpenScanner = () => {
   const modalRef = useRef(null);
-  const [quantity, setQuantity] = useState(1);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [scanResultWebCam, setScanResultWebCam] = useState("");
+  // Tracked for parity with the previous implementation (cleared on
+  // close/sell) even though its value isn't rendered anywhere.
+  const [, setScanResultWebCam] = useState("");
   const [products, setProducts] = useState([]);
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const boxStyle = {
-    position: "relative",
-    width: isSmallScreen ? "100%" : "50%", // Adjusted for mobile responsiveness
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    flexDirection: "column",
-    pt: 2,
-    px: 4,
-    pb: 3,
-  };
 
   const navigate = useNavigate();
-
-  const handleErrorWebCam = (error) => {
-    console.error(error);
-  };
 
   const handleScanWebCam = async (result) => {
     if (result) {
@@ -66,7 +29,6 @@ const OpenScanner = () => {
       const toadd = response?.data?.data;
 
       if (toadd) {
-        // Use functional form of setProducts to ensure we have the latest products
         setProducts((prevProducts) => {
           const isexisting = prevProducts.find(
             (product) => product?._id === toadd?._id
@@ -74,10 +36,9 @@ const OpenScanner = () => {
 
           if (isexisting) {
             toast?.info("Product already present in the cart!");
-            return prevProducts; // Return the current state without adding the product
+            return prevProducts;
           }
 
-          // Add the new product to the list if it doesn't exist
           return [...prevProducts, { ...toadd, quantity: 1 }];
         });
       }
@@ -86,285 +47,201 @@ const OpenScanner = () => {
     }
   };
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
-
+  const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => {
     setModalOpen(false);
     setScanResultWebCam("");
   };
 
-  const printList = () => {
-    window.print();
-  };
+  const printList = () => window.print();
 
-  // const handleSell = async () => {
-  //   const id = scanResultWebCam;
-  //   console.log(id);
-  //   const response = await sellProduct(id, quantity);
-  //   if (response.status === 200) {
-  //     handleCloseModal();
-  //     toast.success("Successfully sold Product");
-  //     navigate("/inventory");
-  //     setScanResultWebCam("");
-  //   } else {
-  //     toast.error("An Error Occured in Solding Product");
-  //     handleCloseModal();
-  //   }
-  // };
   const handleSell = async () => {
     try {
       for (const product of products) {
         const { quantity } = product;
         const id = product?._id;
-
         const response = await sellProduct(id, quantity);
 
-        if (response.status === 200) {
-          console.log(`Successfully sold product with id: ${id}`);
-        } else {
-          // If an error occurs for a specific product, show a toast but continue with others
+        if (response.status !== 200) {
           toast.error(`An error occurred while selling product with id: ${id}`);
         }
       }
 
-      // After all products are processed, close modal, show success message, and navigate
       handleCloseModal();
       setProducts([]);
       toast.success("Successfully sold all products");
       navigate("/inventory");
       setScanResultWebCam("");
     } catch (error) {
-      // In case of any general error during the operation, log and notify the user
-      console.error("An error occurred while processing the sale:", error);
       toast.error("An error occurred during the sale process");
       handleCloseModal();
     }
   };
 
-  // useEffect(() => {
-  //   const handleClickOutsideModal = (event) => {
-  //     if (
-  //       isModalOpen &&
-  //       modalRef.current &&
-  //       !modalRef.current.contains(event.target)
-  //     ) {
-  //       window.location.reload();
-  //       handleCloseModal();
-  //     }
-  //   };
-
-  //   document.addEventListener("click", handleClickOutsideModal);
-
-  //   return () => {
-  //     document.removeEventListener("click", handleClickOutsideModal);
-  //   };
-  // }, [isModalOpen]);
-
-  const cameraFacingMode = isSmallScreen ? "environment" : "user";
-
   return (
-    <div style={containerStyle}>
-      <Box sx={boxStyle}>
-        {products?.length > 0 ? (
-          <IconButton>
-            <ShoppingCart
-              onClick={() => {
-                setModalOpen(true);
-              }}
-            />
-          </IconButton>
-        ) : null}
-        <ToastContainer />
-        <div>
-          <div
-            style={{
+    <Box sx={{ display: "flex", justifyContent: "center" }}>
+      <Box sx={{ width: "100%", maxWidth: "560px" }}>
+        <Box
+          sx={{
+            background: "#fff",
+            border: `1px solid ${COLORS.cardBorder}`,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(20,26,32,0.05)",
+          }}
+        >
+          <Box
+            sx={{
+              background: COLORS.tableHeaderBg,
+              padding: "15px 20px",
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
-              width: "330px",
-              height: "400px",
+              justifyContent: "space-between",
             }}
           >
-            <Typography variant="h6">QR Scanner</Typography>
-
-            {navigator.getUserMedia ? (
-              <Html5QrcodePlugin
-                fps={10}
-                qrbox={{ width: 175, height: 175 }}
-                disableFlip={false}
-                qrCodeSuccessCallback={handleScanWebCam}
-              />
-            ) : (
-              // <QrReader
-              //   key={cameraFacingMode}
-              //   constraints={{
-              //     audio: false,
-              //     video: { facingMode: cameraFacingMode },
-              //   }}
-              //   delay={3000}
-              //   style={{
-              //     width: "100%",
-              //     borderWidth: 2,
-              //     borderColor: "#00FF00",
-              //     backgroundColor: "transparent",
-              //   }}
-              //   onError={handleErrorWebCam}
-              //   onScan={handleScanWebCam}
-              // />
-              <p>http does not support camera</p>
-            )}
-
-            <Drawer
-              open={isModalOpen}
-              onClose={handleCloseModal}
-              aria-labelledby="child-modal-title"
-              aria-describedby="child-modal-description"
-              anchor="right"
-            >
-              <Box
-                sx={{
-                  minWidth: "300px",
-                }}
-              >
-                <Grid
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    padding: "5px",
-                  }}
-                >
-                  <Close
-                    onClick={() => {
-                      handleCloseModal();
+            <span style={{ color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+              Scanner
+            </span>
+            {products.length > 0 && (
+              <IconButton onClick={() => setModalOpen(true)} sx={{ color: "#fff" }}>
+                <Box sx={{ position: "relative", display: "flex" }}>
+                  <ShoppingCart fontSize="small" />
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                      minWidth: 16,
+                      height: 16,
+                      borderRadius: "8px",
+                      background: COLORS.brandRed,
+                      color: "#fff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 3px",
                     }}
-                  />
-                </Grid>
-
-                <Box
-                  className="printable-content"
-                  ref={modalRef}
-                  sx={{
-                    ...boxStyle,
-                    margin: "12px",
-                    display: "flex",
-                    justifyContent: "center",
-                    width: "90%",
-                  }}
-                >
-                  {[...products]?.map((product, index) => {
-                    return (
-                      <div className="product-item" key={index}>
-                        <Typography variant="h6" sx={{ textAlign: "center" }}>
-                          Item {index + 1}
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ textAlign: "center" }}
-                        >
-                          {product?.productcode} {product?.productDescription}
-                        </Typography>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            marginTop: "2px",
-                          }}
-                        >
-                          <Typography variant="body1">Quantity:</Typography>
-                          <IconButton
-                            onClick={() => {
-                              setProducts((prevProducts) => {
-                                let newProduct = {
-                                  ...product,
-                                  quantity: Math.max(0, product?.quantity - 1),
-                                };
-
-                                return newProduct?.quantity === 0
-                                  ? prevProducts?.filter(
-                                      (product) =>
-                                        product?._id !== newProduct?._id
-                                    )
-                                  : prevProducts.map((product, index1) =>
-                                      index === index1 ? newProduct : product
-                                    );
-                              });
-                            }}
-                            size="small"
-                          >
-                            <Remove />
-                          </IconButton>
-                          <input
-                            type="text"
-                            value={product?.quantity}
-                            onChange={(e) => {
-                              const quantity = Math.max(
-                                1,
-                                parseInt(e.target.value) || 1
-                              );
-                              setProducts((prevProducts) => {
-                                return prevProducts.map((product, index1) =>
-                                  index === index1
-                                    ? { ...product, quantity: quantity }
-                                    : product
-                                );
-                              });
-                            }}
-                            style={{
-                              width: "40px",
-                              textAlign: "center",
-                              margin: "5px",
-                            }}
-                          />
-                          <IconButton
-                            onClick={() => {
-                              setProducts((prevProducts) => {
-                                return prevProducts.map((product, index1) =>
-                                  index === index1
-                                    ? {
-                                        ...product,
-                                        quantity: product?.quantity + 1,
-                                      }
-                                    : product
-                                );
-                              });
-                            }}
-                            size="small"
-                          >
-                            <Add />
-                          </IconButton>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSell}
-                    style={{ marginTop: "10px", marginLeft: "25px" }}
                   >
-                    Confirm Sell
-                  </Button>
-
-                  {/* Print Button */}
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={printList}
-                    style={{ marginTop: "10px", marginLeft: "25px" }}
-                  >
-                    Print
-                  </Button>
+                    {products.length}
+                  </Box>
                 </Box>
+              </IconButton>
+            )}
+          </Box>
+
+          <Box sx={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            {navigator.getUserMedia ? (
+              <Box sx={{ width: "100%", maxWidth: "330px" }}>
+                <Html5QrcodePlugin
+                  fps={10}
+                  qrbox={{ width: 175, height: 175 }}
+                  disableFlip={false}
+                  qrCodeSuccessCallback={handleScanWebCam}
+                />
               </Box>
-            </Drawer>
-          </div>
-        </div>
+            ) : (
+              <Box sx={{ color: COLORS.textFaint, fontSize: "14px" }}>
+                http does not support camera
+              </Box>
+            )}
+          </Box>
+        </Box>
       </Box>
-    </div>
+
+      <Drawer open={isModalOpen} onClose={handleCloseModal} anchor="right">
+        <Box sx={{ minWidth: "340px", maxWidth: "400px", height: "100%", display: "flex", flexDirection: "column" }}>
+          <Box
+            sx={{
+              background: COLORS.tableHeaderBg,
+              padding: "15px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              Sell cart
+            </span>
+            <Box
+              onClick={handleCloseModal}
+              sx={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", color: "#C7CBD1", cursor: "pointer", "&:hover": { background: "rgba(255,255,255,0.1)", color: "#fff" } }}
+            >
+              ✕
+            </Box>
+          </Box>
+
+          <Box className="printable-content" ref={modalRef} sx={{ flex: 1, overflow: "auto" }}>
+            {products.length === 0 ? (
+              <Box sx={{ padding: "40px 20px", textAlign: "center", color: COLORS.textFaint, fontSize: "13.5px" }}>
+                No product scanned yet.
+              </Box>
+            ) : (
+              [...products].map((product, index) => (
+                <Box
+                  key={product._id || index}
+                  className="product-item"
+                  sx={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 20px", borderBottom: `1px solid ${COLORS.rowBorder}` }}
+                >
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ fontSize: "13px", fontWeight: 700, color: COLORS.textPrimary }}>
+                      {product?.productDescription}
+                    </Box>
+                    <Box sx={{ fontSize: "11.5px", color: COLORS.textFaint, marginTop: "2px" }}>
+                      {product?.productcode}
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", border: `1px solid ${COLORS.inputBorder}`, borderRadius: "6px", overflow: "hidden" }}>
+                    <Box
+                      onClick={() =>
+                        setProducts((prevProducts) => {
+                          let newProduct = { ...product, quantity: Math.max(0, product?.quantity - 1) };
+                          return newProduct?.quantity === 0
+                            ? prevProducts?.filter((p) => p?._id !== newProduct?._id)
+                            : prevProducts.map((p, i1) => (index === i1 ? newProduct : p));
+                        })
+                      }
+                      sx={{ width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#3A4150", cursor: "pointer", userSelect: "none", "&:hover": { background: "#F1F3F5" } }}
+                    >
+                      −
+                    </Box>
+                    <input
+                      type="text"
+                      value={product?.quantity}
+                      onChange={(e) => {
+                        const quantity = Math.max(1, parseInt(e.target.value) || 1);
+                        setProducts((prevProducts) =>
+                          prevProducts.map((p, i1) => (index === i1 ? { ...p, quantity } : p))
+                        );
+                      }}
+                      style={{ width: 34, textAlign: "center", fontSize: 13, fontWeight: 700, color: COLORS.textPrimary, border: "none", outline: "none" }}
+                    />
+                    <Box
+                      onClick={() =>
+                        setProducts((prevProducts) =>
+                          prevProducts.map((p, i1) => (index === i1 ? { ...p, quantity: p?.quantity + 1 } : p))
+                        )
+                      }
+                      sx={{ width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#3A4150", cursor: "pointer", userSelect: "none", "&:hover": { background: "#F1F3F5" } }}
+                    >
+                      +
+                    </Box>
+                  </Box>
+                </Box>
+              ))
+            )}
+          </Box>
+
+          <Box sx={{ display: "flex", gap: "10px", padding: "16px 20px", borderTop: `1px solid ${COLORS.rowBorder}`, background: "#FAFBFC" }}>
+            <Button sx={buttonSx.neutral("44px")} onClick={printList}>Print</Button>
+            <Button sx={{ ...buttonSx.primary("44px"), flex: 1 }} onClick={handleSell} disabled={products.length === 0}>
+              Confirm Sell
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+    </Box>
   );
 };
 

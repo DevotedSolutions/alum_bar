@@ -108,12 +108,13 @@ const Html5QrcodePlugin = (props) => {
             top: "10px",
             right: "10px",
             zIndex: 1000,
-            padding: "5px",
-            fontSize: "10px",
-            backgroundColor: "#007BFF",
+            padding: "6px 10px",
+            fontSize: "11px",
+            fontWeight: 600,
+            backgroundColor: "#0D8B92",
             color: "#fff",
             border: "none",
-            borderRadius: "5px",
+            borderRadius: "6px",
             cursor: "pointer",
           }}
         >

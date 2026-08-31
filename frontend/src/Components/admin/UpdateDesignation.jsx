@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useState, useEffect } from "react";
+import PriceDeltaRow from "./PriceDeltaRow";
 import { toast } from "react-toastify";
 import { updateDesignation } from "../../services/designation/updateDesignation";
 import { deleteDesignation } from "../../services/designation/deleteDesignation";
@@ -43,6 +44,9 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       : `/assets/images/default-img.png`,
   );
 
+  // Euro-conversion tool: converts the current MRU reference price to Euro,
+  // then bumps MAY/REU/Others each by their own %. Does NOT touch MRU itself
+  // — MRU only moves via "MRU Direct Increase %" below.
   const [priceFactor, setPriceFactor] = useState({
     euro: 45,
     may: 0,
@@ -53,35 +57,96 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   useEffect(() => {
     if (selectedProduct?.priceFactor) {
       setPriceFactor({
-        ...selectedProduct?.priceFactor,
+        euro: selectedProduct.priceFactor.euro ?? 45,
+        may: selectedProduct.priceFactor.may ?? 0,
+        reu: selectedProduct.priceFactor.reu ?? 0,
+        others: selectedProduct.priceFactor.others ?? 0,
       });
     } else {
-      setPriceFactor({
-        euro: 45,
-        may: 0,
-        reu: 0,
-        others: 0,
-      });
+      setPriceFactor({ euro: 45, may: 0, reu: 0, others: 0 });
     }
   }, [selectedProduct?._id]);
 
   const applyPercentage = () => {
     if (formData.priceList?.length > 0) {
       const updatedPriceList = formData.priceList.map((priceEntry) => {
-        const price_local = Number(priceEntry.price_local);
-        const euroPrice = price_local / Number(priceFactor.euro);
+        if (!priceEntry?.isSelected) return priceEntry;
+
+        // reference is the fixed pre-increase MRU price — never the
+        // already-bumped price_local — so re-applying the same % is idempotent
+        const referencePrice = Number(
+          priceEntry.price_old || priceEntry.price_local,
+        );
+        const euroPrice = referencePrice / Number(priceFactor.euro);
 
         return {
           ...priceEntry,
-          price: priceEntry?.isSelected
-            ? Math.round(euroPrice * (1 + Number(priceFactor.others) / 100))
-            : priceEntry.price,
-          price_may: priceEntry?.isSelected
-            ? Math.round(euroPrice * (1 + Number(priceFactor.may) / 100))
-            : priceEntry.price_may,
-          price_reu: priceEntry?.isSelected
-            ? Math.round(euroPrice * (1 + Number(priceFactor.reu) / 100))
-            : priceEntry.price_reu,
+          price_old: priceEntry.price_old || referencePrice,
+          price_default_old: priceEntry.price_default_old || priceEntry.price,
+          price_may_old: priceEntry.price_may_old || priceEntry.price_may,
+          price_reu_old: priceEntry.price_reu_old || priceEntry.price_reu,
+          // price_local intentionally untouched by this Apply
+          price: Math.round(euroPrice * (1 + Number(priceFactor.others) / 100)),
+          price_may: Math.round(euroPrice * (1 + Number(priceFactor.may) / 100)),
+          price_reu: Math.round(euroPrice * (1 + Number(priceFactor.reu) / 100)),
+        };
+      });
+
+      setFormData({
+        ...formData,
+        priceList: updatedPriceList.sort((a, b) =>
+          a.width === b.width ? a.height - b.height : a.width - b.width,
+        ),
+      });
+    }
+  };
+
+  // Independent per-country increase — each applies directly to that one
+  // country's own previous price (own reference, direct %, idempotent capture
+  // of the pre-increase value on first Apply); none of these touch each other.
+  const [directPercent, setDirectPercent] = useState({
+    mru: 0,
+    may: 0,
+    reu: 0,
+    others: 0,
+  });
+
+  const applyDirectPercentage = () => {
+    if (formData.priceList?.length > 0) {
+      const updatedPriceList = formData.priceList.map((priceEntry) => {
+        if (!priceEntry?.isSelected) return priceEntry;
+
+        const mruReference = Number(
+          priceEntry.price_old || priceEntry.price_local,
+        );
+        const mayReference = Number(
+          priceEntry.price_may_old || priceEntry.price_may,
+        );
+        const reuReference = Number(
+          priceEntry.price_reu_old || priceEntry.price_reu,
+        );
+        const priceReference = Number(
+          priceEntry.price_default_old || priceEntry.price,
+        );
+
+        return {
+          ...priceEntry,
+          price_old: priceEntry.price_old || mruReference,
+          price_may_old: priceEntry.price_may_old || mayReference,
+          price_reu_old: priceEntry.price_reu_old || reuReference,
+          price_default_old: priceEntry.price_default_old || priceReference,
+          price_local: Math.round(
+            mruReference * (1 + Number(directPercent.mru) / 100),
+          ),
+          price_may: Math.round(
+            mayReference * (1 + Number(directPercent.may) / 100),
+          ),
+          price_reu: Math.round(
+            reuReference * (1 + Number(directPercent.reu) / 100),
+          ),
+          price: Math.round(
+            priceReference * (1 + Number(directPercent.others) / 100),
+          ),
         };
       });
 
@@ -247,12 +312,28 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
         priceEntry.price_local ?? 0,
       );
       formDataAppend.append(
+        `priceList[${index}][price_old]`,
+        priceEntry.price_old ?? 0,
+      );
+      formDataAppend.append(
+        `priceList[${index}][price_default_old]`,
+        priceEntry.price_default_old ?? 0,
+      );
+      formDataAppend.append(
         `priceList[${index}][price_may]`,
         priceEntry.price_may ?? 0,
       );
       formDataAppend.append(
+        `priceList[${index}][price_may_old]`,
+        priceEntry.price_may_old ?? 0,
+      );
+      formDataAppend.append(
         `priceList[${index}][price_reu]`,
         priceEntry.price_reu ?? 0,
+      );
+      formDataAppend.append(
+        `priceList[${index}][price_reu_old]`,
+        priceEntry.price_reu_old ?? 0,
       );
     });
 
@@ -296,8 +377,12 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
         height: "",
         price: "",
         price_local: 0,
+        price_old: 0,
+        price_default_old: 0,
         price_may: 0,
+        price_may_old: 0,
         price_reu: 0,
+        price_reu_old: 0,
       },
     ];
     setFormData({
@@ -330,9 +415,13 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       width: priceEntry.width,
       height: priceEntry.height,
       price_local: priceEntry.price_local,
+      price_old: priceEntry.price_old,
       price_may: priceEntry.price_may,
+      price_may_old: priceEntry.price_may_old,
       price_reu: priceEntry.price_reu,
+      price_reu_old: priceEntry.price_reu_old,
       price: priceEntry.price,
+      price_default_old: priceEntry.price_default_old,
     }));
 
     const csv = Papa.unparse(reorderedPriceList);
@@ -363,13 +452,25 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
             price_local: isNaN(parseFloat(row.price_local))
               ? 0
               : parseFloat(row.price_local),
+            price_old: isNaN(parseFloat(row.price_old))
+              ? 0
+              : parseFloat(row.price_old),
             price_may: isNaN(parseFloat(row.price_may))
               ? 0
               : parseFloat(row.price_may),
+            price_may_old: isNaN(parseFloat(row.price_may_old))
+              ? 0
+              : parseFloat(row.price_may_old),
             price_reu: isNaN(parseFloat(row.price_reu))
               ? 0
               : parseFloat(row.price_reu),
+            price_reu_old: isNaN(parseFloat(row.price_reu_old))
+              ? 0
+              : parseFloat(row.price_reu_old),
             price: isNaN(parseFloat(row.price)) ? 0 : parseFloat(row.price),
+            price_default_old: isNaN(parseFloat(row.price_default_old))
+              ? 0
+              : parseFloat(row.price_default_old),
             _id: row._id, // Optional if you need it
           }));
 
@@ -503,205 +604,224 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                     </Box>
                   </Grid>
 
+                  {/* Euro-conversion tool: reads the current MRU reference price,
+                      converts to Euro, bumps MAY/REU/Others by their own %.
+                      Leaves MRU itself untouched. */}
+                  <Box
+                    sx={{
+                      p: 2,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <TextField
+                      size="medium"
+                      type="number"
+                      label="Euro Price"
+                      value={priceFactor.euro}
+                      onChange={(e) =>
+                        setPriceFactor({
+                          ...priceFactor,
+                          euro: e.target.value,
+                        })
+                      }
+                      sx={{ width: "140px" }}
+                    />
+
+                    <TextField
+                      size="medium"
+                      type="number"
+                      label="MAY %"
+                      value={priceFactor.may}
+                      onChange={(e) =>
+                        setPriceFactor({
+                          ...priceFactor,
+                          may: e.target.value,
+                        })
+                      }
+                      sx={{ width: "140px" }}
+                    />
+
+                    <TextField
+                      size="medium"
+                      type="number"
+                      label="REU %"
+                      value={priceFactor.reu}
+                      onChange={(e) =>
+                        setPriceFactor({
+                          ...priceFactor,
+                          reu: e.target.value,
+                        })
+                      }
+                      sx={{ width: "140px" }}
+                    />
+
+                    <TextField
+                      size="medium"
+                      type="number"
+                      label="Others %"
+                      value={priceFactor.others}
+                      onChange={(e) =>
+                        setPriceFactor({
+                          ...priceFactor,
+                          others: e.target.value,
+                        })
+                      }
+                      sx={{ width: "140px" }}
+                    />
+
+                    <Button
+                      color="primary"
+                      onClick={applyPercentage}
+                      variant="contained"
+                      disabled={formData.priceList.length === 0}
+                    >
+                      Apply
+                    </Button>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        const newPriceList = formData.priceList.map(
+                          (entry) => ({
+                            ...entry,
+                            isSelected: true,
+                          }),
+                        );
+                        setFormData({
+                          ...formData,
+                          priceList: newPriceList,
+                        });
+                      }}
+                      variant="contained"
+                      disabled={formData.priceList.length === 0}
+                    >
+                      Select All
+                    </Button>
+
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        const newPriceList = formData.priceList.map(
+                          (entry) => ({
+                            ...entry,
+                            isSelected: false,
+                          }),
+                        );
+                        setFormData({
+                          ...formData,
+                          priceList: newPriceList,
+                        });
+                      }}
+                      variant="contained"
+                      disabled={formData.priceList.length === 0}
+                    >
+                      UnSelect
+                    </Button>
+
+                    {/* Discount % inputs (mru/may/reu/others) are intentionally
+                        hidden; this Apply still applies whatever is in `discount`
+                        state, which currently only "AllDesignation"'s catalog-wide
+                        panel sets — left as-is, not part of this change. */}
+                    <Button
+                      color="primary"
+                      onClick={applyDiscount}
+                      variant="contained"
+                      disabled={formData.priceList.length === 0}
+                    >
+                      Apply Discount
+                    </Button>
+                  </Box>
+
+                  {/* Independent per-country price increase — each field applies
+                      only to that one country's own column, off its own previous
+                      price, with no cross-country dependency. */}
                   <Box sx={{ p: 2 }}>
                     <Grid
                       container
                       spacing={2}
-                      sx={{ alignItems: "center", pb: 2, width: "100%" }}
+                      sx={{ alignItems: "center", pb: 1, width: "100%" }}
                     >
-                      <Grid
-                        item
-                        xs={12}
-                        sm={4}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                        }}
-                      >
-                        <TextField
-                          size="medium"
-                          type="number"
-                          fullWidth
-                          label="Euro Price"
-                          value={priceFactor.euro}
-                          onChange={(e) =>
-                            setPriceFactor({
-                              ...priceFactor,
-                              euro: e.target.value,
-                            })
-                          }
-                        />
-                      </Grid>
-
                       <Grid item xs={12} sm={2}>
                         <TextField
                           size="medium"
                           type="number"
                           fullWidth
-                          label="MAY %"
-                          value={priceFactor.may}
+                          label="MRU Direct Increase %"
+                          value={directPercent.mru}
                           onChange={(e) =>
-                            setPriceFactor({
-                              ...priceFactor,
-                              may: e.target.value,
-                            })
-                          }
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sm={2}>
-                        <TextField
-                          size="medium"
-                          type="number"
-                          fullWidth
-                          label="REU %"
-                          value={priceFactor.reu}
-                          onChange={(e) =>
-                            setPriceFactor({
-                              ...priceFactor,
-                              reu: e.target.value,
-                            })
-                          }
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sm={2}>
-                        <TextField
-                          size="medium"
-                          type="number"
-                          fullWidth
-                          label="Others %"
-                          value={priceFactor.others}
-                          onChange={(e) =>
-                            setPriceFactor({
-                              ...priceFactor,
-                              others: e.target.value,
-                            })
-                          }
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sm={2}>
-                        <Button
-                          color="primary"
-                          onClick={applyPercentage}
-                          variant="contained"
-                          disabled={formData.priceList.length === 0}
-                        >
-                          Apply
-                        </Button>
-                      </Grid>
-                      <Grid item xs={12} sm={2}>
-                        <Button
-                          color="primary"
-                          onClick={() => {
-                            const newPriceList = formData.priceList.map(
-                              (entry) => ({
-                                ...entry,
-                                isSelected: true,
-                              }),
-                            );
-                            setFormData({
-                              ...formData,
-                              priceList: newPriceList,
-                            });
-                          }}
-                          variant="contained"
-                          disabled={formData.priceList.length === 0}
-                        >
-                          Select All
-                        </Button>
-                      </Grid>
-
-                      <Grid item xs={12} sm={2}>
-                        <Button
-                          color="primary"
-                          onClick={() => {
-                            const newPriceList = formData.priceList.map(
-                              (entry) => ({
-                                ...entry,
-                                isSelected: false,
-                              }),
-                            );
-                            setFormData({
-                              ...formData,
-                              priceList: newPriceList,
-                            });
-                          }}
-                          variant="contained"
-                          disabled={formData.priceList.length === 0}
-                        >
-                          UnSelect
-                        </Button>
-                      </Grid>
-
-                      {/* <Grid item xs={12} sm={1.5}>
-                        <TextField
-                          size="medium"
-                          type="number"
-                          fullWidth
-                          value={discount.mru}
-                          label="MRU Discount %"
-                          onChange={(e) =>
-                            setDiscount({
-                              ...discount,
+                            setDirectPercent({
+                              ...directPercent,
                               mru: e.target.value,
                             })
                           }
                         />
                       </Grid>
 
-                      <Grid item xs={12} sm={1.5}>
+                      <Grid item xs={12} sm={2}>
                         <TextField
                           size="medium"
                           type="number"
                           fullWidth
-                          value={discount.may}
-                          label="MAY Discount %"
+                          label="MAY Direct Increase %"
+                          value={directPercent.may}
                           onChange={(e) =>
-                            setDiscount({
-                              ...discount,
+                            setDirectPercent({
+                              ...directPercent,
                               may: e.target.value,
                             })
                           }
                         />
                       </Grid>
 
-                      <Grid item xs={12} sm={1.5}>
+                      <Grid item xs={12} sm={2}>
                         <TextField
                           size="medium"
                           type="number"
                           fullWidth
-                          value={discount.reu}
-                          label="REU Discount %"
+                          label="REU Direct Increase %"
+                          value={directPercent.reu}
                           onChange={(e) =>
-                            setDiscount({
-                              ...discount,
+                            setDirectPercent({
+                              ...directPercent,
                               reu: e.target.value,
                             })
                           }
                         />
                       </Grid>
 
-                      <Grid item xs={12} sm={1.5}>
+                      <Grid item xs={12} sm={2}>
                         <TextField
                           size="medium"
                           type="number"
                           fullWidth
-                          value={discount.others}
-                          label="Other Discount %"
+                          label="Price Direct Increase %"
+                          value={directPercent.others}
                           onChange={(e) =>
-                            setDiscount({
-                              ...discount,
+                            setDirectPercent({
+                              ...directPercent,
                               others: e.target.value,
                             })
                           }
-                        /> */}
-                      {/* </Grid> */}
+                        />
+                      </Grid>
+
                       <Grid item xs={12} sm={2}>
                         <Button
                           color="primary"
-                          onClick={applyDiscount}
+                          onClick={applyDirectPercentage}
                           variant="contained"
                           disabled={formData.priceList.length === 0}
                         >
@@ -709,6 +829,13 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                         </Button>
                       </Grid>
                     </Grid>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", pt: 1 }}>
+                      Check the dimension rows you want to change below, set a % for the countries you
+                      want to move, then click Apply. Each field increases only its own column directly
+                      off that country's own previous price — MRU, MAY, REU and Price never affect each
+                      other. A comparison row appears below each price row so you can review before
+                      hitting Update Product.
+                    </Typography>
                   </Box>
 
                   {/* Price List Section */}
@@ -721,7 +848,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                           key={index}
                           sx={{ alignItems: "center", pb: 2 }}
                         >
-                          <Grid item xs={12} sm={2}>
+                          <Grid item xs={12} sm={1.5}>
                             <FormControl fullWidth>
                               <TextField
                                 size="medium"
@@ -751,7 +878,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                               />
                             </FormControl>
                           </Grid>
-                          <Grid item xs={12} sm={2}>
+                          <Grid item xs={12} sm={1.5}>
                             <FormControl fullWidth>
                               <TextField
                                 fullWidth
@@ -781,7 +908,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                             </FormControl>
                           </Grid>
 
-                          <Grid item xs={12} sm={1.75}>
+                          <Grid item xs={12} sm={2}>
                             <FormControl fullWidth>
                               <TextField
                                 fullWidth
@@ -811,7 +938,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                             </FormControl>
                           </Grid>
 
-                          <Grid item xs={12} sm={1.75}>
+                          <Grid item xs={12} sm={2}>
                             <FormControl fullWidth>
                               <TextField
                                 fullWidth
@@ -841,7 +968,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                             </FormControl>
                           </Grid>
 
-                          <Grid item xs={12} sm={1.75}>
+                          <Grid item xs={12} sm={2}>
                             <FormControl fullWidth>
                               <TextField
                                 fullWidth
@@ -871,7 +998,7 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                             </FormControl>
                           </Grid>
 
-                          <Grid item xs={12} sm={1.75}>
+                          <Grid item xs={12} sm={2}>
                             <FormControl fullWidth>
                               <TextField
                                 fullWidth
@@ -930,6 +1057,8 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                               <DeleteIcon />
                             </IconButton>
                           </Grid>
+
+                          <PriceDeltaRow priceEntry={priceEntry} />
                         </Grid>
                       ))}
                   </Box>

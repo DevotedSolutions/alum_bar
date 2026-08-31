@@ -1,167 +1,49 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Grid,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  FormControl,
-  TextField,
-} from "@mui/material";
+import { Box, Button, Modal } from "@mui/material";
 import {
   getAllProducts,
-  getOneProduct,
   sortProducts,
+  getQrcode,
 } from "../services/products/getAllProducts";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import Modal from "@mui/material/Modal";
-import ClearIcon from "@mui/icons-material/Clear";
-import { getQrcode } from "../services/products/getAllProducts";
-import Pagination from "@mui/material/Pagination";
-import PaginationItem from "@mui/material/PaginationItem";
-import Stack from "@mui/material/Stack";
-// import { useNavigate } from 'react-router-dom';
+import { toast } from "react-toastify";
 import { UpdateQuantity } from "../services/products/updateQuantity";
 import ExportOptions from "../Components/ExportOptions";
+import { COLORS, badgeStyle, stockBand, buttonSx, inputSx as inputSxBase } from "../theme/tokens";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  flexDirection: "column",
-  pt: 2,
-  px: 4,
-  pb: 3,
+const colorDot = (productColor) => {
+  const c = (productColor || "").toUpperCase();
+  if (c === "BLANC") return { bg: "#fff", border: "1px solid #C7CBD1" };
+  if (c === "NOIR") return { bg: "#2B303A", border: "1px solid #2B303A" };
+  if (c === "AS") return { bg: "#9AA1A9", border: "1px solid #9AA1A9" };
+  return { bg: COLORS.headerTeal, border: `1px solid ${COLORS.headerTeal}` };
 };
 
+const inputSx = { ...inputSxBase, width: "290px" };
+const primaryBtnSx = buttonSx.primary();
+const outlineBtnSx = buttonSx.outline();
+const neutralBtnSx = buttonSx.neutral();
+
 const InventoryPage = () => {
-  // let navigate = useNavigate();
-  const [qrCodeUrlSell, setQRCodeUrlSell] = useState("");
   const [data, setData] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [openSell, setOpenSell] = useState(false);
   const [searchData, setSearchData] = useState("");
-  // const [page, setPage] = useState(1);
-  // const [Size, setSize] = useState(5);
-  // const [totalPages, setTotalPages] = useState(1);
-  const [totalQuantity, setTotalQuantity] = useState(0);
-  // update quantity
-  let [oneProduct, setOneProduct] = useState(null);
-  const [priviousQuantity, setPriviousQuantity] = useState(0);
-  const [newQuantity, setNewQuantity] = useState();
   const [loading, setLoading] = useState(false);
 
-  // Function to handle the new quantity input
-  function handleNewQuantity(e) {
-    let inputValue = parseInt(e.target.value);
+  // Inline quantity editing
+  const [qtyEditId, setQtyEditId] = useState(null);
+  const [qtyEditValue, setQtyEditValue] = useState(0);
 
-    if (!isNaN(inputValue)) {
-      setNewQuantity(inputValue);
-      setTotalQuantity(inputValue);
-    } else {
-      setNewQuantity(0);
-    }
-  }
+  // Sell QR modal
+  const [openSell, setOpenSell] = useState(false);
+  const [qrCodeUrlSell, setQRCodeUrlSell] = useState("");
+  const [sellQrItem, setSellQrItem] = useState(null);
 
-  // Function to handle quantity submission
-  async function handleQuantitySubmit(e) {
-    e.preventDefault();
-    let newData = { newQuantity: newQuantity };
-    try {
-      let response = await UpdateQuantity(oneProduct._id, newData);
-      if (response.status === 200) {
-        console.log(response.data.message);
-        toast.success(response.data);
-        toast.success(response.data.message);
-
-        handleClose();
-        getData();
-        setNewQuantity(" ");
-      } else {
-        toast.error();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  // Function to handle the search input
-  function searchFun(e) {
-    setSearchData(e.target.value);
-  }
-
-  // Function to clear the search input
-  function clearSearch(e) {
-    setSearchData("");
-  }
-
-  // Function to open the update quantity modal
-  const handleOpen = async (id) => {
-    setOpen(true);
-
-    try {
-      let resp = await getOneProduct(id);
-      if (resp.status === 200) {
-        setPriviousQuantity(resp.data.data.quantity);
-        setOneProduct(resp.data.data);
-        console.log(oneProduct._id, "one product");
-      } else {
-        console.log(resp.data.message);
-      }
-    } catch (error) {
-      console.error("Failed to make the request", error);
-    }
-  };
-
-  // Function to close the update quantity modal
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  // Function to close the sell modal
-  const handleCloseSellModal = async () => {
-    setOpenSell(false);
-  };
-
-  // Function to open the sell modal
-  const handleOpenSellModal = async (id) => {
-    setOpenSell(true);
-
-    try {
-      const response = await getQrcode(id);
-      if (response.status === 200) {
-        setQRCodeUrlSell(response.data.qrCodeUrl);
-      } else {
-        console.error("Failed to generate QR code");
-      }
-    } catch (error) {
-      console.error("Failed to make the request", error);
-    }
-  };
-
-  // Function to fetch data from the server
   async function getData() {
     try {
       setLoading(true);
       const resp = await getAllProducts();
       setLoading(false);
       if (resp.status === 200) {
-        const sortedProduct = sortProducts(resp.data.getdata);
-
-        setData(sortedProduct);
+        setData(sortProducts(resp.data.getdata));
       } else {
         toast.error(resp.data.message);
       }
@@ -170,373 +52,287 @@ const InventoryPage = () => {
     }
   }
 
-  // Fetch data on component when page/Size changes
   useEffect(() => {
     getData();
   }, []);
 
+  const openQtyEdit = (item) => {
+    setQtyEditId(item._id);
+    setQtyEditValue(item.quantity);
+  };
+  const closeQtyEdit = () => setQtyEditId(null);
+  const decQty = () => setQtyEditValue((v) => Math.max(0, (Number(v) || 0) - 1));
+  const incQty = () => setQtyEditValue((v) => (Number(v) || 0) + 1);
+  const onQtyInputChange = (e) =>
+    setQtyEditValue(Math.max(0, parseInt(e.target.value, 10) || 0));
+
+  const submitQtyEdit = async (item) => {
+    const delta = Number(qtyEditValue) - Number(item.quantity);
+    if (delta === 0) {
+      closeQtyEdit();
+      return;
+    }
+    try {
+      const response = await UpdateQuantity(item._id, { newQuantity: delta });
+      if (response.status === 200) {
+        toast.success(response.data.message || "Quantity updated");
+        closeQtyEdit();
+        getData();
+      } else {
+        toast.error("Failed to update quantity");
+      }
+    } catch (error) {
+      toast.error("Failed to update quantity");
+    }
+  };
+
+  const handleOpenSellModal = async (item) => {
+    setSellQrItem(item);
+    setOpenSell(true);
+    try {
+      const response = await getQrcode(item._id);
+      if (response.status === 200) {
+        setQRCodeUrlSell(response.data.qrCodeUrl);
+      } else {
+        toast.error("Failed to generate QR code");
+      }
+    } catch (error) {
+      toast.error("Failed to generate QR code");
+    }
+  };
+  const handleCloseSellModal = () => {
+    setOpenSell(false);
+    setQRCodeUrlSell("");
+    setSellQrItem(null);
+  };
+
+  const q = searchData.trim().toLowerCase();
+  const filtered = data.filter((item) => {
+    const productName = (item.productName || "").toLowerCase();
+    const productDescription = (item.productDescription || "").toLowerCase();
+    const productcode = (item.productcode || "").toLowerCase();
+    return (
+      !q ||
+      productName.includes(q) ||
+      productDescription.includes(q) ||
+      productcode.includes(q)
+    );
+  });
+
   return (
-    <Box sx={{ width: { xs: "auto", sm: "auto" }, padding: "0 10px" }}>
-      <ToastContainer />
-      {/* Update Quantity Modal */}
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="child-modal-title"
-        aria-describedby="child-modal-description"
-      >
-        <Box sx={{ ...style, width: "30%" }}>
-          <div>
-            <Typography variant="h5" sx={{ textAlign: "center" }}>
-              Update Quantity
-            </Typography>
-            <div>
-              <form onSubmit={handleQuantitySubmit}>
-                <Box sx={{ padding: "20px", borderRadius: "12px" }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            type="number"
-                            fullWidth
-                            label="Previous Quantity"
-                            disabled
-                            name="quantity"
-                            value={priviousQuantity}
-                          />
-                        </FormControl>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Box>
-                        <FormControl fullWidth>
-                          <TextField
-                            type="number"
-                            fullWidth
-                            label="+ / - Quantity"
-                            required
-                            value={newQuantity}
-                            onChange={handleNewQuantity}
-                          />
-                        </FormControl>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Box sx={{ margin: "6px 0", color: "#707070" }}>
-                        Total Quantity ={" "}
-                        {parseInt(priviousQuantity) + parseInt(totalQuantity)}
-                      </Box>
-                      <Box display="flex" gap="6px">
-                        <Button
-                          variant="outlined"
-                          sx={{ textTransform: "capitalize" }}
-                          type="submit"
-                        >
-                          Update Quantity
-                        </Button>
-                        <Button
-                          variant="contained"
-                          sx={{ textTransform: "capitalize" }}
-                          onClick={handleClose}
-                        >
-                          Cancel
-                        </Button>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Box>
-              </form>
-            </div>
-          </div>
-        </Box>
-      </Modal>
+    <Box>
+      {/* Search + export toolbar */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap", marginBottom: "14px" }}>
+        <input
+          placeholder="Search products..."
+          value={searchData}
+          onChange={(e) => setSearchData(e.target.value)}
+          style={inputSx}
+        />
+        <Button sx={primaryBtnSx}>Search</Button>
+        <ExportOptions data={data} />
+      </Box>
 
-      {/* Sell Modal */}
-      <Modal
-        open={openSell}
-        onClose={handleCloseSellModal}
-        aria-labelledby="child-modal-title"
-        aria-describedby="child-modal-description"
-      >
-        <Box sx={{ ...style, width: "30%" }}>
-          <div>
-            {qrCodeUrlSell && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <h3>QR Code:</h3>
-                <img src={qrCodeUrlSell} alt="QR Code" width="180px" />
-                <br />
-                <a href={qrCodeUrlSell} download="qrcode.png">
-                  Download
-                </a>
-                <Button
-                  sx={{ margin: "4px 0" }}
-                  variant="contained"
-                  onClick={handleCloseSellModal}
-                >
-                  Cancel
-                </Button>
-              </div>
-            )}
-            {/* <Button onClick={() => { navigate("/open-scanner") }}>Open Scanner</Button> */}
-          </div>
-        </Box>
-      </Modal>
+      <Box sx={{ fontSize: "14px", fontWeight: 600, color: "#3A4150", marginBottom: "12px" }}>
+        {filtered.length} products
+      </Box>
 
-      <Grid container>
-        <Grid item xs={12}>
-          <Box sx={{ borderRadius: "12px" }}>
-            <Typography sx={{ fontSize: "30px" }} variant="1">
-              Welcome to the inventory page
-            </Typography>
+      {loading ? (
+        <Box sx={{ padding: "48px", textAlign: "center", color: COLORS.textFaint, fontSize: "14px" }}>
+          Loading...
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            background: "#fff",
+            border: `1px solid ${COLORS.cardBorder}`,
+            borderRadius: "8px",
+            overflowX: "auto",
+            boxShadow: "0 1px 3px rgba(20,26,32,0.05)",
+          }}
+        >
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: COLORS.tableHeaderBg }}>
+                {["Image", "Product name", "Product description", "Product code", "Quantity", "Action"].map(
+                  (h, i) => (
+                    <th
+                      key={h}
+                      style={{
+                        padding: "16px 18px",
+                        color: "#fff",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        letterSpacing: "0.07em",
+                        textTransform: "uppercase",
+                        textAlign: "center",
+                        borderRight: i < 5 ? "1px solid rgba(255,255,255,0.12)" : "none",
+                        width: h === "Image" ? 110 : h === "Product code" ? 170 : h === "Quantity" ? 150 : h === "Action" ? 330 : undefined,
+                      }}
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: "48px", textAlign: "center", color: COLORS.textFaint, fontSize: "14px" }}>
+                    No product matches &ldquo;{searchData}&rdquo;
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((item, index) => {
+                  const showGroupHeader =
+                    index === 0 || item.productCategory !== filtered[index - 1].productCategory;
+                  const groupCount = filtered.filter((p) => p.productCategory === item.productCategory).length;
+                  const band = stockBand(item.quantity);
+                  const dot = colorDot(item.productColor);
+                  const editing = qtyEditId === item._id;
+
+                  return (
+                    <React.Fragment key={item._id}>
+                      {showGroupHeader && (
+                        <tr>
+                          <td colSpan={6} style={{ padding: 0, borderBottom: `1px solid ${COLORS.cardBorder}` }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: "14px", background: COLORS.groupRowBg, padding: "13px 18px" }}>
+                              <span style={{ width: 4, height: 18, background: COLORS.headerTeal, borderRadius: 2 }} />
+                              <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: COLORS.groupRowFg }}>
+                                {item.productCategory}
+                              </span>
+                              <span style={{ fontSize: 12.5, color: COLORS.textFaint }}>{groupCount} items</span>
+                            </Box>
+                          </td>
+                        </tr>
+                      )}
+                      <tr>
+                        <td style={{ padding: "10px 18px", borderBottom: `1px solid ${COLORS.rowBorder}`, textAlign: "center" }}>
+                          <img
+                            src={`https://app.noutfermeture.com/api/${item.image}`}
+                            alt={item.productName}
+                            style={{ width: 66, height: 44, objectFit: "contain", mixBlendMode: "multiply" }}
+                          />
+                        </td>
+                        <td style={{ padding: "10px 18px", borderBottom: `1px solid ${COLORS.rowBorder}`, fontSize: 14, fontWeight: 700, color: COLORS.textPrimary }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span
+                              title={item.productColor}
+                              style={{ width: 10, height: 10, minWidth: 10, borderRadius: "50%", background: dot.bg, border: dot.border }}
+                            />
+                            {item.productName}
+                          </Box>
+                        </td>
+                        <td style={{ padding: "10px 18px", borderBottom: `1px solid ${COLORS.rowBorder}`, fontSize: 14, color: COLORS.textSecondary }}>
+                          {item.productDescription}
+                        </td>
+                        <td style={{ padding: "10px 18px", borderBottom: `1px solid ${COLORS.rowBorder}`, textAlign: "center" }}>
+                          <span style={{ display: "inline-block", background: COLORS.neutralChipBg, color: COLORS.neutralChipFg, fontSize: 13, padding: "6px 14px", borderRadius: 5 }}>
+                            {item.productcode}
+                          </span>
+                        </td>
+                        <td style={{ padding: "10px 18px", borderBottom: `1px solid ${COLORS.rowBorder}`, textAlign: "center" }}>
+                          <span style={badgeStyle(band)}>{item.quantity}</span>
+                        </td>
+                        <td style={{ padding: "10px 18px", borderBottom: `1px solid ${COLORS.rowBorder}` }}>
+                          {editing ? (
+                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                              <Box sx={{ display: "flex", alignItems: "center", border: `1px solid ${COLORS.inputBorder}`, borderRadius: "6px", overflow: "hidden", background: "#fff" }}>
+                                <Box
+                                  onClick={decQty}
+                                  sx={{ width: 38, height: 36, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#3A4150", cursor: "pointer", userSelect: "none", "&:hover": { background: "#F1F3F5" } }}
+                                >
+                                  −
+                                </Box>
+                                <input
+                                  type="number"
+                                  value={qtyEditValue}
+                                  onChange={onQtyInputChange}
+                                  style={{ width: 56, height: 36, border: "none", borderLeft: `1px solid ${COLORS.cardBorder}`, borderRight: `1px solid ${COLORS.cardBorder}`, textAlign: "center", fontSize: 14, fontWeight: 700, color: COLORS.textPrimary, outline: "none" }}
+                                />
+                                <Box
+                                  onClick={incQty}
+                                  sx={{ width: 38, height: 36, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#3A4150", cursor: "pointer", userSelect: "none", "&:hover": { background: "#F1F3F5" } }}
+                                >
+                                  +
+                                </Box>
+                              </Box>
+                              <Button sx={{ ...primaryBtnSx, height: "36px", padding: "0 16px", fontSize: "13px" }} onClick={() => submitQtyEdit(item)}>
+                                Done
+                              </Button>
+                            </Box>
+                          ) : (
+                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px" }}>
+                              <Button sx={outlineBtnSx} onClick={() => openQtyEdit(item)}>
+                                + / - Quantity
+                              </Button>
+                              <Button sx={neutralBtnSx} onClick={() => handleOpenSellModal(item)}>
+                                Generate Sell QR Code
+                              </Button>
+                            </Box>
+                          )}
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </Box>
+      )}
+
+      {/* Sell QR modal */}
+      <Modal open={openSell} onClose={handleCloseSellModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            background: "#fff",
+            borderRadius: "8px",
+            width: 400,
+            maxWidth: "92vw",
+            boxShadow: "0 26px 60px rgba(0,0,0,0.3)",
+            overflow: "hidden",
+          }}
+        >
+          <Box sx={{ background: COLORS.tableHeaderBg, padding: "15px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              Sell QR code
+            </span>
           </Box>
-        </Grid>
-        <Grid item xs={12}>
-          <Box sx={{ borderRadius: "12px", display: "flex", gap: "5px" }}>
-            <Box
-              sx={{
-                display: "flex",
-                border: "0.5px solid gray",
-                alignItems: "center",
-                borderRadius: "8px",
-                padding: "3px 10px",
-              }}
-            >
-              <input
-                type="text"
-                onChange={searchFun}
-                placeholder="Search product.."
-                value={searchData}
-                style={{ outline: "none", border: "none" }}
-              />
-              {searchData.length > 0 && (
-                <span onClick={clearSearch}>
-                  <ClearIcon />
-                </span>
+          <Box sx={{ padding: "22px", textAlign: "center" }}>
+            {sellQrItem && (
+              <>
+                <Box sx={{ fontSize: "15px", fontWeight: 700, color: COLORS.textPrimary }}>{sellQrItem.productName}</Box>
+                <Box sx={{ fontSize: "13px", color: COLORS.textMuted, marginTop: "4px" }}>
+                  {sellQrItem.productDescription} · {sellQrItem.productcode}
+                </Box>
+              </>
+            )}
+            <Box sx={{ margin: "18px auto 0", width: 190, minHeight: 190, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {qrCodeUrlSell ? (
+                <img src={qrCodeUrlSell} alt="QR Code" style={{ width: "100%" }} />
+              ) : (
+                <Box sx={{ color: COLORS.textFaint, fontSize: "13px" }}>Generating…</Box>
               )}
             </Box>
-            <Box sx={{ display: "flex" }}>
-              <Button
-                sx={{
-                  borderRadius: "8px",
-                  padding: "7px 20px",
-                  textTransform: "capitalize",
-                }}
-                variant="contained"
-              >
-                Search
+            <Box sx={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+              <Button sx={{ ...neutralBtnSx, flex: 1, height: "44px" }} onClick={handleCloseSellModal}>
+                Close
               </Button>
-
-              <ExportOptions data={data} />
+              {qrCodeUrlSell && (
+                <Button sx={{ ...primaryBtnSx, flex: 1 }} href={qrCodeUrlSell} download="qrcode.png" component="a">
+                  Download
+                </Button>
+              )}
             </Box>
           </Box>
-        </Grid>
-        <Grid item xs={12}>
-          {loading ? (
-            <Grid
-              style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                marginTop: "15px",
-              }}
-            >
-              <Typography>Loading...</Typography>
-            </Grid>
-          ) : (
-            <Box sx={{ borderRadius: "12px" }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Image</TableCell>
-                    <TableCell>Product Name</TableCell>
-                    <TableCell>Product Description</TableCell>
-                    <TableCell>Product Code</TableCell>
-                    {/* <TableCell>Price</TableCell> */}
-                    <TableCell>Quantity</TableCell>
-                    <TableCell>Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data.length > 0 ? (
-                    data
-                      .filter((item) => {
-                        const productName = item.productName.toLowerCase();
-                        const productDescription =
-                          item.productDescription.toLowerCase();
-                        const productcode = item.productcode.toLowerCase();
-                        const searchDataLowerCase = searchData.toLowerCase();
-                        return (
-                          productName.includes(searchDataLowerCase) ||
-                          productDescription.includes(searchDataLowerCase) ||
-                          productcode.includes(searchDataLowerCase)
-                        );
-                      })
-
-                      .map((item, index) => {
-                        console.log(item.price);
-                        if (
-                          index === 0 ||
-                          item.productCategory !==
-                            data[index - 1].productCategory
-                        ) {
-                          return (
-                            <React.Fragment key={index}>
-                              <TableRow>
-                                <TableCell
-                                  colSpan={6}
-                                  style={{
-                                    fontWeight: "bold",
-                                    backgroundColor: "#f0f0f0",
-                                  }}
-                                >
-                                  {item.productCategory}
-                                </TableCell>
-                              </TableRow>
-                              <TableRow
-                                sx={{
-                                  bgcolor:
-                                    item?.productColor === "BLANC"
-                                      ? "#ffffff"
-                                      : item?.productColor === "NOIR"
-                                        ? "#969696"
-                                        : item?.productColor === "AS"
-                                          ? "#E6E6E6"
-                                          : "#e3fcfa",
-                                }}
-                              >
-                                <TableCell>
-                                  <Box sx={{ width: "100px" }}>
-                                    <img
-                                      src={`https://app.noutfermeture.com/api/${item.image}`}
-                                      style={{ width: "100%", height: "70px" }}
-                                      alt="Product"
-                                    />
-                                  </Box>
-                                </TableCell>
-                                <TableCell>{item.productName}</TableCell>
-                                <TableCell>{item.productDescription}</TableCell>
-                                <TableCell>{item.productcode}</TableCell>
-                                <TableCell>{item.quantity}</TableCell>
-                                <TableCell>
-                                  <Box sx={{ display: "flex", gap: "6px" }}>
-                                    <Button
-                                      variant="contained"
-                                      sx={{ textTransform: "capitalize" }}
-                                      onClick={() => {
-                                        handleOpen(item._id);
-                                      }}
-                                    >
-                                      + / - Quantity
-                                    </Button>
-                                    <Button
-                                      variant="contained"
-                                      sx={{ textTransform: "capitalize" }}
-                                      onClick={() => {
-                                        handleOpenSellModal(item._id);
-                                      }}
-                                    >
-                                      Generate Sell QR code
-                                    </Button>
-                                  </Box>
-                                </TableCell>
-                              </TableRow>
-                            </React.Fragment>
-                          );
-                        }
-                        return (
-                          <TableRow
-                            key={index}
-                            sx={{
-                              bgcolor:
-                                item?.productColor === "BLANC"
-                                  ? "#ffffff"
-                                  : item?.productColor === "NOIR"
-                                    ? "#969696"
-                                    : item?.productColor === "AS"
-                                      ? "#E6E6E6"
-                                      : "#e3fcfa",
-                            }}
-                          >
-                            <TableCell>
-                              <Box sx={{ width: "100px" }}>
-                                <img
-                                  // src={`http://localhost:1000/${item.image}`}
-                                  src={`https://app.noutfermeture.com/api/${item.image}`}
-                                  style={{ width: "100%", height: "70px" }}
-                                  alt="Product"
-                                />
-                              </Box>
-                            </TableCell>
-                            <TableCell>{item.productName}</TableCell>
-                            <TableCell>{item.productDescription}</TableCell>
-                            <TableCell>{item.productcode}</TableCell>
-                            {/* <TableCell>{item.price}</TableCell> */}
-
-                            <TableCell>{item.quantity}</TableCell>
-                            <TableCell>
-                              <Box sx={{ display: "flex", gap: "6px" }}>
-                                <Button
-                                  variant="contained"
-                                  sx={{ textTransform: "capitalize" }}
-                                  onClick={() => {
-                                    handleOpen(item._id);
-                                  }}
-                                >
-                                  + / - Quantity
-                                </Button>
-                                <Button
-                                  variant="contained"
-                                  sx={{ textTransform: "capitalize" }}
-                                  onClick={() => {
-                                    handleOpenSellModal(item._id);
-                                  }}
-                                >
-                                  Generate Sell QR code
-                                </Button>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                  ) : (
-                    <TableRow>
-                      <TableCell>Data not found</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </Box>
-          )}
-        </Grid>
-        {/* <Grid item xs={12}>
-          <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
-            <Stack spacing={2}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(event, value) => {
-                  setPage(value);
-                }}
-                renderItem={(item) => {
-                  return (
-                    <PaginationItem
-                      component={Button}
-                      {...item}
-                    />
-                  )
-                }}
-              />
-            </Stack>
-          </div>
-        </Grid> */}
-      </Grid>
+        </Box>
+      </Modal>
     </Box>
   );
 };

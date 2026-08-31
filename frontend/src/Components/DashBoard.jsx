@@ -1,13 +1,4 @@
-import {
-  Grid,
-  Typography,
-  Box,
-  Table,
-  TableCell,
-  TableRow,
-  TableBody,
-  TableHead,
-} from "@mui/material";
+import { Box } from "@mui/material";
 
 import React, { useEffect, useState } from "react";
 
@@ -24,11 +15,76 @@ import { topSoldProducts } from "../services/products/totalProducts";
 
 import LastWeekSales from "./LastWeekSales";
 import TotalRevenu from "./Products/totalRevenue";
+import { COLORS } from "../theme/tokens";
+
+const kpiCardSx = (accent) => ({
+  background: "#fff",
+  border: `1px solid ${COLORS.cardBorder}`,
+  borderTop: `3px solid ${accent}`,
+  borderRadius: "8px",
+  padding: "18px 20px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "9px",
+  boxShadow: "0 1px 3px rgba(20,26,32,0.05)",
+});
+
+const panelHeaderSx = {
+  background: COLORS.tableHeaderBg,
+  padding: "15px 20px",
+};
+
+const panelSx = {
+  background: "#fff",
+  border: `1px solid ${COLORS.cardBorder}`,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow: "0 1px 3px rgba(20,26,32,0.05)",
+};
+
+const tableHeadRow = (
+  <tr style={{ background: "#F7F8F9" }}>
+    {["Product name", "Product code", "Quantity", "Revenue"].map((h) => (
+      <th
+        key={h}
+        style={{
+          padding: "12px 20px",
+          textAlign: "left",
+          fontSize: "11.5px",
+          fontWeight: 700,
+          letterSpacing: "0.07em",
+          textTransform: "uppercase",
+          color: COLORS.textMuted,
+          borderBottom: `1px solid ${COLORS.cardBorder}`,
+        }}
+      >
+        {h}
+      </th>
+    ))}
+  </tr>
+);
+
+const ProductRow = ({ product }) => (
+  <tr>
+    <td style={{ padding: "12px 20px", borderBottom: `1px solid ${COLORS.rowBorder}`, fontSize: "13.5px", fontWeight: 600, color: COLORS.textPrimary }}>
+      {product.productDetails.productName}
+    </td>
+    <td style={{ padding: "12px 20px", borderBottom: `1px solid ${COLORS.rowBorder}`, fontSize: "13px", color: COLORS.textSecondary }}>
+      {product.productDetails.productcode}
+    </td>
+    <td style={{ padding: "12px 20px", borderBottom: `1px solid ${COLORS.rowBorder}`, fontSize: "13.5px", color: COLORS.textSecondary }}>
+      {product.totalQuantity}
+    </td>
+    <td style={{ padding: "12px 20px", borderBottom: `1px solid ${COLORS.rowBorder}`, fontSize: "13.5px", fontWeight: 700, color: COLORS.textPrimary }}>
+      ${product.totalRevenue}
+    </td>
+  </tr>
+);
+
 const DashBoard = () => {
   const [total, setTotal] = useState(0);
   const [lowStock, setLowStock] = useState(0);
   const [mostStock, setMostStock] = useState(0);
-  const [topRtdProducts, setTopRatedProducts] = useState([]);
   const [topSaleProducts, setTopSaleProducts] = useState([]);
   const [topSoldProductss, setTopSoldProducts] = useState([]);
   const [monthlySale, setMonthlySale] = useState(0);
@@ -36,21 +92,12 @@ const DashBoard = () => {
   const [lastWeek, setLastWeek] = useState();
   const [countday, setCountDay] = useState();
 
-  const YearsaleArray=[]
- 
- 
-  yearRevenue.map((item,i)=>{
-    // console.log(item.total,"iiii");
-    YearsaleArray.push(item.total)
-    return  item
+  const YearsaleArray = [];
 
-  })
-
-
-  // console.log(YearsaleArray,"years sale array");
-  
-
-
+  yearRevenue.map((item, i) => {
+    YearsaleArray.push(item.total);
+    return item;
+  });
 
   async function fetchTotalproducts() {
     try {
@@ -67,7 +114,6 @@ const DashBoard = () => {
       const resp = await lowStockProducts();
       if (resp.status === 200) {
         setLowStock(resp.data.lowStockProductsCount);
-        
       }
     } catch (error) {
       console.log("Error occur in fetching Low stock products:", error);
@@ -79,7 +125,6 @@ const DashBoard = () => {
       const resp = await mostStockProducts();
       if (resp.status === 200) {
         setMostStock(resp.data.mostStockProductsCount);
-        // console.log(resp.data.mostStockProductsCount, "moststockkkkkkkkkkk");
       }
     } catch (error) {
       console.log("Error occur in fetching Most stock products:", error);
@@ -88,8 +133,8 @@ const DashBoard = () => {
   async function fetchTopRatedProducts() {
     try {
       const resp = await topRatedProducts();
-      if (resp.status === 200) {
-        setTopRatedProducts(resp.data.topRatedProducts);
+      if (resp.status !== 200) {
+        console.log("Error occur in fetching top rated products");
       }
     } catch (error) {
       console.log("Error occur in fetching top rated products:", error);
@@ -100,8 +145,6 @@ const DashBoard = () => {
       const resp = await topSalesProducts();
       if (resp.status === 200) {
         setTopSaleProducts(resp.data.topSales);
-        // console.log(resp.data.topSales, "resssssssssssssssp");
-
       }
     } catch (error) {
       console.log("Error occur in fetching top sales products:", error);
@@ -111,10 +154,7 @@ const DashBoard = () => {
     try {
       const resp = await topSoldProducts();
       if (resp.status === 200) {
-        // console.log(resp.data.topSales,"rrrrrrrrrrrrrrr");
         setTopSoldProducts(resp.data.topSales);
-        // console.log(resp.data.topSales, "resssssssssssssssp");
-
       }
     } catch (error) {
       console.log("Error occur in fetching top sold products:", error);
@@ -124,35 +164,27 @@ const DashBoard = () => {
     try {
       const resp = await getTotalRevenue();
       if (resp.status === 200) {
-        setMonthlySale(resp.data.currentMonthSales.total)
-        // console.log(resp.data, "resp revenue");
-        // console.log(resp.data.monthlySales, "resp total revenue");
-        setYearRevenue(resp.data.monthlySales)
-
+        setMonthlySale(resp.data.currentMonthSales.total);
+        setYearRevenue(resp.data.monthlySales);
       }
     } catch (error) {
       console.log("Error occur in fetching total revenue of products:", error);
     }
-  
   }
   async function LastWeekSale() {
     try {
       const resp = await getLastweekSales();
       if (resp.status === 200) {
-
         const lastWeekSales = resp.data.lastWeekSales;
         const countsArray = lastWeekSales.map((item) => item.count);
         const countsDay = lastWeekSales.map((item) => item.day);
-        console.log(countsDay,"kkkkkkkkkkkkkkkkk");
-        
-        setLastWeek(countsArray)
-        setCountDay(countsDay)
 
+        setLastWeek(countsArray);
+        setCountDay(countsDay);
       }
     } catch (error) {
       console.log("Error occur in fetching last week sales of products:", error);
     }
-  
   }
   useEffect(() => {
     fetchTotalproducts();
@@ -162,228 +194,93 @@ const DashBoard = () => {
     fetchTopSalesProducts();
     fetchTotalRevenue();
     fetchTopSoldProducts();
-    LastWeekSale()
+    LastWeekSale();
   }, []);
 
+  const kpis = [
+    { label: "Total products", value: total, accent: COLORS.headerTeal, valueColor: COLORS.textPrimary, note: "Tracked in the catalogue" },
+    { label: "This month sales", value: `$${monthlySale}`, accent: COLORS.headerTeal, valueColor: COLORS.textPrimary, note: "Revenue this calendar month" },
+    { label: "Low stock products", value: lowStock, accent: "#D22D3A", valueColor: "#D22D3A", note: "Below their reorder point" },
+    { label: "Most stock products", value: mostStock, accent: COLORS.headerTeal, valueColor: COLORS.textPrimary, note: "Best-stocked items" },
+  ];
+
   return (
-    <Grid container>
-      <Grid item xs={12} sx={{ padding: "0 15px" }}>
-        <Typography sx={{ padding: "4px 0" }} variant="h5">
-          Dashboard
-        </Typography>
-        <Grid container gap={"4px"} justifyContent={"space-between"}>
-          <Grid
-            item
-            xs={12}
-            sm={2.85}
-            sx={{
-              borderRadius: "12px",
-              padding: "25px 0",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-
-              boxShadow:
-                " rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
-              background: "#434343",
-              color: "white",
-            }}
-          >
-            <Typography variant="h6" textAlign={"center"}>
-              Total Products
-            </Typography>
-            <Typography variant="h6" textAlign={"center"}>
-              {total}
-            </Typography>
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            sm={2.85}
-            sx={{
-              borderRadius: "12px",
-              padding: "10px 0",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#454545",
-              color: "white",
-              boxShadow:
-                " rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
-            }}
-          >
-            <Typography variant="h6" textAlign={"center"}>
-              This Month Sales
-            </Typography>
-            <Typography variant="h6" textAlign={"center"}>
-              ${monthlySale}
-            </Typography>
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            sm={2.85}
-            sx={{
-              padding: "10px 0",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow:
-                " rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
-              borderRadius: "12px",
-              background: "#565656",
-              color: "white",
-            }}
-          >
-            <Typography variant="h6" textAlign={"center"}>
-              Low stock Products
-            </Typography>
-            <Typography variant="h6" textAlign={"center"}>
-              {lowStock}
-            </Typography>
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            sm={2.85}
-            sx={{
-              padding: "10px 0",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow:
-                " rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
-              borderRadius: "12px",
-              background: "#878787",
-              color: "white",
-            }}
-          >
-            <Typography variant="h6" textAlign={"center"}>
-              Most Stock Products
-            </Typography>
-            <Typography variant="h6" textAlign={"center"}>
-              {mostStock}
-            </Typography>
-          </Grid>
-        </Grid>
-      </Grid>
-
-      {/* container 2  for top rated products and top sales*/}
-
-      <Grid item xs={12} mt={2} sx={{ padding: "0 15px" }}>
-        <Grid container gap={"2px"} justifyContent={"space-between"}>
-        <Grid item xs={12} sm={12} md={5.9}>
-            <Typography variant="h6">Top 5 Revenue Products</Typography>
-
-            <Box
-              sx={{
-                boxShadow:
-                  " rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px",
-                borderRadius: "12px",
-                padding: "20px 10px",
-              }}
-            >
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ padding: "5px" }}>Product Name</TableCell>
-                    <TableCell sx={{ padding: "5px" }}>Product Code</TableCell>
-                    <TableCell sx={{ padding: "5px" }}>Quantity</TableCell>
-                    <TableCell sx={{ padding: "5px" }}>Revenue</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {topSoldProductss.map((product) => {
-                    // console.log(product, " singlepppppppppp");
-                    // console.log(product.productDetails, "product details");
-                    return (
-                      <TableRow key={product.productDetails._id}>
-                        <TableCell sx={{ padding: "8px" }}>
-                          {product.productDetails.productName}
-                        </TableCell>
-                        <TableCell sx={{ padding: "8px" }}>
-                        {product.productDetails.productcode}
-                        </TableCell>
-                        <TableCell sx={{ padding: "8px" }}>
-                          {product.totalQuantity}
-                        </TableCell>
-                        <TableCell sx={{ padding: "8px" }}>
-                          ${product.totalRevenue}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+    <Box>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "18px", marginBottom: "22px" }}>
+        {kpis.map((k) => (
+          <Box key={k.label} sx={kpiCardSx(k.accent)}>
+            <Box sx={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: COLORS.textFaint }}>
+              {k.label}
             </Box>
-          </Grid>
-          
-          <Grid item xs={12} sm={12} md={5.9}>
-            <Typography variant="h6">Top 5 Sold Products</Typography>
-
-            <Box
-              sx={{
-                boxShadow:
-                  " rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px",
-                borderRadius: "12px",
-                padding: "20px 10px",
-              }}
-            >
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ padding: "5px" }}>Product Name</TableCell>
-                    <TableCell sx={{ padding: "5px" }}>Product Code</TableCell>
-                    <TableCell sx={{ padding: "5px" }}>Quantity</TableCell>
-                    <TableCell sx={{ padding: "5px" }}>Revenue</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {topSaleProducts.map((product) => {
-                    // console.log(product, " singlepppppppppp");
-                    // console.log(product.productDetails, "product details");
-                    return (
-                      <TableRow key={product.productDetails._id}>
-                        <TableCell sx={{ padding: "8px" }}>
-                          {product.productDetails.productName}
-                        </TableCell>
-                        <TableCell sx={{ padding: "8px" }}>
-                        {product.productDetails.productcode}
-                        </TableCell>
-                        <TableCell sx={{ padding: "8px" }}>
-                          {product.totalQuantity}
-                        </TableCell>
-                        <TableCell sx={{ padding: "8px" }}>
-                          ${product.totalRevenue}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+            <Box sx={{ fontSize: "30px", fontWeight: 800, color: k.valueColor, lineHeight: 1 }}>
+              {k.value}
             </Box>
-          </Grid>
-        </Grid>
-      </Grid>
+            <Box sx={{ fontSize: "12.5px", color: COLORS.textMuted }}>{k.note}</Box>
+          </Box>
+        ))}
+      </Box>
 
-      <Grid item xs={12} mt={2} sx={{ padding: "0 15px" }}>
-        <Grid container justifyContent={"space-between"}>
-          <Grid item xs={12} sm={12} md={5.9} sx={{}} mb={3}>
-            <Typography variant="h6">Last week sales</Typography>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "18px", marginBottom: "18px" }}>
+        <Box sx={panelSx}>
+          <Box sx={panelHeaderSx}>
+            <span style={{ color: "#fff", fontSize: "14px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+              Top 5 revenue products
+            </span>
+          </Box>
+          <Box sx={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>{tableHeadRow}</thead>
+              <tbody>
+                {topSoldProductss.map((product) => (
+                  <ProductRow key={product.productDetails._id} product={product} />
+                ))}
+              </tbody>
+            </table>
+          </Box>
+        </Box>
 
-            <LastWeekSales lastWeek={lastWeek} countday={countday}/>
-          </Grid>
-          <Grid item xs={12} sm={12} md={5.9} sx={{}} mb={3}>
-            <Typography variant="h6">Total Revenue</Typography>
-            <TotalRevenu yearData={YearsaleArray}/>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
+        <Box sx={panelSx}>
+          <Box sx={panelHeaderSx}>
+            <span style={{ color: "#fff", fontSize: "14px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+              Top 5 sold products
+            </span>
+          </Box>
+          <Box sx={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>{tableHeadRow}</thead>
+              <tbody>
+                {topSaleProducts.map((product) => (
+                  <ProductRow key={product.productDetails._id} product={product} />
+                ))}
+              </tbody>
+            </table>
+          </Box>
+        </Box>
+      </Box>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "18px" }}>
+        <Box sx={panelSx}>
+          <Box sx={panelHeaderSx}>
+            <span style={{ color: "#fff", fontSize: "14px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+              Last week sales
+            </span>
+          </Box>
+          <Box sx={{ padding: "16px" }}>
+            <LastWeekSales lastWeek={lastWeek} countday={countday} />
+          </Box>
+        </Box>
+        <Box sx={panelSx}>
+          <Box sx={panelHeaderSx}>
+            <span style={{ color: "#fff", fontSize: "14px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+              Total revenue
+            </span>
+          </Box>
+          <Box sx={{ padding: "16px" }}>
+            <TotalRevenu yearData={YearsaleArray} />
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
