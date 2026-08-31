@@ -4,16 +4,23 @@ import {
   Grid,
   FormControl,
   TextField,
-  Typography,
   Button,
   IconButton,
-  MenuItem, // Import IconButton component
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete"; // Import delete icon
+import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { updateDesignation } from "../../services/designation/updateDesignation";
 import { addDesignation } from "../../services/designation/addDesignation";
+import { COLORS, buttonSx } from "../../theme/tokens";
+import {
+  Field,
+  ModalHeader,
+  fieldInputStyle,
+  fieldSelectStyle,
+  modalShellSx,
+  modalFooterSx,
+} from "../common/ModalKit";
 
 const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
   const [formData, setFormData] = useState({
@@ -173,246 +180,153 @@ const AddDesignation = ({ isOpen, onClose, isUpdate }) => {
 
   return (
     <Modal open={isOpen} onClose={onClose}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          bgcolor: "background.paper",
-          boxShadow: 24,
-          p: 4,
-          display: "flex",
-          flexDirection: "row",
-          borderRadius: "6px",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          width: { xs: "90%", md: "auto" },
-          minWidth: { xs: "90%", md: "90%", lg: "1000px" },
-        }}
-      >
-        <Grid container>
-          <Grid item xs={12}>
-            <Typography variant="h4">Add Product Data</Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <form onSubmit={handleAddProduct}>
-              <Box sx={{ padding: "20px", borderRadius: "12px" }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Box>
-                      {showImg && (
-                        <img
-                          src={showImg}
-                          alt="Preview"
-                          style={{
-                            width: "100px",
-                            height: "80px",
-                            marginTop: "10px",
-                          }}
-                        />
-                      )}
-                      <br />
-                      <input
-                        type="file"
-                        onChange={handleImageChange}
-                        name="image"
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box>
-                      <FormControl fullWidth>
-                        <TextField
-                          fullWidth
-                          label="Product Designation"
-                          name="designation"
-                          value={formData.designation}
-                          onChange={handleInputChange}
-                        />
-                      </FormControl>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box>
-                      <FormControl fullWidth>
-                        <TextField
-                          fullWidth
-                          label="Product Vitrage"
-                          name="vitrage"
-                          value={formData.vitrage}
-                          onChange={handleInputChange}
-                        />
-                      </FormControl>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box>
-                      <FormControl fullWidth>
-                        <TextField
-                          fullWidth
-                          label="Product Category"
-                          name="category"
-                          select
-                          value={formData.category}
-                          onChange={handleInputChange}
-                        >
-                          {categories.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </FormControl>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box>
-                      <FormControl fullWidth>
-                        <TextField
-                          fullWidth
-                          label="Product Cermone"
-                          name="cermone"
-                          value={formData.cermone}
-                          onChange={handleInputChange}
-                        />
-                      </FormControl>
-                    </Box>
-                  </Grid>
+      <Box sx={modalShellSx(1000)}>
+        <ModalHeader title="Add Product Data" subtitle="New designation in the quotation catalogue" onClose={onClose} />
 
-                  {/* Price List Section */}
-                  <Box
-                    sx={{
-                      p: 2,
-                    }}
-                  >
-                    {formData.priceList.map((priceEntry, index) => (
-                      <Grid
-                        container
-                        spacing={2}
-                        key={index}
-                        sx={{ alignItems: "center", pb: 1 }}
-                      >
-                        <Grid item xs={12} sm={2}>
-                          <FormControl fullWidth>
-                            <TextField
-                              type="number"
-                              size="medium"
-                              fullWidth
-                              label="Largeur (mm)"
-                              name="width"
-                              value={priceEntry.width}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={2}>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              type="number"
-                              label="Hauteur (mm)"
-                              name="height"
-                              value={priceEntry.height}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={1.75}>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              type="number"
-                              label="Price"
-                              name="price"
-                              value={priceEntry.price}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
-                        </Grid>
-
-                        <Grid item xs={12} sm={1.75}>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              type="number"
-                              label="MRU Price"
-                              name="price_local"
-                              value={priceEntry.price_local}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
-                        </Grid>
-
-                        <Grid item xs={12} sm={1.75}>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              type="number"
-                              label="Price MAY"
-                              name="price_may"
-                              value={priceEntry.price_may}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
-                        </Grid>
-
-                        <Grid item xs={12} sm={1.75}>
-                          <FormControl fullWidth>
-                            <TextField
-                              fullWidth
-                              type="number"
-                              label="Price REU"
-                              name="price_reu"
-                              value={priceEntry.price_reu}
-                              onChange={(e) => handlePriceInputChange(index, e)}
-                            />
-                          </FormControl>
-                        </Grid>
-
-                        <Grid item xs={12} sm={1}>
-                          <IconButton
-                            onClick={() => handleDeletePriceEntry(index)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Grid>
-                      </Grid>
-                    ))}
-                  </Box>
-                  <Grid item xs={12}>
-                    <Button variant="contained" onClick={handleAddPriceEntry}>
-                      Add Price
-                    </Button>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Box display="flex" gap="6px">
-                      <Button
-                        variant="contained"
-                        sx={{
-                          whiteSpace: "nowrap",
-                        }}
-                        type="submit"
-                      >
-                        Add Product
-                      </Button>
-                      <Button
-                        variant="contained"
-                        onClick={handleCancel}
-                        sx={{
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </Box>
-                  </Grid>
-                </Grid>
+        <form onSubmit={handleAddProduct}>
+          <Box sx={{ padding: "22px", display: "grid", gridTemplateColumns: "210px minmax(0,1fr)", gap: "24px" }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <Box sx={{ fontSize: "11.5px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: COLORS.textMuted }}>
+                Product image
               </Box>
-            </form>
-          </Grid>
-        </Grid>
+              <Box sx={{ width: 210, height: 150, border: `1px solid ${COLORS.cardBorder}`, borderRadius: "6px", background: "#F7F8F9", display: "flex", alignItems: "center", justifyContent: "center", padding: "14px", boxSizing: "border-box" }}>
+                {showImg && (
+                  <img src={showImg} alt="Preview" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                )}
+              </Box>
+              <input type="file" onChange={handleImageChange} name="image" />
+              <Box sx={{ fontSize: "11.5px", color: COLORS.textFaint, lineHeight: 1.5 }}>
+                PNG or JPG on a white background, 600px wide or more.
+              </Box>
+            </Box>
+
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+              <Field label="Product designation">
+                <input name="designation" value={formData.designation} onChange={handleInputChange} style={fieldInputStyle} />
+              </Field>
+              <Field label="Product vitrage">
+                <input name="vitrage" value={formData.vitrage} onChange={handleInputChange} style={fieldInputStyle} />
+              </Field>
+              <Field label="Product category">
+                <select name="category" value={formData.category || ""} onChange={handleInputChange} style={fieldSelectStyle}>
+                  <option value="" disabled>Select category</option>
+                  {categories.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Product cermone">
+                <input name="cermone" value={formData.cermone} onChange={handleInputChange} style={fieldInputStyle} />
+              </Field>
+            </Box>
+          </Box>
+
+          {/* Price list — kept as the existing MUI Grid/TextField rows (working
+              feature, not part of this visual pass). */}
+          <Box sx={{ padding: "0 22px 22px" }}>
+            {formData.priceList.map((priceEntry, index) => (
+              <Grid
+                container
+                spacing={2}
+                key={index}
+                sx={{ alignItems: "center", pb: 1 }}
+              >
+                <Grid item xs={12} sm={2}>
+                  <FormControl fullWidth>
+                    <TextField
+                      type="number"
+                      size="medium"
+                      fullWidth
+                      label="Largeur (mm)"
+                      name="width"
+                      value={priceEntry.width}
+                      onChange={(e) => handlePriceInputChange(index, e)}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={2}>
+                  <FormControl fullWidth>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Hauteur (mm)"
+                      name="height"
+                      value={priceEntry.height}
+                      onChange={(e) => handlePriceInputChange(index, e)}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={1.75}>
+                  <FormControl fullWidth>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Price"
+                      name="price"
+                      value={priceEntry.price}
+                      onChange={(e) => handlePriceInputChange(index, e)}
+                    />
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} sm={1.75}>
+                  <FormControl fullWidth>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="MRU Price"
+                      name="price_local"
+                      value={priceEntry.price_local}
+                      onChange={(e) => handlePriceInputChange(index, e)}
+                    />
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} sm={1.75}>
+                  <FormControl fullWidth>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Price MAY"
+                      name="price_may"
+                      value={priceEntry.price_may}
+                      onChange={(e) => handlePriceInputChange(index, e)}
+                    />
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} sm={1.75}>
+                  <FormControl fullWidth>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Price REU"
+                      name="price_reu"
+                      value={priceEntry.price_reu}
+                      onChange={(e) => handlePriceInputChange(index, e)}
+                    />
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} sm={1}>
+                  <IconButton onClick={() => handleDeletePriceEntry(index)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            ))}
+
+            <Button sx={{ ...buttonSx.outline(), marginTop: "6px" }} onClick={handleAddPriceEntry}>
+              Add Price
+            </Button>
+          </Box>
+
+          <Box sx={modalFooterSx}>
+            <Box sx={{ flex: 1 }} />
+            <Button sx={buttonSx.neutral("44px")} onClick={handleCancel}>Cancel</Button>
+            <Button type="submit" sx={{ ...buttonSx.primary(), fontWeight: 700 }}>Add Product</Button>
+          </Box>
+        </form>
       </Box>
     </Modal>
   );

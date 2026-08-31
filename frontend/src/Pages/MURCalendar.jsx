@@ -2,19 +2,19 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  MenuItem,
-} from "@mui/material";
+import { Box, Button, Modal } from "@mui/material";
 import MapComponent from "../Components/calendar/Map";
 import CalendarToolbar from "../Components/calendar/CalendarToolbar";
 import { AddIcon } from "../Components/common/navIcons";
+import {
+  Field,
+  ModalHeader,
+  fieldInputStyle,
+  fieldSelectStyle,
+  fieldTextareaStyle,
+  modalShellSx,
+  modalFooterSx,
+} from "../Components/common/ModalKit";
 import {
   addEventByCountry,
   deleteEvent,
@@ -427,264 +427,266 @@ const CustomCalendar = () => {
         ))}
       </Box>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>
-          {currentEvent?._id ? "Event Detail" : "Add New Event"}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Title"
-            fullWidth
-            disabled={!isAdmin && currentEvent?._id}
-            margin="dense"
-            value={currentEvent?.title || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, title: e.target.value })
-            }
+      <Modal open={openDialog} onClose={handleCloseDialog}>
+        <Box sx={modalShellSx(640)}>
+          <ModalHeader
+            title={currentEvent?._id ? "Event Detail" : "Add New Event"}
+            subtitle={currentEvent?._id ? getEventTypeLabel(currentEvent) : "New entry on the calendar"}
+            onClose={handleCloseDialog}
           />
-          <TextField
-            label="Description"
-            fullWidth
-            disabled={!isAdmin && currentEvent?._id}
-            multiline
-            InputLabelProps={{ shrink: true }}
-            margin="dense"
-            value={currentEvent?.description || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, description: e.target.value })
-            }
-          />
-          <TextField
-            label="Event Type"
-            select
-            fullWidth
-            disabled={!isAdmin && currentEvent?._id}
-            margin="dense"
-            value={currentEvent?.type || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, type: e.target.value })
-            }
-          >
-            {isAdmin && (
-              <MenuItem value="container-arrival">Container Arrival</MenuItem>
-            )}
 
-            {isAdmin && (
-              <MenuItem value="container-departure">
-                Container Departure
-              </MenuItem>
-            )}
-
-            {isAdmin && <MenuItem value="site-work">Site Work</MenuItem>}
-
-            {isAdmin && <MenuItem value="reparation">Reparation</MenuItem>}
-
-            {isAdmin && <MenuItem value="measurement">Measurement</MenuItem>}
-
-            {!currentEvent?.location &&
-              currentEvent?.start &&
-              moment(currentEvent.start).diff(moment(), "days") >= 5 && (
-                <MenuItem value="local-leave">Local Leave</MenuItem>
-              )}
-
-            {(!currentEvent?.location ||
-              currentEvent?.location?.length === 0) && (
-              <MenuItem value="emergency-local-leave">
-                Emergency Local Leave
-              </MenuItem>
-            )}
-            {!currentEvent?.location ||
-              (currentEvent?.location?.length === 0 && (
-                <MenuItem value="sick-leave">Sick Leave</MenuItem>
-              ))}
-
-            {(!currentEvent?.location ||
-              currentEvent?.location?.length === 0) && (
-              <MenuItem value="absent">Absent</MenuItem>
-            )}
-
-            {isAdmin && <MenuItem value="other">Custom</MenuItem>}
-          </TextField>
-
-          {currentEvent?.type === "other" && (
-            <TextField
-              label="Custom Event Type"
-              placeholder="Enter a name for this event type"
-              fullWidth
-              margin="dense"
-              value={currentEvent?.otherType || ""}
-              onChange={(e) =>
-                setCurrentEvent({ ...currentEvent, otherType: e.target.value })
-              }
-            />
-          )}
-
-          {currentEvent?.location && currentEvent?.location?.length > 0 && (
-            <>
-              <TextField
-                label="Address"
-                fullWidth
-                disabled={!isAdmin}
-                margin="dense"
-                value={currentEvent?.address || ""}
+          <Box sx={{ padding: "22px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <Field label="Title">
+              <input
+                disabled={!isAdmin && currentEvent?._id}
+                value={currentEvent?.title || ""}
                 onChange={(e) =>
-                  setCurrentEvent({ ...currentEvent, address: e.target.value })
+                  setCurrentEvent({ ...currentEvent, title: e.target.value })
                 }
+                style={fieldInputStyle}
               />
-            </>
-          )}
+            </Field>
 
-          <TextField
-            label="Start Date"
-            type="date"
-            fullWidth
-            disabled={!isAdmin && currentEvent?._id}
-            margin="dense"
-            InputLabelProps={{ shrink: true }}
-            value={
-              currentEvent?.start
-                ? moment(currentEvent.start).format("YYYY-MM-DD")
-                : ""
-            }
-            onChange={(e) =>
-              setCurrentEvent({
-                ...currentEvent,
-                start: new Date(e.target.value),
-              })
-            }
-            inputProps={{
-              min: moment().format("YYYY-MM-DD"),
-            }}
-          />
-          <TextField
-            label="End Date"
-            type="date"
-            fullWidth
-            disabled={!isAdmin && currentEvent?._id}
-            margin="dense"
-            InputLabelProps={{ shrink: true }}
-            value={
-              currentEvent?.end
-                ? moment(currentEvent.end).format("YYYY-MM-DD")
-                : ""
-            }
-            onChange={(e) =>
-              setCurrentEvent({
-                ...currentEvent,
-                end: new Date(e.target.value),
-              })
-            }
-            inputProps={{
-              min: currentEvent?.start
-                ? moment(currentEvent.start).format("YYYY-MM-DD")
-                : moment().format("YYYY-MM-DD"),
-            }}
-          />
-          <TextField
-            label="Note"
-            fullWidth
-            disabled={!isAdmin && currentEvent?._id}
-            multiline
-            InputLabelProps={{ shrink: true }}
-            margin="dense"
-            value={currentEvent?.note || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, note: e.target.value })
-            }
-          />
-          <Box sx={{ marginTop: "10px" }}>
-            <Box sx={{ fontSize: "12px", color: "rgba(0,0,0,0.6)", marginBottom: "6px" }}>
-              Event Color
-            </Box>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {COLOR_PALETTE.map((swatch) => {
-                const isSelected = currentEvent?.color === swatch.hex;
-                const disabled = !isAdmin && currentEvent?._id;
-                return (
-                  <Box
-                    key={swatch.hex}
-                    component="button"
-                    type="button"
-                    title={swatch.name}
-                    aria-label={swatch.name}
-                    disabled={disabled}
-                    onClick={() =>
-                      setCurrentEvent({ ...currentEvent, color: swatch.hex })
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+              <Field label="Event Type">
+                <select
+                  disabled={!isAdmin && currentEvent?._id}
+                  value={currentEvent?.type || ""}
+                  onChange={(e) =>
+                    setCurrentEvent({ ...currentEvent, type: e.target.value })
+                  }
+                  style={fieldSelectStyle}
+                >
+                  <option value="" disabled>
+                    Select type
+                  </option>
+
+                  {isAdmin && (
+                    <option value="container-arrival">Container Arrival</option>
+                  )}
+                  {isAdmin && (
+                    <option value="container-departure">
+                      Container Departure
+                    </option>
+                  )}
+                  {isAdmin && <option value="site-work">Site Work</option>}
+                  {isAdmin && <option value="reparation">Reparation</option>}
+                  {isAdmin && <option value="measurement">Measurement</option>}
+
+                  {!currentEvent?.location &&
+                    currentEvent?.start &&
+                    moment(currentEvent.start).diff(moment(), "days") >= 5 && (
+                      <option value="local-leave">Local Leave</option>
+                    )}
+
+                  {(!currentEvent?.location ||
+                    currentEvent?.location?.length === 0) && (
+                    <option value="emergency-local-leave">
+                      Emergency Local Leave
+                    </option>
+                  )}
+                  {!currentEvent?.location ||
+                    (currentEvent?.location?.length === 0 && (
+                      <option value="sick-leave">Sick Leave</option>
+                    ))}
+
+                  {(!currentEvent?.location ||
+                    currentEvent?.location?.length === 0) && (
+                    <option value="absent">Absent</option>
+                  )}
+
+                  {isAdmin && <option value="other">Custom</option>}
+                </select>
+              </Field>
+
+              {currentEvent?.type === "other" ? (
+                <Field label="Custom Event Type">
+                  <input
+                    placeholder="Enter a name for this event type"
+                    value={currentEvent?.otherType || ""}
+                    onChange={(e) =>
+                      setCurrentEvent({ ...currentEvent, otherType: e.target.value })
                     }
-                    sx={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: "50%",
-                      background: swatch.hex,
-                      border: isSelected
-                        ? "3px solid #08999D"
-                        : "1px solid rgba(0,0,0,0.2)",
-                      boxShadow: isSelected
-                        ? "0 0 0 1px #fff inset"
-                        : "none",
-                      cursor: disabled ? "default" : "pointer",
-                      opacity: disabled ? 0.5 : 1,
-                      padding: 0,
-                    }}
+                    style={fieldInputStyle}
                   />
-                );
-              })}
+                </Field>
+              ) : (
+                <Box />
+              )}
             </Box>
+
+            {currentEvent?.location && currentEvent?.location?.length > 0 && (
+              <Field label="Address">
+                <input
+                  disabled={!isAdmin}
+                  value={currentEvent?.address || ""}
+                  onChange={(e) =>
+                    setCurrentEvent({ ...currentEvent, address: e.target.value })
+                  }
+                  style={fieldInputStyle}
+                />
+              </Field>
+            )}
+
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+              <Field label="Start Date">
+                <input
+                  type="date"
+                  disabled={!isAdmin && currentEvent?._id}
+                  value={
+                    currentEvent?.start
+                      ? moment(currentEvent.start).format("YYYY-MM-DD")
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setCurrentEvent({
+                      ...currentEvent,
+                      start: new Date(e.target.value),
+                    })
+                  }
+                  min={moment().format("YYYY-MM-DD")}
+                  style={fieldInputStyle}
+                />
+              </Field>
+              <Field label="End Date">
+                <input
+                  type="date"
+                  disabled={!isAdmin && currentEvent?._id}
+                  value={
+                    currentEvent?.end
+                      ? moment(currentEvent.end).format("YYYY-MM-DD")
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setCurrentEvent({
+                      ...currentEvent,
+                      end: new Date(e.target.value),
+                    })
+                  }
+                  min={
+                    currentEvent?.start
+                      ? moment(currentEvent.start).format("YYYY-MM-DD")
+                      : moment().format("YYYY-MM-DD")
+                  }
+                  style={fieldInputStyle}
+                />
+              </Field>
+            </Box>
+
+            <Field label="Description">
+              <textarea
+                disabled={!isAdmin && currentEvent?._id}
+                rows={3}
+                value={currentEvent?.description || ""}
+                onChange={(e) =>
+                  setCurrentEvent({ ...currentEvent, description: e.target.value })
+                }
+                style={fieldTextareaStyle}
+              />
+            </Field>
+
+            <Field label="Note">
+              <textarea
+                disabled={!isAdmin && currentEvent?._id}
+                rows={3}
+                value={currentEvent?.note || ""}
+                onChange={(e) =>
+                  setCurrentEvent({ ...currentEvent, note: e.target.value })
+                }
+                style={fieldTextareaStyle}
+              />
+            </Field>
+
+            <Field label="Event Color">
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {COLOR_PALETTE.map((swatch) => {
+                  const isSelected = currentEvent?.color === swatch.hex;
+                  const disabled = !isAdmin && currentEvent?._id;
+                  return (
+                    <Box
+                      key={swatch.hex}
+                      component="button"
+                      type="button"
+                      title={swatch.name}
+                      aria-label={swatch.name}
+                      disabled={disabled}
+                      onClick={() =>
+                        setCurrentEvent({ ...currentEvent, color: swatch.hex })
+                      }
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        background: swatch.hex,
+                        border: isSelected
+                          ? "3px solid #08999D"
+                          : "1px solid rgba(0,0,0,0.2)",
+                        boxShadow: isSelected ? "0 0 0 1px #fff inset" : "none",
+                        cursor: disabled ? "default" : "pointer",
+                        opacity: disabled ? 0.5 : 1,
+                        padding: 0,
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+            </Field>
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDialog}
-            color="secondary"
-            variant="outlined"
-          >
-            Cancel
-          </Button>
-          {currentEvent?._id && !currentEvent?.completed && (
-            <Button
-              onClick={handleCompleteEvent}
-              variant="contained"
-              sx={{
-                display: isAdmin ? "block" : "none",
-                backgroundColor: "#2ECC71",
-                "&:hover": { backgroundColor: "#27AE60" },
-              }}
-            >
-              Mark Complete
-            </Button>
-          )}
 
-          {currentEvent?._id && (
-            <Button
-              onClick={handleDeleteEvent}
-              variant="contained"
-              color="error"
-              sx={{
-                display: isAdmin ? "block" : "none",
-              }}
-            >
-              Delete
-            </Button>
-          )}
+          <Box sx={modalFooterSx}>
+            {currentEvent?._id && (
+              <Button
+                sx={{ ...buttonSx.danger("44px"), display: isAdmin ? "flex" : "none" }}
+                onClick={handleDeleteEvent}
+              >
+                Delete
+              </Button>
+            )}
 
-          <Button
-            onClick={handleAddEvent}
-            color="primary"
-            variant="contained"
-            sx={{
-              display: isAdmin ? "block" : currentEvent?._id ? "none" : "block",
-            }}
-            disabled={
-              currentEvent?.title?.length === 0 ||
-              !currentEvent?.start ||
-              !currentEvent?.end ||
-              !currentEvent?.type
-            }
-          >
-            {currentEvent?._id ? "Save" : "Add"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {currentEvent?._id && !currentEvent?.completed && (
+              <Button
+                sx={{
+                  height: "44px",
+                  background: "#2ECC71",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0 16px",
+                  fontSize: "13.5px",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  display: isAdmin ? "flex" : "none",
+                  "&:hover": { background: "#27AE60" },
+                }}
+                onClick={handleCompleteEvent}
+              >
+                Mark Complete
+              </Button>
+            )}
+
+            <Box sx={{ flex: 1 }} />
+            <Button sx={buttonSx.neutral("44px")} onClick={handleCloseDialog}>
+              Cancel
+            </Button>
+            <Button
+              sx={{
+                ...buttonSx.primary("44px"),
+                fontWeight: 700,
+                display: isAdmin ? "flex" : currentEvent?._id ? "none" : "flex",
+              }}
+              onClick={handleAddEvent}
+              disabled={
+                currentEvent?.title?.length === 0 ||
+                !currentEvent?.start ||
+                !currentEvent?.end ||
+                !currentEvent?.type
+              }
+            >
+              {currentEvent?._id ? "Save" : "Add"}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </div>
   );
 };

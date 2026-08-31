@@ -7,7 +7,6 @@ import {
   Typography,
   Button,
   IconButton,
-  MenuItem,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useState, useEffect } from "react";
@@ -16,6 +15,15 @@ import { toast } from "react-toastify";
 import { updateDesignation } from "../../services/designation/updateDesignation";
 import { deleteDesignation } from "../../services/designation/deleteDesignation";
 import Papa from "papaparse";
+import { COLORS, buttonSx } from "../../theme/tokens";
+import {
+  Field,
+  ModalHeader,
+  fieldInputStyle,
+  fieldSelectStyle,
+  modalShellSx,
+  modalFooterSx,
+} from "../common/ModalKit";
 
 const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
   const [formData, setFormData] = useState({
@@ -496,115 +504,84 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
       aria-labelledby="child-modal-title"
       aria-describedby="child-modal-description"
     >
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          bgcolor: "background.paper",
-          boxShadow: 24,
-          p: 4,
-          width: { xs: "90%", md: "auto" },
-          minWidth: { xs: "90%", md: "90%", lg: "1000px" },
-          display: "flex",
-          flexDirection: "row",
-          borderRadius: "6px",
-          maxHeight: "90vh",
-          overflowY: "auto",
-        }}
-      >
-        <Grid container>
-          <Grid item xs={12}>
-            <Typography variant="h4">Update Product Data</Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <form onSubmit={handleUpdateProduct}>
-              <Box sx={{ padding: "20px", borderRadius: "12px" }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Box>
-                      {showImg && (
-                        <img
-                          src={showImg}
-                          alt="Preview"
-                          style={{
-                            width: "100px",
-                            height: "80px",
-                            marginTop: "10px",
-                          }}
-                        />
-                      )}
-                      <br />
-                      <input
-                        type="file"
-                        onChange={handleImageChange}
-                        name="image"
+      <Box sx={modalShellSx(1000)}>
+        <ModalHeader
+          title="Update Product Data"
+          subtitle={formData.designation || ""}
+          onClose={onClose}
+        />
+        <form onSubmit={handleUpdateProduct}>
+          <Box sx={{ padding: "20px", borderRadius: "12px" }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Field label="Product image">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                    {showImg && (
+                      <img
+                        src={showImg}
+                        alt="Preview"
+                        style={{
+                          width: 90,
+                          height: 72,
+                          objectFit: "contain",
+                          border: `1px solid ${COLORS.cardBorder}`,
+                          borderRadius: "6px",
+                          background: "#F7F8F9",
+                        }}
                       />
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box>
-                      <FormControl fullWidth>
-                        <TextField
-                          fullWidth
-                          label="Product Designation"
-                          name="designation"
-                          value={formData.designation}
-                          onChange={handleInputChange}
-                        />
-                      </FormControl>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box>
-                      <FormControl fullWidth>
-                        <TextField
-                          fullWidth
-                          label="Product Vitrage"
-                          name="vitrage"
-                          value={formData.vitrage}
-                          onChange={handleInputChange}
-                        />
-                      </FormControl>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box>
-                      <FormControl fullWidth>
-                        <TextField
-                          fullWidth
-                          label="Product Category"
-                          name="category"
-                          select
-                          value={formData.category}
-                          onChange={handleInputChange}
-                        >
-                          {categories.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </FormControl>
-                    </Box>
-                  </Grid>
+                    )}
+                    <input type="file" onChange={handleImageChange} name="image" />
+                  </Box>
+                </Field>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field label="Product designation">
+                  <input
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleInputChange}
+                    style={fieldInputStyle}
+                  />
+                </Field>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field label="Product vitrage">
+                  <input
+                    name="vitrage"
+                    value={formData.vitrage}
+                    onChange={handleInputChange}
+                    style={fieldInputStyle}
+                  />
+                </Field>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field label="Product category">
+                  <select
+                    name="category"
+                    value={formData.category || ""}
+                    onChange={handleInputChange}
+                    style={fieldSelectStyle}
+                  >
+                    <option value="" disabled>Select category</option>
+                    {categories.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </Field>
+              </Grid>
 
-                  <Grid item xs={12} sm={6}>
-                    <Box>
-                      <FormControl fullWidth>
-                        <TextField
-                          fullWidth
-                          label="Product Cermone"
-                          name="cermone"
-                          value={formData.cermone}
-                          onChange={handleInputChange}
-                        />
-                      </FormControl>
-                    </Box>
-                  </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field label="Product cermone">
+                  <input
+                    name="cermone"
+                    value={formData.cermone}
+                    onChange={handleInputChange}
+                    style={fieldInputStyle}
+                  />
+                </Field>
+              </Grid>
 
-                  {/* Euro-conversion tool: reads the current MRU reference price,
+              {/* Euro-conversion tool: reads the current MRU reference price,
                       converts to Euro, bumps MAY/REU/Others by their own %.
                       Leaves MRU itself untouched. */}
                   <Box
@@ -1096,48 +1073,22 @@ const UpdateDesignation = ({ isOpen, onClose, selectedProduct, isUpdate }) => {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={12}>
-                    <Box
-                      display="flex"
-                      sx={{ flexDirection: { xs: "column", md: "row" } }}
-                      gap="6px"
-                    >
-                      <Box display="flex" gap="6px">
-                        <Button
-                          variant="contained"
-                          sx={{
-                            whiteSpace: "nowrap",
-                          }}
-                          type="submit"
-                        >
-                          Update Product
-                        </Button>
-                        <Button
-                          variant="contained"
-                          onClick={handleCancel}
-                          sx={{
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </Box>
-                      <Button
-                        variant="contained"
-                        onClick={handleDelete}
-                        sx={{
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Delete Product
-                      </Button>
-                    </Box>
-                  </Grid>
                 </Grid>
               </Box>
+
+              <Box sx={modalFooterSx}>
+                <Button sx={buttonSx.danger("44px")} onClick={handleDelete}>
+                  Delete Product
+                </Button>
+                <Box sx={{ flex: 1 }} />
+                <Button sx={buttonSx.neutral("44px")} onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button type="submit" sx={{ ...buttonSx.primary(), fontWeight: 700 }}>
+                  Update Product
+                </Button>
+              </Box>
             </form>
-          </Grid>
-        </Grid>
       </Box>
     </Modal>
   );

@@ -16,36 +16,15 @@ import {
 import { COLORS, buttonSx, badgeStyle, stockBand } from "../../theme/tokens";
 import { AddIcon } from "../common/navIcons";
 import ConfirmDialog from "../common/ConfirmDialog";
-
-const fieldLabelSx = {
-  fontSize: "11.5px",
-  fontWeight: 700,
-  letterSpacing: "0.06em",
-  textTransform: "uppercase",
-  color: COLORS.textMuted,
-  marginBottom: "6px",
-};
-
-const fieldInputStyle = {
-  width: "100%",
-  boxSizing: "border-box",
-  height: "42px",
-  border: `1px solid ${COLORS.inputBorder}`,
-  borderRadius: "6px",
-  padding: "0 13px",
-  fontSize: "14px",
-  color: COLORS.textPrimary,
-  outline: "none",
-};
-
-const fieldSelectStyle = { ...fieldInputStyle, padding: "0 11px", background: "#fff", cursor: "pointer" };
-
-const Field = ({ label, children }) => (
-  <Box>
-    <Box sx={fieldLabelSx}>{label}</Box>
-    {children}
-  </Box>
-);
+import {
+  Field,
+  ModalHeader,
+  fieldLabelSx,
+  fieldInputStyle,
+  fieldSelectStyle,
+  modalShellSx,
+  modalFooterSx,
+} from "../common/ModalKit";
 
 const AllProducts = () => {
   const [Data, setData] = useState(null);
@@ -284,25 +263,6 @@ const AllProducts = () => {
     groups[groupIndex[cat]].items.push(item);
   });
 
-  const modalHeader = (title, subtitle, onClose) => (
-    <Box sx={{ background: COLORS.tableHeaderBg, padding: "16px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-      <Box>
-        <Box sx={{ color: "#fff", fontSize: "16px", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          {title}
-        </Box>
-        {subtitle && (
-          <Box sx={{ color: "#9AA1A9", fontSize: "12.5px", marginTop: "3px" }}>{subtitle}</Box>
-        )}
-      </Box>
-      <Box
-        onClick={onClose}
-        sx={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", color: "#C7CBD1", cursor: "pointer", "&:hover": { background: "rgba(255,255,255,0.1)", color: "#fff" } }}
-      >
-        ✕
-      </Box>
-    </Box>
-  );
-
   return (
     <Box>
       {/* Toolbar */}
@@ -416,8 +376,8 @@ const AllProducts = () => {
 
       {/* Add product modal */}
       <Modal open={addModalOpen} onClose={handleCloseAdd}>
-        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "#fff", borderRadius: "8px", width: 840, maxWidth: "94vw", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 26px 60px rgba(0,0,0,0.3)" }}>
-          {modalHeader("Add product", "New entry in the catalogue", handleCloseAdd)}
+        <Box sx={modalShellSx(840)}>
+          <ModalHeader title="Add product" subtitle="New entry in the catalogue" onClose={handleCloseAdd} />
           <form onSubmit={handleSubmit}>
             <Box sx={{ padding: "22px", display: "grid", gridTemplateColumns: "210px minmax(0,1fr)", gap: "24px" }}>
               <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -482,7 +442,7 @@ const AllProducts = () => {
               </Box>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px 22px", borderTop: `1px solid ${COLORS.rowBorder}`, background: "#FAFBFC" }}>
+            <Box sx={modalFooterSx}>
               <Box sx={{ flex: 1 }} />
               <Button sx={buttonSx.neutral("44px")} onClick={handleCloseAdd}>Cancel</Button>
               <Button type="submit" sx={{ ...buttonSx.primary(), fontWeight: 700 }}>ADD PRODUCT</Button>
@@ -493,8 +453,12 @@ const AllProducts = () => {
 
       {/* Update product modal */}
       <Modal open={open} onClose={handleCloseUpdate}>
-        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "#fff", borderRadius: "8px", width: 840, maxWidth: "94vw", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 26px 60px rgba(0,0,0,0.3)" }}>
-          {modalHeader("Edit product", modalData.productcode ? `${modalData.productcode} · ${modalData.productCategory || ""}` : "", handleCloseUpdate)}
+        <Box sx={modalShellSx(840)}>
+          <ModalHeader
+            title="Edit product"
+            subtitle={modalData.productcode ? `${modalData.productcode} · ${modalData.productCategory || ""}` : ""}
+            onClose={handleCloseUpdate}
+          />
           <form onSubmit={handleModalSubmit}>
             <Box sx={{ padding: "22px", display: "grid", gridTemplateColumns: "210px minmax(0,1fr)", gap: "24px" }}>
               <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -555,7 +519,7 @@ const AllProducts = () => {
               </Box>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px 22px", borderTop: `1px solid ${COLORS.rowBorder}`, background: "#FAFBFC" }}>
+            <Box sx={modalFooterSx}>
               <Button
                 sx={buttonSx.danger("44px")}
                 onClick={() => {
