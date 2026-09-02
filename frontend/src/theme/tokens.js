@@ -45,20 +45,30 @@ export const TONE = {
   neutral: { bg: "#F1F3F5", border: "#D8DCE0", fg: "#4A5158" },
 };
 
-// No per-product stock-threshold field exists in the schema today
-// (see backend/api/model/productSchema.js) — these are fixed
-// presentational cutoffs for the quantity badge, not stored data.
+// Fallback cutoffs for products that haven't been given their own
+// criticalMax/toOrderMax (see backend/api/model/productSchema.js).
 export const STOCK_CUTOFFS = {
   criticalMax: 0, // qty <= this -> "bad" (critical / red)
   warnMax: 9, // qty <= this (and > criticalMax) -> "warn" (to order / amber)
   // qty > warnMax -> "ok" (healthy / green)
 };
 
-/** Classify a quantity into 'ok' | 'warn' | 'bad' using STOCK_CUTOFFS. */
-export function stockBand(qty) {
+/**
+ * Classify a quantity into 'ok' | 'warn' | 'bad' using the product's own
+ * criticalMax/toOrderMax when set, falling back to STOCK_CUTOFFS otherwise.
+ */
+export function productStockBand(qty, product) {
   const q = Number(qty) || 0;
-  if (q <= STOCK_CUTOFFS.criticalMax) return "bad";
-  if (q <= STOCK_CUTOFFS.warnMax) return "warn";
+  const criticalMax =
+    product?.criticalMax === undefined || product?.criticalMax === null || product?.criticalMax === ""
+      ? STOCK_CUTOFFS.criticalMax
+      : Number(product.criticalMax);
+  const toOrderMax =
+    product?.toOrderMax === undefined || product?.toOrderMax === null || product?.toOrderMax === ""
+      ? STOCK_CUTOFFS.warnMax
+      : Number(product.toOrderMax);
+  if (q <= criticalMax) return "bad";
+  if (q <= toOrderMax) return "warn";
   return "ok";
 }
 

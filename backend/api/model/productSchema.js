@@ -36,6 +36,22 @@ const productSchema = mongoose.Schema({
   price: {
     type: Number,
   },
+  weight: {
+    type: Number,
+  },
+  // Per-product stock-level cutoffs driving the quantity badge color
+  // (frontend/src/theme/tokens.js productStockBand) — quantity <= criticalMax
+  // is red, <= toOrderMax is yellow, otherwise green; healthyMin is the
+  // target/ideal restock level shown alongside the badge.
+  criticalMax: {
+    type: Number,
+  },
+  toOrderMax: {
+    type: Number,
+  },
+  healthyMin: {
+    type: Number,
+  },
   createdAt: {
     type: Date,
     default: Date.now, // This sets the default value to the current date and time

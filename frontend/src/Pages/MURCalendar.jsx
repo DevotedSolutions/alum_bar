@@ -90,6 +90,7 @@ const CustomCalendar = () => {
 
   const [update, setUpdate] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -276,10 +277,20 @@ const CustomCalendar = () => {
   };
 
   const legendItems = useMemo(() => {
+    const monthStart = moment(currentDate).startOf("month");
+    const monthEnd = moment(currentDate).endOf("month");
+
     const seen = new Map();
     let hasCompleted = false;
 
     (events || []).forEach((event) => {
+      if (!event?.start || !event?.end) return;
+      const eventStart = moment(event.start);
+      const eventEnd = moment(event.end);
+      const isInCurrentMonth =
+        eventStart.isSameOrBefore(monthEnd) && eventEnd.isSameOrAfter(monthStart);
+      if (!isInCurrentMonth) return;
+
       if (event?.completed) {
         hasCompleted = true;
       }
@@ -301,7 +312,7 @@ const CustomCalendar = () => {
     }
 
     return items;
-  }, [events]);
+  }, [events, currentDate]);
 
   return (
     <div style={{ width: "100%" }}>
@@ -372,6 +383,8 @@ const CustomCalendar = () => {
           }))}
           startAccessor="start"
           endAccessor="end"
+          date={currentDate}
+          onNavigate={(date) => setCurrentDate(date)}
           style={{ height: 900, width: "100%" }}
           eventPropGetter={(event) => {
             const eventStyle = getEventStyle(

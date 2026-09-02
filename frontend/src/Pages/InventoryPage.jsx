@@ -8,7 +8,7 @@ import {
 import { toast } from "react-toastify";
 import { UpdateQuantity } from "../services/products/updateQuantity";
 import ExportOptions from "../Components/ExportOptions";
-import { COLORS, badgeStyle, stockBand, buttonSx, inputSx as inputSxBase } from "../theme/tokens";
+import { COLORS, badgeStyle, productStockBand, buttonSx, inputSx as inputSxBase } from "../theme/tokens";
 
 const colorDot = (productColor) => {
   const c = (productColor || "").toUpperCase();
@@ -188,7 +188,7 @@ const InventoryPage = () => {
                   const showGroupHeader =
                     index === 0 || item.productCategory !== filtered[index - 1].productCategory;
                   const groupCount = filtered.filter((p) => p.productCategory === item.productCategory).length;
-                  const band = stockBand(item.quantity);
+                  const band = productStockBand(item.quantity, item);
                   const dot = colorDot(item.productColor);
                   const editing = qtyEditId === item._id;
 

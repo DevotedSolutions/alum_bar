@@ -13,7 +13,7 @@ import {
   categoryData,
   colorData,
 } from "../../Utility/data";
-import { COLORS, buttonSx, badgeStyle, stockBand } from "../../theme/tokens";
+import { COLORS, TONE, buttonSx, badgeStyle, productStockBand } from "../../theme/tokens";
 import { AddIcon } from "../common/navIcons";
 import ConfirmDialog from "../common/ConfirmDialog";
 import {
@@ -25,6 +25,51 @@ import {
   modalShellSx,
   modalFooterSx,
 } from "../common/ModalKit";
+
+// Colored number input for a stock-level threshold field (green/yellow/red),
+// shared between the Add and Edit product modals.
+const toneFieldInputStyle = (tone) => ({
+  ...fieldInputStyle,
+  fontWeight: 700,
+  borderColor: TONE[tone].border,
+  background: TONE[tone].bg,
+  color: TONE[tone].fg,
+});
+
+const StockThresholdFields = ({ data, onChange }) => (
+  <Box sx={{ gridColumn: "span 2" }}>
+    <Box sx={fieldLabelSx}>Stock level thresholds</Box>
+    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
+      <Field label="Healthy target">
+        <input
+          type="number"
+          name="healthyMin"
+          value={data.healthyMin ?? ""}
+          onChange={onChange}
+          style={toneFieldInputStyle("ok")}
+        />
+      </Field>
+      <Field label="To order at/below">
+        <input
+          type="number"
+          name="toOrderMax"
+          value={data.toOrderMax ?? ""}
+          onChange={onChange}
+          style={toneFieldInputStyle("warn")}
+        />
+      </Field>
+      <Field label="Critical at/below">
+        <input
+          type="number"
+          name="criticalMax"
+          value={data.criticalMax ?? ""}
+          onChange={onChange}
+          style={toneFieldInputStyle("bad")}
+        />
+      </Field>
+    </Box>
+  </Box>
+);
 
 const AllProducts = () => {
   const [Data, setData] = useState(null);
@@ -52,6 +97,10 @@ const AllProducts = () => {
     productCermone: "",
     productVitrage: "",
     price: "",
+    weight: "",
+    criticalMax: "",
+    toOrderMax: "",
+    healthyMin: "",
   });
 
   const [modalFormdata, setModalFormData] = useState({});
@@ -81,6 +130,10 @@ const AllProducts = () => {
     formData.append("productVitrage", AddData.productVitrage);
     formData.append("productColor", AddData.productColor);
     formData.append("productCategory", AddData.productCategory);
+    formData.append("weight", AddData.weight);
+    formData.append("criticalMax", AddData.criticalMax);
+    formData.append("toOrderMax", AddData.toOrderMax);
+    formData.append("healthyMin", AddData.healthyMin);
     formData.append("image", image);
 
     try {
@@ -98,6 +151,10 @@ const AllProducts = () => {
           productcermone: "",
           productVitrage: "",
           price: "",
+          weight: "",
+          criticalMax: "",
+          toOrderMax: "",
+          healthyMin: "",
         });
         setShowImg({});
       } else if (resp) {
@@ -188,6 +245,10 @@ const AllProducts = () => {
       price: data.price,
       productCategory: data.productCategory,
       productColor: data.productColor,
+      weight: data.weight ?? "",
+      criticalMax: data.criticalMax ?? "",
+      toOrderMax: data.toOrderMax ?? "",
+      healthyMin: data.healthyMin ?? "",
     });
     if (data.image) {
       setShowModalImg({
@@ -213,6 +274,10 @@ const AllProducts = () => {
     formData.append("price", modalFormdata.price);
     formData.append("productCermone", modalFormdata.productCermone);
     formData.append("productVitrage", modalFormdata.productVitrage);
+    formData.append("weight", modalFormdata.weight);
+    formData.append("criticalMax", modalFormdata.criticalMax);
+    formData.append("toOrderMax", modalFormdata.toOrderMax);
+    formData.append("healthyMin", modalFormdata.healthyMin);
 
     if (modalImage) {
       formData.append("image", modalImage);
@@ -311,7 +376,7 @@ const AllProducts = () => {
           </Box>
           <Box sx={{ padding: "18px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(206px, 1fr))", gap: "16px" }}>
             {g.items.map((item) => {
-              const band = stockBand(item.quantity);
+              const band = productStockBand(item.quantity, item);
               return (
                 <Box
                   key={item._id}
@@ -348,6 +413,9 @@ const AllProducts = () => {
                   <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <span style={{ fontSize: 12.5, color: COLORS.textSecondary }}>Quantity</span>
                     <span style={badgeStyle(band)}>{item.quantity}</span>
+                    {item.weight != null && item.weight !== "" && (
+                      <span style={{ fontSize: 12, color: COLORS.textFaint }}>{item.weight} kg</span>
+                    )}
                   </Box>
                   <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "9px", marginTop: "2px" }}>
                     <Button sx={buttonSx.outline("34px")} onClick={() => handleOpenUpdate(item)}>Edit</Button>
@@ -433,6 +501,10 @@ const AllProducts = () => {
                   <Field label="Quantity in stock">
                     <input type="number" name="quantity" value={AddData.quantity} onChange={handleChange} style={fieldInputStyle} />
                   </Field>
+                  <Field label="Weight (kg)">
+                    <input type="number" name="weight" value={AddData.weight} onChange={handleChange} style={fieldInputStyle} />
+                  </Field>
+                  <StockThresholdFields data={AddData} onChange={handleChange} />
                   <Box sx={{ gridColumn: "span 2" }}>
                     <Field label="Description">
                       <textarea name="productDescription" value={AddData.productDescription} onChange={handleChange} rows={3} style={{ ...fieldInputStyle, height: "auto", padding: "11px 13px", resize: "vertical" }} />
@@ -510,6 +582,10 @@ const AllProducts = () => {
                   <Field label="Quantity">
                     <input type="number" name="quantity" value={modalFormdata.quantity || ""} onChange={handleModalChange} style={fieldInputStyle} />
                   </Field>
+                  <Field label="Weight (kg)">
+                    <input type="number" name="weight" value={modalFormdata.weight ?? ""} onChange={handleModalChange} style={fieldInputStyle} />
+                  </Field>
+                  <StockThresholdFields data={modalFormdata} onChange={handleModalChange} />
                   <Box sx={{ gridColumn: "span 2" }}>
                     <Field label="Description">
                       <textarea name="productDescription" value={modalFormdata.productDescription || ""} onChange={handleModalChange} rows={3} style={{ ...fieldInputStyle, height: "auto", padding: "11px 13px", resize: "vertical" }} />

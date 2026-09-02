@@ -14,6 +14,10 @@ exports.AddProduct = async (req, res) => {
     productCategory,
     productCermone,
     productVitrage,
+    weight,
+    criticalMax,
+    toOrderMax,
+    healthyMin,
   } = req.body;
   const image = req.file ? req.file.path : null;
 
@@ -43,6 +47,10 @@ exports.AddProduct = async (req, res) => {
       productVitrage,
       productColor,
       productCategory,
+      weight,
+      criticalMax,
+      toOrderMax,
+      healthyMin,
     });
 
     const result = await product_data.save();
@@ -138,6 +146,10 @@ exports.updateProduct = async (req, res) => {
     productCategory,
     productCermone,
     productVitrage,
+    weight,
+    criticalMax,
+    toOrderMax,
+    healthyMin,
   } = req.body;
   const image = req.file ? req.file.path : req.body.image;
 
@@ -165,6 +177,10 @@ exports.updateProduct = async (req, res) => {
         productCategory,
         productCermone,
         productVitrage,
+        weight,
+        criticalMax,
+        toOrderMax,
+        healthyMin,
       },
       { new: true }
     );
