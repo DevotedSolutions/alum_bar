@@ -21,6 +21,12 @@ router.post(
   middlware.authMiddleware,
   dashboardController.addMetalPrice
 );
+// Pull the live metals board on demand; the GET above also tops up when stale.
+router.post(
+  "/dashboard/metal-price/refresh",
+  middlware.authMiddleware,
+  dashboardController.refreshMetalPrice
+);
 
 // Daily news column.
 router.get(
@@ -32,6 +38,12 @@ router.post(
   "/dashboard/news",
   middlware.authMiddleware,
   dashboardController.addNews
+);
+// Sweep Trading Economics on demand; the GET above also sweeps hourly.
+router.post(
+  "/dashboard/news/refresh",
+  middlware.authMiddleware,
+  dashboardController.refreshNews
 );
 router.delete(
   "/dashboard/news/:id",
@@ -49,6 +61,12 @@ router.post(
   "/dashboard/exchange-rates",
   middlware.authMiddleware,
   dashboardController.addExchangeRate
+);
+// Pull the live MCB board on demand; the GET above also tops up once a day.
+router.post(
+  "/dashboard/exchange-rates/refresh",
+  middlware.authMiddleware,
+  dashboardController.refreshExchangeRates
 );
 
 // Container capacity and other dashboard configuration.

@@ -249,7 +249,7 @@ export default function DrawerAppBar({ children }) {
               <Box
                 sx={{
                   color: "#fff",
-                  fontSize: "29px",
+                  fontSize: { xs: "22px", sm: "29px" },
                   fontWeight: 800,
                   letterSpacing: "0.01em",
                   textTransform: "uppercase",
@@ -295,7 +295,16 @@ export default function DrawerAppBar({ children }) {
           )}
         </Box>
 
-        <Box sx={{ flex: 1, overflow: "auto", padding: "24px 28px 40px" }}>{children}</Box>
+        <Box
+          sx={{
+            flex: 1,
+            overflow: "auto",
+            // Narrow screens can't spare 28px of gutter on each side.
+            padding: { xs: "16px 14px 32px", sm: "24px 28px 40px" },
+          }}
+        >
+          {children}
+        </Box>
       </Box>
     </Box>
   );

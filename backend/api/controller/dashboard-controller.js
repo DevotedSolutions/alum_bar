@@ -3,6 +3,9 @@ const MetalPrice = require("../model/metalPriceSchema");
 const News = require("../model/newsSchema");
 const ExchangeRate = require("../model/exchangeRateSchema");
 const DashboardSetting = require("../model/dashboardSettingSchema");
+const { fetchMcbRates } = require("../services/mcbForex");
+const { fetchMetalPricePerKg } = require("../services/metalsPrice");
+const { fetchAluminiumNews } = require("../services/tradingEconomicsNews");
 
 // Payload a 20ft container is loaded to, used when no dashboard setting has
 // been stored yet. Override by writing the `containerCapacityKg` setting.
@@ -17,6 +20,25 @@ const num = (v, fallback = 0) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 };
+
+/** UTC midnight for a date - the key under which one day's reading is stored. */
+const utcDayStart = (d = new Date()) =>
+  new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+
+/** Read a raw (non-numeric) dashboard setting value. */
+async function getRawSetting(key) {
+  const doc = await DashboardSetting.findOne({ key });
+  return doc ? doc.value : undefined;
+}
+
+/** Write a raw dashboard setting value. */
+async function setRawSetting(key, value) {
+  await DashboardSetting.findOneAndUpdate(
+    { key },
+    { key, value, updatedAt: Date.now() },
+    { upsert: true }
+  );
+}
 
 /** Read a dashboard setting, falling back when it has never been written. */
 async function getSetting(key, fallback) {
@@ -128,11 +150,62 @@ exports.getStockSummary = async (req, res) => {
   }
 };
 
+// How long a stored price stays fresh before the board is polled again.
+const METAL_PRICE_TTL_MS = 15 * 60 * 1000;
+
+/**
+ * Pull the live metals board and store today's reading. The document is keyed
+ * on the UTC day, so intraday refreshes update today's point rather than
+ * stacking extra points onto the sparkline.
+ */
+async function refreshMetalPrice(metal = "aluminium") {
+  const quote = await fetchMetalPricePerKg(metal);
+  const recordedAt = utcDayStart(quote.recordedAt);
+
+  await MetalPrice.findOneAndUpdate(
+    { metal: quote.metal, recordedAt },
+    {
+      metal: quote.metal,
+      price: quote.pricePerKg,
+      currency: quote.currency,
+      unit: "kg",
+      source: "LME",
+      recordedAt,
+      fetchedAt: new Date(),
+    },
+    { upsert: true }
+  );
+
+  return { metal: quote.metal, price: quote.pricePerKg, recordedAt };
+}
+
+/** True when today's reading is missing or older than the TTL. */
+async function metalPriceIsStale(metal) {
+  const newest = await MetalPrice.findOne({ metal })
+    .sort({ recordedAt: -1 })
+    .lean();
+  if (!newest) return true;
+  if (new Date(newest.recordedAt).getTime() < utcDayStart().getTime()) return true;
+
+  const fetchedAt = newest.fetchedAt ? new Date(newest.fetchedAt).getTime() : 0;
+  return Date.now() - fetchedAt > METAL_PRICE_TTL_MS;
+}
+
 /** Newest reference price for a metal, plus the readings behind it. */
 exports.getMetalPrice = async (req, res) => {
   try {
     const metal = (req.query.metal || "aluminium").toLowerCase();
     const points = Math.max(2, num(req.query.points, 12));
+
+    // Top up from the live board when what we hold has gone stale. A failure
+    // is not fatal - fall through and serve the last reading we stored.
+    if (req.query.refresh !== "false" && (await metalPriceIsStale(metal))) {
+      try {
+        await refreshMetalPrice(metal);
+      } catch (error) {
+        console.log("Metal price refresh failed, serving stored reading:", error.message);
+      }
+    }
 
     const readings = await MetalPrice.find({ metal })
       .sort({ recordedAt: -1 })
@@ -170,6 +243,24 @@ exports.getMetalPrice = async (req, res) => {
   }
 };
 
+/** Force a pull from the metals board now. */
+exports.refreshMetalPrice = async (req, res) => {
+  try {
+    const result = await refreshMetalPrice(
+      (req.body?.metal || req.query?.metal || "aluminium").toLowerCase()
+    );
+    res.status(200).json({
+      message: `Refreshed ${result.metal} price from the live board`,
+      ...result,
+    });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(502)
+      .json({ message: `Failed to refresh metal price: ${error.message}` });
+  }
+};
+
 /** Record a new reference-price reading. */
 exports.addMetalPrice = async (req, res) => {
   try {
@@ -194,10 +285,61 @@ exports.addMetalPrice = async (req, res) => {
   }
 };
 
+// Aluminium headlines are rare in the stream, so sweeping it more often than
+// this mostly re-reads the same pages.
+const NEWS_TTL_MS = 60 * 60 * 1000;
+const NEWS_FETCHED_AT_KEY = "newsFetchedAt";
+
+/**
+ * Sweep Trading Economics for aluminium stories and store what it finds.
+ * Stories are upserted on their upstream id, so a repeated sweep refreshes
+ * the ones already held instead of duplicating them.
+ */
+async function refreshNews(options) {
+  const stories = await fetchAluminiumNews(options);
+
+  for (const story of stories) {
+    const filter = story.externalId
+      ? { externalId: story.externalId }
+      : { title: story.title };
+
+    await News.findOneAndUpdate(
+      filter,
+      {
+        ...story,
+        // Stories arriving from the feed are live unless retired by hand.
+        $setOnInsert: { active: true },
+      },
+      { upsert: true }
+    );
+  }
+
+  await setRawSetting(NEWS_FETCHED_AT_KEY, new Date().toISOString());
+  return { count: stories.length };
+}
+
+/** True when the stream hasn't been swept inside the TTL. */
+async function newsIsStale() {
+  const last = await getRawSetting(NEWS_FETCHED_AT_KEY);
+  if (!last) return true;
+  const at = new Date(last).getTime();
+  if (!Number.isFinite(at)) return true;
+  return Date.now() - at > NEWS_TTL_MS;
+}
+
 /** Active news items, newest first. */
 exports.getNews = async (req, res) => {
   try {
     const limit = Math.max(1, num(req.query.limit, 3));
+
+    // Sweep the stream at most hourly; serve what is stored if it fails.
+    if (req.query.refresh !== "false" && (await newsIsStale())) {
+      try {
+        await refreshNews();
+      } catch (error) {
+        console.log("News refresh failed, serving stored items:", error.message);
+      }
+    }
 
     const news = await News.find({ active: true })
       .sort({ publishedAt: -1 })
@@ -208,6 +350,22 @@ exports.getNews = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Failed to retrieve news" });
+  }
+};
+
+/** Force a sweep of the news stream now. */
+exports.refreshNews = async (req, res) => {
+  try {
+    const { count } = await refreshNews({
+      includeDescription: req.body?.includeDescription === true,
+    });
+    res.status(200).json({
+      message: `Swept the stream and stored ${count} aluminium stor${count === 1 ? "y" : "ies"}`,
+      count,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(502).json({ message: `Failed to refresh news: ${error.message}` });
   }
 };
 
@@ -247,10 +405,64 @@ exports.deleteNews = async (req, res) => {
   }
 };
 
+/**
+ * Pull the live MCB board and store one reading per pair for its rate date.
+ * Re-running on the same day overwrites that day's readings rather than
+ * stacking duplicates, so the sparkline stays one point per day.
+ */
+async function refreshFromMcb() {
+  const { asOf, rates } = await fetchMcbRates();
+  const recordedAt = asOf || new Date();
+
+  await Promise.all(
+    rates.map((r) =>
+      ExchangeRate.findOneAndUpdate(
+        { base: r.base, quote: "MUR", recordedAt },
+        {
+          base: r.base,
+          quote: "MUR",
+          rate: r.mid,
+          buy: r.buy,
+          sell: r.sell,
+          source: "MCB",
+          recordedAt,
+        },
+        { upsert: true }
+      )
+    )
+  );
+
+  return { recordedAt, count: rates.length };
+}
+
+/** True when the newest stored reading predates today's board. */
+async function ratesAreStale() {
+  const newest = await ExchangeRate.findOne().sort({ recordedAt: -1 }).lean();
+  if (!newest) return true;
+
+  const today = new Date();
+  const startOfToday = Date.UTC(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate()
+  );
+  return new Date(newest.recordedAt).getTime() < startOfToday;
+}
+
 /** Latest rate per currency pair, with its recent trend and day-on-day move. */
 exports.getExchangeRates = async (req, res) => {
   try {
     const points = Math.max(2, num(req.query.points, 8));
+
+    // Top up from MCB once a day, on the first read after their board moves.
+    // A failure here is not fatal - fall through and serve what is stored.
+    if (req.query.refresh !== "false" && (await ratesAreStale())) {
+      try {
+        await refreshFromMcb();
+      } catch (error) {
+        console.log("MCB forex refresh failed, serving stored rates:", error.message);
+      }
+    }
 
     // Newest-first across every pair, then grouped client-side of Mongo so the
     // per-pair trend keeps its ordering without one query per pair.
@@ -281,6 +493,8 @@ exports.getExchangeRates = async (req, res) => {
         base: latest.base,
         quote: latest.quote,
         rate: num(latest.rate),
+        buy: latest.buy === undefined ? null : num(latest.buy),
+        sell: latest.sell === undefined ? null : num(latest.sell),
         source: latest.source,
         recordedAt: latest.recordedAt,
         changePct,
@@ -302,6 +516,23 @@ exports.getExchangeRates = async (req, res) => {
   }
 };
 
+/** Force a pull from MCB now, rather than waiting for the daily top-up. */
+exports.refreshExchangeRates = async (req, res) => {
+  try {
+    const { recordedAt, count } = await refreshFromMcb();
+    res.status(200).json({
+      message: `Refreshed ${count} rate(s) from MCB`,
+      recordedAt,
+      count,
+    });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(502)
+      .json({ message: `Failed to refresh rates from MCB: ${error.message}` });
+  }
+};
+
 exports.addExchangeRate = async (req, res) => {
   try {
     const { base, rate } = req.body;
@@ -315,6 +546,8 @@ exports.addExchangeRate = async (req, res) => {
       base: String(base).toUpperCase(),
       quote: String(req.body.quote || "MUR").toUpperCase(),
       rate: Number(rate),
+      buy: Number.isFinite(Number(req.body.buy)) ? Number(req.body.buy) : undefined,
+      sell: Number.isFinite(Number(req.body.sell)) ? Number(req.body.sell) : undefined,
       source: req.body.source || "MCB",
       recordedAt: req.body.recordedAt || Date.now(),
     });

@@ -8,7 +8,23 @@ const NewsSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  // Short operational takeaway, for hand-written items. Feed-sourced stories
+  // carry `description` instead and the UI falls back to it.
   impact: {
+    type: String,
+  },
+  description: {
+    type: String,
+  },
+  // Upstream id, used to upsert a story rather than duplicate it on refresh.
+  externalId: {
+    type: String,
+    index: true,
+  },
+  category: {
+    type: String,
+  },
+  country: {
     type: String,
   },
   source: {

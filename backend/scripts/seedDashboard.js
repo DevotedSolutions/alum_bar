@@ -1,9 +1,11 @@
-// Seeds the dashboard's price / news / exchange-rate collections with a
-// starting set of readings so the panels have something to show before a
-// real feed is wired up.
+// Primes the dashboard's collections by pulling each live source once, so the
+// panels have data before the app's own hourly/daily top-ups kick in.
 //
-//   node scripts/seedDashboard.js            # only seeds empty collections
-//   node scripts/seedDashboard.js --reset    # wipes and re-seeds them
+//   node scripts/seedDashboard.js            # fetch and store
+//   node scripts/seedDashboard.js --reset    # clear the collections first
+//
+// Every write is an upsert keyed the same way the app keys it, so re-running
+// this is safe and will not duplicate readings.
 //
 // NOTE: this writes to whatever cluster "api/db config/db.js" points at.
 
@@ -14,86 +16,123 @@ const MetalPrice = require("../api/model/metalPriceSchema");
 const News = require("../api/model/newsSchema");
 const ExchangeRate = require("../api/model/exchangeRateSchema");
 const DashboardSetting = require("../api/model/dashboardSettingSchema");
+const { fetchMcbRates } = require("../api/services/mcbForex");
+const { fetchMetalPricePerKg } = require("../api/services/metalsPrice");
+const { fetchAluminiumNews } = require("../api/services/tradingEconomicsNews");
 
 const reset = process.argv.includes("--reset");
 
-const daysAgo = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
-
-const ALU_TREND = [2.4, 2.44, 2.41, 2.46, 2.45, 2.49, 2.47, 2.52, 2.55, 2.53, 2.57, 2.58];
-
-const FX_TRENDS = {
-  USD: [46.4, 46.5, 46.45, 46.6, 46.7, 46.65, 46.76, 46.85],
-  EUR: [55.2, 55.1, 55.15, 54.95, 55.0, 54.85, 54.85, 54.8],
-  CNY: [6.48, 6.5, 6.49, 6.52, 6.51, 6.54, 6.54, 6.55],
-};
-
-const NEWS = [
-  {
-    title: "Global aluminium price edges higher on supply concerns",
-    impact: "review supplier quotations today",
-    source: "Metal Bulletin",
-  },
-  {
-    title: "China production data supports regional premiums",
-    impact: "monitor extrusion lead times",
-    source: "Platts",
-  },
-  {
-    title: "Freight rates remain stable on Indian Ocean routes",
-    impact: "favourable shipping window continues",
-    source: "Freight Insider",
-  },
-];
-
-async function seedCollection(name, model, docs) {
-  if (reset) {
+/** --reset: drop what's stored so the next pull starts from a clean slate. */
+async function clearCollections() {
+  for (const [name, model] of [
+    ["metalprices", MetalPrice],
+    ["exchangerates", ExchangeRate],
+    ["news", News],
+  ]) {
     const { deletedCount } = await model.deleteMany({});
     console.log(`${name}: cleared ${deletedCount} existing document(s)`);
-  } else {
-    const existing = await model.countDocuments();
-    if (existing > 0) {
-      console.log(`${name}: ${existing} document(s) already present, skipping`);
-      return;
-    }
   }
-  await model.insertMany(docs);
-  console.log(`${name}: inserted ${docs.length} document(s)`);
+}
+
+/** Store today's aluminium price, keyed on the UTC day like the API does. */
+async function seedMetalPrice() {
+  const quote = await fetchMetalPricePerKg("aluminium");
+  const d = quote.recordedAt;
+  const recordedAt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+
+  await MetalPrice.findOneAndUpdate(
+    { metal: "aluminium", recordedAt },
+    {
+      metal: "aluminium",
+      price: quote.pricePerKg,
+      currency: quote.currency,
+      unit: "kg",
+      source: "LME",
+      recordedAt,
+      fetchedAt: new Date(),
+    },
+    { upsert: true }
+  );
+
+  return quote;
+}
+
+/** Store today's MCB board, one reading per pair. */
+async function seedExchangeRates() {
+  const { asOf, rates } = await fetchMcbRates();
+  const recordedAt = asOf || new Date();
+
+  for (const r of rates) {
+    await ExchangeRate.findOneAndUpdate(
+      { base: r.base, quote: "MUR", recordedAt },
+      {
+        base: r.base,
+        quote: "MUR",
+        rate: r.mid,
+        buy: r.buy,
+        sell: r.sell,
+        source: "MCB",
+        recordedAt,
+      },
+      { upsert: true }
+    );
+  }
+
+  return { recordedAt, count: rates.length };
+}
+
+/** Store whatever aluminium stories the stream is carrying. */
+async function seedNews() {
+  const stories = await fetchAluminiumNews();
+
+  for (const story of stories) {
+    const filter = story.externalId
+      ? { externalId: story.externalId }
+      : { title: story.title };
+    await News.findOneAndUpdate(
+      filter,
+      { ...story, $setOnInsert: { active: true } },
+      { upsert: true }
+    );
+  }
+
+  return stories.length;
 }
 
 async function run() {
   await db();
 
-  const priceDocs = ALU_TREND.map((price, i) => ({
-    metal: "aluminium",
-    price,
-    currency: "USD",
-    unit: "kg",
-    source: "LME",
-    recordedAt: daysAgo(ALU_TREND.length - 1 - i),
-  }));
+  if (reset) await clearCollections();
 
-  const rateDocs = [];
-  Object.entries(FX_TRENDS).forEach(([base, trend]) => {
-    trend.forEach((rate, i) => {
-      rateDocs.push({
-        base,
-        quote: "MUR",
-        rate,
-        source: "MCB",
-        recordedAt: daysAgo(trend.length - 1 - i),
-      });
-    });
-  });
+  // Every panel is live now, so seeding means "go and fetch it once".
+  // Each step is independent: one upstream being down shouldn't stop the rest.
+  try {
+    const quote = await seedMetalPrice();
+    console.log(
+      `metalprices: aluminium $${quote.pricePerKg.toFixed(4)}/kg ` +
+        `($${quote.pricePerTonne}/tonne)`
+    );
+  } catch (error) {
+    console.log(`metalprices: fetch failed (${error.message}) - skipped`);
+  }
 
-  const newsDocs = NEWS.map((n, i) => ({
-    ...n,
-    publishedAt: new Date(Date.now() - (i + 1) * 45 * 60 * 1000),
-    active: true,
-  }));
+  try {
+    const { recordedAt, count } = await seedExchangeRates();
+    console.log(
+      `exchangerates: stored ${count} MCB rate(s) for ${recordedAt
+        .toISOString()
+        .slice(0, 10)}`
+    );
+  } catch (error) {
+    console.log(`exchangerates: MCB fetch failed (${error.message}) - skipped`);
+  }
 
-  await seedCollection("metalprices", MetalPrice, priceDocs);
-  await seedCollection("exchangerates", ExchangeRate, rateDocs);
-  await seedCollection("news", News, newsDocs);
+  try {
+    const count = await seedNews();
+    console.log(`news: stored ${count} aluminium stor${count === 1 ? "y" : "ies"}`);
+  } catch (error) {
+    console.log(`news: feed fetch failed (${error.message}) - skipped`);
+  }
 
   await DashboardSetting.findOneAndUpdate(
     { key: "containerCapacityKg" },

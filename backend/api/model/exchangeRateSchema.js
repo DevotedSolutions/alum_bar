@@ -12,9 +12,16 @@ const ExchangeRateSchema = mongoose.Schema({
     type: String,
     default: "MUR",
   },
+  // Midpoint of the buy/sell spread - the single figure the dashboard quotes.
   rate: {
     type: Number,
     required: true,
+  },
+  buy: {
+    type: Number,
+  },
+  sell: {
+    type: Number,
   },
   source: {
     type: String,
@@ -27,6 +34,8 @@ const ExchangeRateSchema = mongoose.Schema({
   },
 });
 
+// One board per day per pair: refreshing repeatedly on the same day updates
+// the existing reading instead of stacking duplicates onto the sparkline.
 ExchangeRateSchema.index({ base: 1, quote: 1, recordedAt: -1 });
 
 const ExchangeRate = mongoose.model("exchangerates", ExchangeRateSchema);

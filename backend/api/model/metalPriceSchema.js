@@ -27,10 +27,17 @@ const MetalPriceSchema = mongoose.Schema({
     type: String,
     default: "LME",
   },
+  // Normalised to UTC midnight so one day = one point on the sparkline; the
+  // reading is refreshed in place as the market moves during that day.
   recordedAt: {
     type: Date,
     default: Date.now,
     index: true,
+  },
+  // When the upstream board was last polled, which drives the staleness check.
+  fetchedAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

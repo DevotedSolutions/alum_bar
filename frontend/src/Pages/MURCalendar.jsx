@@ -27,7 +27,18 @@ import { toast } from "react-toastify";
 import { useRegion } from "../Components/common/RegionContext";
 import { COLORS, buttonSx } from "../theme/tokens";
 
+// Weeks run Monday-Sunday here, not Sunday-Saturday. moment's locale drives
+// react-big-calendar's week layout, so this has to be set before the localizer
+// is built. dow: 1 = Monday; doy: 4 keeps ISO week numbering consistent with it.
+moment.updateLocale("en", { week: { dow: 1, doy: 4 } });
+
 const localizer = momentLocalizer(moment);
+
+// The month grid is no longer clipped (so the weekday row can stick), which
+// means the calendar has to be tall enough for the weeks it actually renders -
+// otherwise the last row would spill over whatever follows it.
+const MONTH_ROW_HEIGHT = 168;
+const WEEKDAY_HEADER_HEIGHT = 46;
 
 // 20 mutually-distinct, colorblind-safe colors (Sasha Trubetskoy's "20 simple
 // distinct colors" set) — chosen so hue alone is never the only thing telling
@@ -276,6 +287,13 @@ const CustomCalendar = () => {
     }
   };
 
+  // How many week rows this month spans, with weeks starting on Monday.
+  const calendarHeight = useMemo(() => {
+    const monthStart = moment(currentDate).startOf("month");
+    const weekRows = Math.ceil((monthStart.weekday() + monthStart.daysInMonth()) / 7);
+    return WEEKDAY_HEADER_HEIGHT + weekRows * MONTH_ROW_HEIGHT;
+  }, [currentDate]);
+
   const legendItems = useMemo(() => {
     const monthStart = moment(currentDate).startOf("month");
     const monthEnd = moment(currentDate).endOf("month");
@@ -346,7 +364,7 @@ const CustomCalendar = () => {
 
       <style>
         {`
-          .rbc-calendar-shell .rbc-month-row { min-height: 168px; }
+          .rbc-calendar-shell .rbc-month-row { min-height: ${MONTH_ROW_HEIGHT}px; }
           .rbc-calendar-shell .rbc-event {
             padding: 6px 9px !important;
             font-size: 12px !important;
@@ -364,12 +382,22 @@ const CustomCalendar = () => {
             border-right: 1px solid #EDEFF2 !important;
             border-bottom: none !important;
           }
-          .rbc-calendar-shell .rbc-month-header { border-bottom: 2px solid ${COLORS.headerTeal}; }
+          /* Keep the weekday row visible while scrolling a long month. The
+             shell and month view must not clip, or the sticky row would be
+             pinned inside a box that doesn't scroll and never actually stick. */
+          .rbc-calendar-shell .rbc-month-header,
+          .rbc-calendar-shell .rbc-time-header {
+            position: sticky;
+            top: 0;
+            z-index: 6;
+            background: #fff;
+            border-bottom: 2px solid ${COLORS.headerTeal};
+          }
           .rbc-calendar-shell .rbc-off-range-bg { background: #FAFBFC; }
           .rbc-calendar-shell .rbc-day-bg, .rbc-calendar-shell .rbc-month-row { border-color: #EDEFF2 !important; }
-          .rbc-calendar-shell .rbc-month-view { border: none; }
+          .rbc-calendar-shell .rbc-month-view { border: none; overflow: visible; }
           .rbc-calendar-shell .rbc-today { background: #EEF8F9; }
-          .rbc-calendar-shell { background: #fff; border: 1px solid #E4E7EA; border-top: none; border-radius: 0 0 8px 8px; box-shadow: 0 1px 3px rgba(20,26,32,0.05); overflow: hidden; }
+          .rbc-calendar-shell { background: #fff; border: 1px solid #E4E7EA; border-top: none; border-radius: 0 0 8px 8px; box-shadow: 0 1px 3px rgba(20,26,32,0.05); }
         `}
       </style>
       <Box className="rbc-calendar-shell">
@@ -385,7 +413,7 @@ const CustomCalendar = () => {
           endAccessor="end"
           date={currentDate}
           onNavigate={(date) => setCurrentDate(date)}
-          style={{ height: 900, width: "100%" }}
+          style={{ height: calendarHeight, width: "100%" }}
           eventPropGetter={(event) => {
             const eventStyle = getEventStyle(
               event.type,
