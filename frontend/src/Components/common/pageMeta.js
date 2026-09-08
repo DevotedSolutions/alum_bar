@@ -5,7 +5,7 @@
 const ROUTES = [
   { prefix: "/jobsheets/", title: "Job Sheets", subtitle: "Workshop job detail", navKey: "jobs" },
   { prefix: "/jobsheets", title: "Job Sheets", subtitle: "Workshop jobs", navKey: "jobs" },
-  { prefix: "/dashboard", title: "Dashboard", subtitle: "Operations overview", navKey: "dashboard" },
+  { prefix: "/dashboard", title: "Dashboard", subtitle: "Daily operations overview", navKey: "dashboard" },
   { prefix: "/inventory", title: "Inventory", subtitle: "Stock management", navKey: "inventory" },
   { prefix: "/allproduct", title: "Products", subtitle: "Product management", navKey: "products" },
   { prefix: "/open-scanner", title: "Scanner", subtitle: "Scan & sell", navKey: "scanner" },

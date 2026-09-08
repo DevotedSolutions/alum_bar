@@ -8,6 +8,7 @@ import { COLORS } from "../theme/tokens";
 import { getPageMeta } from "./common/pageMeta";
 import { useRegion } from "./common/RegionContext";
 import BrandLogo from "./common/BrandLogo";
+import DashboardHeaderMeta from "./common/DashboardHeaderMeta";
 import {
   CalendarIcon,
   DashboardIcon,
@@ -272,6 +273,8 @@ export default function DrawerAppBar({ children }) {
               )}
             </Box>
           </Box>
+
+          {meta.navKey === "dashboard" && <DashboardHeaderMeta />}
 
           {showRegionToggle && (
             <Box sx={{ display: "flex", alignItems: "center", border: "1px solid rgba(255,255,255,0.65)", borderRadius: "6px", overflow: "hidden" }}>

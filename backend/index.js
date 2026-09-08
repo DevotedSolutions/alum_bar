@@ -9,6 +9,7 @@ var cors = require("cors");
 const productsroute = require("./api/routes/product_routes");
 const quotationroute = require("./api/routes/quotation_routes");
 const jobsheetroute = require("./api/routes/jobSheets_routes");
+const dashboardroute = require("./api/routes/dashboard_routes");
 app.use(cors());
 
 db();
@@ -17,7 +18,14 @@ const designationModel = require("./api/model/designationSchema");
 app.use("/uploads", express.static("uploads"));
 app.use("/files", express.static("files"));
 app.use("/quotationuploads", express.static("quotationuploads"));
-app.use("/api", rout, productsroute, quotationroute, jobsheetroute);
+app.use(
+  "/api",
+  rout,
+  productsroute,
+  quotationroute,
+  jobsheetroute,
+  dashboardroute
+);
 
 app.listen(port, () => {
   console.log("port is working on 1000");
