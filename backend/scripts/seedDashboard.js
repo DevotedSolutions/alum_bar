@@ -61,6 +61,7 @@ async function seedMetalPrice() {
 async function seedExchangeRates() {
   const { asOf, rates } = await fetchMcbRates();
   const recordedAt = asOf || new Date();
+  const fetchedAt = new Date();
 
   for (const r of rates) {
     await ExchangeRate.findOneAndUpdate(
@@ -73,6 +74,7 @@ async function seedExchangeRates() {
         sell: r.sell,
         source: "MCB",
         recordedAt,
+        fetchedAt,
       },
       { upsert: true }
     );

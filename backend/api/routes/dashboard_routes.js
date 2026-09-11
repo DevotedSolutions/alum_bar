@@ -10,6 +10,13 @@ router.get(
   dashboardController.getStockSummary
 );
 
+// The same reorder list as a styled spreadsheet, for ordering from.
+router.get(
+  "/dashboard/stock-summary.xlsx",
+  middlware.authMiddleware,
+  dashboardController.exportStockSummary
+);
+
 // Aluminium (or other metal) reference price.
 router.get(
   "/dashboard/metal-price",

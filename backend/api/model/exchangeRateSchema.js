@@ -27,10 +27,17 @@ const ExchangeRateSchema = mongoose.Schema({
     type: String,
     default: "MCB",
   },
+  // The date MCB stamped on the board, normalised to UTC midnight.
   recordedAt: {
     type: Date,
     default: Date.now,
     index: true,
+  },
+  // When we last polled MCB, which drives the staleness check. Distinct from
+  // recordedAt: re-polling an unchanged board advances this but not that.
+  fetchedAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

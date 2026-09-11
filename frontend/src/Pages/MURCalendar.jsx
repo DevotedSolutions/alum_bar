@@ -5,6 +5,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Box, Button, Modal } from "@mui/material";
 import MapComponent from "../Components/calendar/Map";
 import CalendarToolbar from "../Components/calendar/CalendarToolbar";
+import AddressPicker from "../Components/calendar/AddressPicker";
 import { AddIcon } from "../Components/common/navIcons";
 import {
   Field,
@@ -36,7 +37,11 @@ const localizer = momentLocalizer(moment);
 
 // The month grid is no longer clipped (so the weekday row can stick), which
 // means the calendar has to be tall enough for the weeks it actually renders -
-// otherwise the last row would spill over whatever follows it.
+// otherwise the last row would spill over whatever follows it. In month view
+// the rows grow past this minimum when a week holds more events than fit:
+// a fixed row height gets clipped by react-big-calendar's `overflow: hidden`,
+// and how much fits differs per platform (Windows reserves scrollbar width and
+// renders taller line boxes, so the same week that fits on macOS is cut off).
 const MONTH_ROW_HEIGHT = 168;
 const WEEKDAY_HEADER_HEIGHT = 46;
 
@@ -102,6 +107,7 @@ const CustomCalendar = () => {
   const [update, setUpdate] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = useState("month");
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -288,11 +294,19 @@ const CustomCalendar = () => {
   };
 
   // How many week rows this month spans, with weeks starting on Monday.
+  // Month view only uses this as a floor: the grid is left to grow with its
+  // content so a busy week is never cut off. The other views have no intrinsic
+  // height, so they still get a fixed one.
   const calendarHeight = useMemo(() => {
     const monthStart = moment(currentDate).startOf("month");
     const weekRows = Math.ceil((monthStart.weekday() + monthStart.daysInMonth()) / 7);
     return WEEKDAY_HEADER_HEIGHT + weekRows * MONTH_ROW_HEIGHT;
   }, [currentDate]);
+
+  const isMonthView = view === "month";
+  const calendarStyle = isMonthView
+    ? { minHeight: calendarHeight, height: "auto", width: "100%" }
+    : { height: calendarHeight, width: "100%" };
 
   const legendItems = useMemo(() => {
     const monthStart = moment(currentDate).startOf("month");
@@ -364,7 +378,29 @@ const CustomCalendar = () => {
 
       <style>
         {`
-          .rbc-calendar-shell .rbc-month-row { min-height: ${MONTH_ROW_HEIGHT}px; }
+          /* Let a week row grow with its events instead of flexing to a
+             fixed share of the calendar height: react-big-calendar clips
+             .rbc-month-row with overflow:hidden, which is what cut the last
+             event (and the "+N more" link) in half on Windows, where the
+             scrollbar eats column width and events wrap onto more lines. */
+          .rbc-calendar-shell .rbc-month-view { height: auto !important; }
+          .rbc-calendar-shell .rbc-month-row {
+            min-height: ${MONTH_ROW_HEIGHT}px;
+            height: auto !important;
+            flex: 1 0 auto !important;
+            overflow: visible !important;
+          }
+          .rbc-calendar-shell .rbc-row-content { height: auto !important; overflow: visible !important; }
+          .rbc-calendar-shell .rbc-show-more {
+            position: static !important;
+            display: block;
+            margin: 2px 0 4px;
+            padding: 0 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: ${COLORS.headerTeal};
+            background: transparent;
+          }
           .rbc-calendar-shell .rbc-event {
             padding: 6px 9px !important;
             font-size: 12px !important;
@@ -389,10 +425,11 @@ const CustomCalendar = () => {
           .rbc-calendar-shell .rbc-time-header {
             position: sticky;
             top: 0;
-            z-index: 6;
+            z-index: 20;
             background: #fff;
             border-bottom: 2px solid ${COLORS.headerTeal};
           }
+          .rbc-calendar-shell .rbc-month-header .rbc-header { background: #fff; }
           .rbc-calendar-shell .rbc-off-range-bg { background: #FAFBFC; }
           .rbc-calendar-shell .rbc-day-bg, .rbc-calendar-shell .rbc-month-row { border-color: #EDEFF2 !important; }
           .rbc-calendar-shell .rbc-month-view { border: none; overflow: visible; }
@@ -413,7 +450,9 @@ const CustomCalendar = () => {
           endAccessor="end"
           date={currentDate}
           onNavigate={(date) => setCurrentDate(date)}
-          style={{ height: calendarHeight, width: "100%" }}
+          view={view}
+          onView={setView}
+          style={calendarStyle}
           eventPropGetter={(event) => {
             const eventStyle = getEventStyle(
               event.type,
@@ -556,17 +595,19 @@ const CustomCalendar = () => {
               )}
             </Box>
 
-            {currentEvent?.location && currentEvent?.location?.length > 0 && (
-              <Field label="Address">
-                <input
-                  disabled={!isAdmin}
-                  value={currentEvent?.address || ""}
-                  onChange={(e) =>
-                    setCurrentEvent({ ...currentEvent, address: e.target.value })
-                  }
-                  style={fieldInputStyle}
-                />
-              </Field>
+            {/* Shown for every event, not only ones opened from the map:
+                searching an address here is what gives a calendar-added event
+                the coordinates it needs to show up as a marker. */}
+            {(isAdmin || (currentEvent?.location?.length || 0) > 0) && (
+              <AddressPicker
+                address={currentEvent?.address}
+                location={currentEvent?.location}
+                country={country}
+                disabled={!isAdmin}
+                onChange={({ address, location }) =>
+                  setCurrentEvent({ ...currentEvent, address, location })
+                }
+              />
             )}
 
             <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>

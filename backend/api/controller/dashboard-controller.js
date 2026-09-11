@@ -1,3 +1,5 @@
+const ExcelJS = require("exceljs");
+
 const productSchema = require("../model/productSchema");
 const MetalPrice = require("../model/metalPriceSchema");
 const News = require("../model/newsSchema");
@@ -73,80 +75,251 @@ function stockBand(quantity, product) {
  * fills a container. Computed here so the client doesn't have to pull the
  * whole product collection to work it out.
  */
+async function buildStockSummary(limit) {
+  const products = await productSchema
+    .find()
+    .select("productName productcode quantity weight criticalMax toOrderMax healthyMin")
+    .lean();
+
+  const weightByBand = { critical: 0, low: 0, buffer: 0 };
+  const counts = { critical: 0, low: 0, buffer: 0 };
+
+  const reorder = [];
+  products.forEach((p) => {
+    const current = num(p.quantity);
+    // Fall back to the "to order" ceiling when no healthy target is set,
+    // otherwise the product would never appear on a restock list.
+    const healthyRaw =
+      p.healthyMin === undefined || p.healthyMin === null || p.healthyMin === ""
+        ? p.toOrderMax
+        : p.healthyMin;
+    const healthy = num(healthyRaw);
+    const orderQty = Math.max(0, healthy - current);
+    if (orderQty <= 0) return;
+
+    const band = stockBand(current, p);
+    const orderKg = orderQty * num(p.weight);
+
+    weightByBand[band] += orderKg;
+    counts[band] += 1;
+
+    reorder.push({
+      _id: p._id,
+      productName: p.productName,
+      productcode: p.productcode,
+      band,
+      current,
+      healthy,
+      orderQty,
+      orderKg,
+    });
+  });
+
+  const bandRank = { critical: 0, low: 1, buffer: 2 };
+  reorder.sort(
+    (a, b) => bandRank[a.band] - bandRank[b.band] || b.orderKg - a.orderKg
+  );
+
+  const totalOrderWeightKg =
+    weightByBand.critical + weightByBand.low + weightByBand.buffer;
+
+  const containerCapacityKg = await getSetting(
+    "containerCapacityKg",
+    DEFAULT_CONTAINER_CAPACITY_KG
+  );
+  const containerPct = containerCapacityKg
+    ? Math.min(100, (totalOrderWeightKg / containerCapacityKg) * 100)
+    : 0;
+
+  return {
+    totalOrderWeightKg,
+    containerCapacityKg,
+    containerPct,
+    containerFreeKg: Math.max(0, containerCapacityKg - totalOrderWeightKg),
+    weightByBand,
+    counts: { ...counts, total: reorder.length },
+    // Critical/low rows drive the reorder table; buffer top-ups only count
+    // towards the weight totals above.
+    reorder: reorder.filter((r) => r.band !== "buffer").slice(0, limit),
+  };
+}
+
 exports.getStockSummary = async (req, res) => {
   try {
     const limit = Math.max(1, num(req.query.limit, 25));
-
-    const products = await productSchema
-      .find()
-      .select("productName productcode quantity weight criticalMax toOrderMax healthyMin")
-      .lean();
-
-    const weightByBand = { critical: 0, low: 0, buffer: 0 };
-    const counts = { critical: 0, low: 0, buffer: 0 };
-
-    const reorder = [];
-    products.forEach((p) => {
-      const current = num(p.quantity);
-      // Fall back to the "to order" ceiling when no healthy target is set,
-      // otherwise the product would never appear on a restock list.
-      const healthyRaw =
-        p.healthyMin === undefined || p.healthyMin === null || p.healthyMin === ""
-          ? p.toOrderMax
-          : p.healthyMin;
-      const healthy = num(healthyRaw);
-      const orderQty = Math.max(0, healthy - current);
-      if (orderQty <= 0) return;
-
-      const band = stockBand(current, p);
-      const orderKg = orderQty * num(p.weight);
-
-      weightByBand[band] += orderKg;
-      counts[band] += 1;
-
-      reorder.push({
-        _id: p._id,
-        productName: p.productName,
-        productcode: p.productcode,
-        band,
-        current,
-        healthy,
-        orderQty,
-        orderKg,
-      });
-    });
-
-    const bandRank = { critical: 0, low: 1, buffer: 2 };
-    reorder.sort(
-      (a, b) => bandRank[a.band] - bandRank[b.band] || b.orderKg - a.orderKg
-    );
-
-    const totalOrderWeightKg =
-      weightByBand.critical + weightByBand.low + weightByBand.buffer;
-
-    const containerCapacityKg = await getSetting(
-      "containerCapacityKg",
-      DEFAULT_CONTAINER_CAPACITY_KG
-    );
-    const containerPct = containerCapacityKg
-      ? Math.min(100, (totalOrderWeightKg / containerCapacityKg) * 100)
-      : 0;
+    const summary = await buildStockSummary(limit);
 
     res.status(200).json({
       message: "Stock summary retrieved successfully",
-      totalOrderWeightKg,
-      containerCapacityKg,
-      containerPct,
-      containerFreeKg: Math.max(0, containerCapacityKg - totalOrderWeightKg),
-      weightByBand,
-      counts: { ...counts, total: reorder.length },
-      // Critical/low rows drive the reorder table; buffer top-ups only count
-      // towards the weight totals above.
-      reorder: reorder.filter((r) => r.band !== "buffer").slice(0, limit),
+      ...summary,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Failed to retrieve stock summary" });
+  }
+};
+
+// How the dashboard's status chips read, reused by the export so the sheet
+// matches the panel it was exported from.
+const BAND_LABEL = { critical: "CRITICAL", low: "LOW", buffer: "BUFFER" };
+const BAND_FILL = { critical: "FFFDECEE", low: "FFFFF3E2", buffer: "FFEEF8F8" };
+const BAND_FONT = { critical: "FFD22D3A", low: "FFA76A00", buffer: "FF0D8B92" };
+
+/**
+ * The reorder panel as a .xlsx: the same rows and columns the dashboard
+ * shows, with the container/weight figures above them so the sheet is
+ * readable on its own once it has been mailed to a supplier.
+ *
+ * Exports the whole reorder list by default rather than the 25 rows the
+ * panel displays - the point of the file is to order from it.
+ */
+exports.exportStockSummary = async (req, res) => {
+  try {
+    const limit = Math.max(1, num(req.query.limit, 1000));
+    const summary = await buildStockSummary(limit);
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "noutfermeture";
+    workbook.created = new Date();
+    const sheet = workbook.addWorksheet("Reorder & critical stock");
+
+    sheet.columns = [
+      { key: "status", width: 12 },
+      { key: "product", width: 34 },
+      { key: "code", width: 14 },
+      { key: "current", width: 11 },
+      { key: "healthy", width: 11 },
+      { key: "orderQty", width: 12 },
+      { key: "orderKg", width: 13 },
+    ];
+
+    const title = sheet.addRow(["Reorder & critical stock"]);
+    title.font = { bold: true, size: 15, color: { argb: "FF22272E" } };
+    sheet.mergeCells(title.number, 1, title.number, 7);
+
+    const stamp = sheet.addRow([
+      `Exported ${new Date().toLocaleString("en-GB")}`,
+    ]);
+    stamp.font = { size: 10, color: { argb: "FF6E757C" } };
+    sheet.mergeCells(stamp.number, 1, stamp.number, 7);
+
+    sheet.addRow([]);
+
+    // Summary block, mirroring the cards above the panel.
+    const facts = [
+      ["Products below healthy stock", summary.counts.total],
+      ["Critical", summary.counts.critical],
+      ["Low stock", summary.counts.low],
+      ["Total order weight (kg)", Math.round(summary.totalOrderWeightKg)],
+      ["20ft container capacity (kg)", Math.round(summary.containerCapacityKg)],
+      ["Container fill (%)", Math.round(summary.containerPct)],
+      ["Container space left (kg)", Math.round(summary.containerFreeKg)],
+    ];
+    facts.forEach(([label, value]) => {
+      const row = sheet.addRow([label, value]);
+      row.getCell(1).font = { bold: true, color: { argb: "FF4A5158" } };
+      row.getCell(2).numFmt = "#,##0";
+      row.getCell(2).alignment = { horizontal: "left" };
+    });
+
+    sheet.addRow([]);
+
+    const header = sheet.addRow([
+      "STATUS",
+      "PRODUCT",
+      "CODE",
+      "CURRENT",
+      "HEALTHY",
+      "ORDER QTY",
+      "ORDER KG",
+    ]);
+    header.eachCell((cell) => {
+      cell.font = { bold: true, size: 10, color: { argb: "FFFFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF2B303A" },
+      };
+      cell.alignment = { vertical: "middle", horizontal: "left" };
+    });
+    header.height = 20;
+
+    summary.reorder.forEach((r) => {
+      const row = sheet.addRow([
+        BAND_LABEL[r.band] || r.band,
+        r.productName,
+        r.productcode,
+        r.current,
+        r.healthy,
+        r.orderQty,
+        Math.round(r.orderKg),
+      ]);
+
+      const status = row.getCell(1);
+      status.font = { bold: true, size: 10, color: { argb: BAND_FONT[r.band] } };
+      status.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: BAND_FILL[r.band] },
+      };
+      status.alignment = { horizontal: "center" };
+
+      // "Current" is the number that explains the status, so it carries the
+      // band colour on the dashboard too.
+      row.getCell(4).font = { bold: true, color: { argb: BAND_FONT[r.band] } };
+      row.getCell(7).font = { bold: true };
+      [4, 5, 6, 7].forEach((c) => {
+        row.getCell(c).alignment = { horizontal: "right" };
+        row.getCell(c).numFmt = "#,##0";
+      });
+      row.eachCell((cell) => {
+        cell.border = { bottom: { style: "thin", color: { argb: "FFEDEFF2" } } };
+      });
+    });
+
+    const totals = sheet.addRow([
+      "",
+      `${summary.reorder.length} product${summary.reorder.length === 1 ? "" : "s"} to order`,
+      "",
+      "",
+      "",
+      summary.reorder.reduce((sum, r) => sum + r.orderQty, 0),
+      Math.round(summary.reorder.reduce((sum, r) => sum + r.orderKg, 0)),
+    ]);
+    totals.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FF1F5F63" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFF1F4F6" },
+      };
+    });
+    [6, 7].forEach((c) => {
+      totals.getCell(c).alignment = { horizontal: "right" };
+      totals.getCell(c).numFmt = "#,##0";
+    });
+
+    // Keep the column titles in view when scrolling a long order list.
+    sheet.views = [{ state: "frozen", ySplit: header.number }];
+    sheet.autoFilter = {
+      from: { row: header.number, column: 1 },
+      to: { row: header.number, column: 7 },
+    };
+
+    const fileName = `reorder-critical-stock-${new Date()
+      .toISOString()
+      .slice(0, 10)}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to export stock summary" });
   }
 };
 
@@ -410,9 +583,15 @@ exports.deleteNews = async (req, res) => {
  * Re-running on the same day overwrites that day's readings rather than
  * stacking duplicates, so the sparkline stays one point per day.
  */
+// How long a stored board stays fresh before MCB is polled again. They publish
+// once a day, but the exact hour moves, so poll through the day to pick up a
+// new board soon after it lands rather than waiting for the next midnight.
+const EXCHANGE_RATE_TTL_MS = 3 * 60 * 60 * 1000;
+
 async function refreshFromMcb() {
   const { asOf, rates } = await fetchMcbRates();
   const recordedAt = asOf || new Date();
+  const fetchedAt = new Date();
 
   await Promise.all(
     rates.map((r) =>
@@ -426,27 +605,28 @@ async function refreshFromMcb() {
           sell: r.sell,
           source: "MCB",
           recordedAt,
+          fetchedAt,
         },
         { upsert: true }
       )
     )
   );
 
-  return { recordedAt, count: rates.length };
+  return { recordedAt, fetchedAt, count: rates.length };
 }
 
-/** True when the newest stored reading predates today's board. */
+/**
+ * True when MCB hasn't been polled inside the TTL. Measured from the poll, not
+ * from the board's own date, so re-reading an unchanged board still counts as
+ * having checked - otherwise every request between midnight and MCB publishing
+ * would fire its own fetch.
+ */
 async function ratesAreStale() {
   const newest = await ExchangeRate.findOne().sort({ recordedAt: -1 }).lean();
   if (!newest) return true;
 
-  const today = new Date();
-  const startOfToday = Date.UTC(
-    today.getUTCFullYear(),
-    today.getUTCMonth(),
-    today.getUTCDate()
-  );
-  return new Date(newest.recordedAt).getTime() < startOfToday;
+  const fetchedAt = newest.fetchedAt ? new Date(newest.fetchedAt).getTime() : 0;
+  return Date.now() - fetchedAt > EXCHANGE_RATE_TTL_MS;
 }
 
 /** Latest rate per currency pair, with its recent trend and day-on-day move. */
@@ -454,7 +634,7 @@ exports.getExchangeRates = async (req, res) => {
   try {
     const points = Math.max(2, num(req.query.points, 8));
 
-    // Top up from MCB once a day, on the first read after their board moves.
+    // Top up from MCB on the first read after the TTL lapses.
     // A failure here is not fatal - fall through and serve what is stored.
     if (req.query.refresh !== "false" && (await ratesAreStale())) {
       try {

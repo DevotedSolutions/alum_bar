@@ -3,13 +3,16 @@ import { Box, useMediaQuery } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import { toast } from "react-toastify";
 
 import { getStockSummary } from "../services/dashboard/getStockSummary";
+import { exportStockSummary } from "../services/dashboard/exportStockSummary";
 import { getMetalPrice } from "../services/dashboard/getMetalPrice";
 import { getNews } from "../services/dashboard/getNews";
 import { getExchangeRates } from "../services/dashboard/getExchangeRates";
 import { getEventsByCountry } from "../services/Events";
 import { useRegion } from "./common/RegionContext";
+import ContainerLoadGraphic from "./dashboard/ContainerLoadGraphic";
 import { COLORS } from "../theme/tokens";
 
 // How each stock band reads in the reorder table and the weight breakdown.
@@ -195,6 +198,14 @@ const PanelHeader = ({ title, aside }) => (
   </Box>
 );
 
+const ExcelIcon = ({ size = 15 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="M7 10l5 5 5-5" />
+    <path d="M12 15V3" />
+  </svg>
+);
+
 /** Minimal inline sparkline; `dots` matches the price card in the mockup. */
 const Sparkline = ({ values = [], color = COLORS.headerTeal, width = 210, height = 54, dots = false }) => {
   if (values.length < 2) return null;
@@ -335,6 +346,18 @@ const DashBoard = () => {
   const [events, setEvents] = useState([]);
   const [priceUnit, setPriceUnit] = useState("kg");
   const [openStory, setOpenStory] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExportReorder() {
+    setExporting(true);
+    try {
+      await exportStockSummary();
+    } catch (error) {
+      toast.error("Could not export the reorder list. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function fetchStockSummary() {
     try {
@@ -530,23 +553,68 @@ const DashBoard = () => {
 
         <Box sx={cardSx}>
           <Box sx={cardLabelSx}>20ft container</Box>
-          <Box sx={{ fontSize: "38px", fontWeight: 800, color: COLORS.textPrimary, lineHeight: 1 }}>
-            {Math.round(containerPct)}% FULL
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "14px",
+              flexWrap: { xs: "wrap", sm: "nowrap" },
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: "6px", minWidth: "140px" }}>
+              <Box sx={{ fontSize: "38px", fontWeight: 800, color: COLORS.textPrimary, lineHeight: 1 }}>
+                {Math.round(containerPct)}% FULL
+              </Box>
+              <Box sx={{ fontSize: "13px", color: COLORS.textMuted }}>
+                {fmtKg(totalOrderWeightKg)} / {fmtKg(containerCapacityKg)} kg
+              </Box>
+              <Box sx={{ fontSize: "13px", color: COLORS.textMuted }}>{fmtKg(containerFreeKg)} kg available</Box>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: "220px", display: "flex", justifyContent: { xs: "flex-start", sm: "flex-end" } }}>
+              <ContainerLoadGraphic pct={containerPct} />
+            </Box>
           </Box>
-          <Box sx={{ fontSize: "13px", color: COLORS.textMuted }}>
-            {fmtKg(totalOrderWeightKg)} / {fmtKg(containerCapacityKg)} kg
-          </Box>
-          <Box sx={{ height: "9px", borderRadius: "5px", background: COLORS.rowBorder, overflow: "hidden" }}>
-            <Box sx={{ width: `${containerPct}%`, height: "100%", background: COLORS.headerTeal, borderRadius: "5px" }} />
-          </Box>
-          <Box sx={{ fontSize: "13px", color: COLORS.textMuted }}>{fmtKg(containerFreeKg)} kg available</Box>
         </Box>
       </Box>
 
       {/* Row 2 - reorder list + today's tasks */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1.45fr) minmax(0, 1fr)" }, gap: "18px" }}>
         <Box sx={panelSx}>
-          <PanelHeader title="Reorder & critical stock" />
+          <PanelHeader
+            title="Reorder & critical stock"
+            aside={
+              reorder.length > 0 && (
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={handleExportReorder}
+                  disabled={exporting}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    height: "32px",
+                    padding: "0 14px",
+                    border: "1px solid rgba(255,255,255,0.35)",
+                    borderRadius: "5px",
+                    background: "transparent",
+                    color: "#fff",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    letterSpacing: "0.04em",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    "&:hover:not(:disabled)": { background: "rgba(255,255,255,0.1)" },
+                    "&:disabled": { opacity: 0.6, cursor: "default" },
+                  }}
+                >
+                  <ExcelIcon />
+                  {exporting ? "Exporting…" : "Export Excel"}
+                </Box>
+              )
+            }
+          />
           {reorder.length === 0 && (
             <Box sx={{ ...emptySx, textAlign: "center" }}>Nothing below its reorder point.</Box>
           )}
