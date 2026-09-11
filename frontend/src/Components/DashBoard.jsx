@@ -162,6 +162,28 @@ const cellEdgePad = (i, len) => ({
   paddingRight: i === len - 1 ? 20 : 12,
 });
 
+// Buy/Sell columns in the exchange-rate panel: fixed width and right-aligned
+// so the decimal points line up down the column.
+const fxColWidth = { xs: "52px", sm: "58px" };
+
+const fxColHeadSx = {
+  fontSize: "10.5px",
+  fontWeight: 700,
+  letterSpacing: "0.07em",
+  textTransform: "uppercase",
+  color: COLORS.textFaint,
+  textAlign: "right",
+  flexShrink: 0,
+};
+
+const fxCellSx = {
+  fontSize: "13.5px",
+  textAlign: "right",
+  whiteSpace: "nowrap",
+  flexShrink: 0,
+  fontVariantNumeric: "tabular-nums",
+};
+
 const emptySx = {
   fontSize: "13.5px",
   color: COLORS.textFaint,
@@ -929,14 +951,25 @@ const DashBoard = () => {
           <Box sx={{ padding: { xs: "14px 14px 0", sm: "14px 20px 0" } }}>
             {fx.rates.length > 0 && (
               <Box sx={{ fontSize: "12px", color: COLORS.textFaint, marginBottom: "6px" }}>
-                {fx.source || "Indicative"} rates
+                {fx.source || "Indicative"} rates in MUR
                 {fx.asOf ? ` • ${new Date(fx.asOf).toLocaleDateString("en-GB")}` : ""}
+              </Box>
+            )}
+            {/* Column headers, so the two figures can't be mistaken for each
+                other. Buy/Sell are from MCB's side: Sell is what you pay. */}
+            {fx.rates.length > 0 && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: "12px", paddingBottom: "6px" }}>
+                <Box sx={{ width: "28px", minWidth: "28px" }} />
+                <Box sx={{ flex: 1, minWidth: 0 }} />
+                <Box sx={{ ...fxColHeadSx, width: fxColWidth }}>Buy</Box>
+                <Box sx={{ ...fxColHeadSx, width: fxColWidth }}>Sell</Box>
+                {!isVeryNarrow && <Box sx={{ ...fxColHeadSx, width: "48px" }}>1d</Box>}
               </Box>
             )}
             {fx.rates.map((rate) => {
               const up = Number(rate.changePct) >= 0;
               return (
-                <Box key={rate.pair} sx={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 0", borderBottom: `1px solid ${COLORS.rowBorder}` }}>
+                <Box key={rate.pair} sx={{ display: "flex", alignItems: "center", gap: "12px", padding: "11px 0", borderBottom: `1px solid ${COLORS.rowBorder}` }}>
                   <Box
                     sx={{
                       width: "28px",
@@ -953,27 +986,28 @@ const DashBoard = () => {
                   >
                     {CURRENCY_FLAG[rate.base] || rate.base}
                   </Box>
-                  <Box sx={{ fontSize: "13px", color: COLORS.textSecondary, fontWeight: 600, minWidth: { xs: "auto", sm: "78px" } }}>
-                    {rate.base} / {rate.quote}
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center" }}>
-                    {!isVeryNarrow && (
-                      <Sparkline values={rate.trend || []} color={up ? "#1E7E42" : "#D22D3A"} width={78} height={26} />
+                  <Box sx={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: "10px" }}>
+                    <Box sx={{ fontSize: "13px", color: COLORS.textSecondary, fontWeight: 600, whiteSpace: "nowrap" }}>
+                      {/* The quote leg is always MUR and is named in the
+                          caption above, so drop it when space is tight. */}
+                      {isVeryNarrow ? rate.base : `${rate.base} / ${rate.quote}`}
+                    </Box>
+                    {!isNarrow && (
+                      <Sparkline values={rate.trend || []} color={up ? "#1E7E42" : "#D22D3A"} width={64} height={24} />
                     )}
                   </Box>
-                  <Box
-                    title={
-                      rate.buy && rate.sell
-                        ? `Buy Rs ${Number(rate.buy).toFixed(2)} / Sell Rs ${Number(rate.sell).toFixed(2)}`
-                        : undefined
-                    }
-                    sx={{ fontSize: "14px", fontWeight: 700, color: COLORS.textPrimary, whiteSpace: "nowrap" }}
-                  >
-                    Rs {Number(rate.rate).toFixed(2)}
+                  <Box sx={{ ...fxCellSx, width: fxColWidth, color: COLORS.textSecondary }}>
+                    {Number(rate.buy ?? rate.rate).toFixed(2)}
                   </Box>
-                  <Box sx={{ fontSize: "12.5px", fontWeight: 700, color: up ? "#1E7E42" : "#D22D3A", minWidth: { xs: "auto", sm: "46px" }, textAlign: "right" }}>
-                    {fmtPct(rate.changePct)}
+                  {/* Sell is the one that sets what an import actually costs. */}
+                  <Box sx={{ ...fxCellSx, width: fxColWidth, color: COLORS.textPrimary, fontWeight: 700 }}>
+                    {Number(rate.sell ?? rate.rate).toFixed(2)}
                   </Box>
+                  {!isVeryNarrow && (
+                    <Box sx={{ ...fxCellSx, width: "48px", fontSize: "12px", fontWeight: 700, color: up ? "#1E7E42" : "#D22D3A" }}>
+                      {fmtPct(rate.changePct)}
+                    </Box>
+                  )}
                 </Box>
               );
             })}
@@ -981,7 +1015,7 @@ const DashBoard = () => {
           </Box>
           <Box sx={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: { xs: "14px 14px", sm: "14px 20px" } }}>
             <Box sx={{ fontSize: "12px", color: COLORS.textFaint }}>
-              {fx.rates.length > 0 ? "Indicative • buy/sell midpoint" : "Indicative"}
+              {fx.rates.length > 0 ? "Indicative • sell is what you pay" : "Indicative"}
             </Box>
             <GhostButton onClick={() => window.open(MCB_RATES_URL, "_blank", "noopener")}>View MCB rates</GhostButton>
           </Box>

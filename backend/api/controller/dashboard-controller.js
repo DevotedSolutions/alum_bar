@@ -583,10 +583,29 @@ exports.deleteNews = async (req, res) => {
  * Re-running on the same day overwrites that day's readings rather than
  * stacking duplicates, so the sparkline stays one point per day.
  */
-// How long a stored board stays fresh before MCB is polled again. They publish
-// once a day, but the exact hour moves, so poll through the day to pick up a
-// new board soon after it lands rather than waiting for the next midnight.
-const EXCHANGE_RATE_TTL_MS = 3 * 60 * 60 * 1000;
+// MCB publishes one board a day, but not at a fixed hour, so we poll through
+// the day to pick a new one up soon after it lands. The slots are anchored to
+// a wall-clock hour rather than to "3h since the last poll", which would drift
+// a little further into the day on every cycle.
+//
+// 24 divides by 3, so anchoring at 06:00 UTC puts the slots at
+// 00, 03, 06, 09, 12, 15, 18 and 21 UTC every day.
+const EXCHANGE_RATE_ANCHOR_HOUR_UTC = 6;
+const EXCHANGE_RATE_INTERVAL_MS = 3 * 60 * 60 * 1000;
+
+/** Start of the most recent polling slot at or before `now`. */
+function currentRateSlot(now = new Date()) {
+  const anchor = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    EXCHANGE_RATE_ANCHOR_HOUR_UTC
+  );
+  // floor() rather than trunc() so times before 06:00 step back to the
+  // previous slot instead of jumping forward to today's anchor.
+  const steps = Math.floor((now.getTime() - anchor) / EXCHANGE_RATE_INTERVAL_MS);
+  return new Date(anchor + steps * EXCHANGE_RATE_INTERVAL_MS);
+}
 
 async function refreshFromMcb() {
   const { asOf, rates } = await fetchMcbRates();
@@ -616,17 +635,17 @@ async function refreshFromMcb() {
 }
 
 /**
- * True when MCB hasn't been polled inside the TTL. Measured from the poll, not
- * from the board's own date, so re-reading an unchanged board still counts as
- * having checked - otherwise every request between midnight and MCB publishing
- * would fire its own fetch.
+ * True when MCB hasn't been polled yet in the current slot. Measured from the
+ * poll, not from the board's own date, so re-reading an unchanged board still
+ * counts as having checked - otherwise every request between a new board
+ * landing and us seeing it would fire its own fetch.
  */
-async function ratesAreStale() {
+async function ratesAreStale(now = new Date()) {
   const newest = await ExchangeRate.findOne().sort({ recordedAt: -1 }).lean();
   if (!newest) return true;
 
   const fetchedAt = newest.fetchedAt ? new Date(newest.fetchedAt).getTime() : 0;
-  return Date.now() - fetchedAt > EXCHANGE_RATE_TTL_MS;
+  return fetchedAt < currentRateSlot(now).getTime();
 }
 
 /** Latest rate per currency pair, with its recent trend and day-on-day move. */
@@ -634,7 +653,7 @@ exports.getExchangeRates = async (req, res) => {
   try {
     const points = Math.max(2, num(req.query.points, 8));
 
-    // Top up from MCB on the first read after the TTL lapses.
+    // Top up from MCB on the first read in each 3-hourly slot.
     // A failure here is not fatal - fall through and serve what is stored.
     if (req.query.refresh !== "false" && (await ratesAreStale())) {
       try {
@@ -663,9 +682,15 @@ exports.getExchangeRates = async (req, res) => {
     byPair.forEach((bucket, key) => {
       const latest = bucket[0];
       const previous = bucket[1];
+
+      // The sparkline and the day-on-day move track the SELL rate: that is
+      // what the bank charges to hand over foreign currency, so it is the
+      // figure that actually moves the cost of paying a supplier. Older rows
+      // written before buy/sell existed fall back to the stored midpoint.
+      const sellOf = (r) => num(r.sell) || num(r.rate);
       const changePct =
-        previous && num(previous.rate)
-          ? ((num(latest.rate) - num(previous.rate)) / num(previous.rate)) * 100
+        previous && sellOf(previous)
+          ? ((sellOf(latest) - sellOf(previous)) / sellOf(previous)) * 100
           : 0;
 
       rates.push({
@@ -678,7 +703,7 @@ exports.getExchangeRates = async (req, res) => {
         source: latest.source,
         recordedAt: latest.recordedAt,
         changePct,
-        trend: bucket.map((r) => num(r.rate)).reverse(),
+        trend: bucket.map(sellOf).reverse(),
       });
     });
 
